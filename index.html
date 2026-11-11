@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HireAI | Enterprise AI Candidate Screening & Recruitment Platform</title>
+<title>TalentLens | AI Recruitment & Candidate Screening Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,8 +18,16 @@ tailwind.config = {
     extend: {
       fontFamily: { sans: ['"Plus Jakarta Sans"', '-apple-system', 'sans-serif'] },
       colors: {
-        brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#1e1b4b' },
-        sidebar: { bg: '#111827', hover: '#1f2937', active: '#374151', text: '#9ca3af' }
+        pwc: {
+          orange: '#D04A02',
+          tangerine: '#EB8C00',
+          yellow: '#FFB600',
+          charcoal: '#2D2D2D',
+          slate: '#464646',
+          light: '#F3F4F6',
+          surface: '#FAFAFA'
+        },
+        sidebar: { bg: '#1F2937', hover: '#374151', active: '#D04A02', text: '#9CA3AF' }
       }
     }
   }
@@ -29,29 +37,37 @@ tailwind.config = {
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+::-webkit-scrollbar-thumb:hover { background: #D04A02; }
 .glass-card { background: rgba(255, 255, 255, 0.98); border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05); }
-.nav-item.active { background-color: rgba(99, 102, 241, 0.15); color: #818cf8; border-right: 3px solid #6366f1; }
+.nav-item.active { background-color: rgba(208, 74, 2, 0.15); color: #FD5108; border-right: 3px solid #D04A02; }
 input[type=range] { -webkit-appearance: none; background: transparent; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #4f46e5; cursor: pointer; margin-top: -5px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #D04A02; cursor: pointer; margin-top: -5px; box-shadow: 0 1px 4px rgba(208, 74, 2, 0.4); }
 input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e2e8f0; border-radius: 999px; }
+.brand-bar { background: linear-gradient(90deg, #D04A02 0%, #FD5108 45%, #EB8C00 80%, #FFB600 100%); }
 </style>
 </head>
-<body class="h-full font-sans antialiased text-slate-800 bg-slate-50 flex flex-col md:flex-row overflow-hidden">
+<body class="h-full font-sans antialiased text-pwc-charcoal bg-pwc-surface flex flex-col md:flex-row overflow-hidden">
+
+<div class="h-1.5 w-full brand-bar fixed top-0 left-0 z-50"></div>
 
 <!-- SIDEBAR NAVIGATION -->
-<aside class="w-full md:w-64 bg-sidebar-bg flex-shrink-0 flex flex-col justify-between border-r border-slate-800 text-slate-300 z-30">
+<aside class="w-full md:w-64 bg-slate-900 flex-shrink-0 flex flex-col justify-between border-r border-slate-800 text-slate-300 z-30 pt-1.5">
   <div>
-    <!-- Logo -->
+    <!-- PwC & TalentLens Header Brand Logo -->
     <div class="h-16 flex items-center px-6 border-b border-slate-800/80 justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white font-extrabold text-lg shadow-md shadow-brand-500/30">H</div>
-        <span class="text-xl font-bold tracking-tight text-white">Hire<span class="text-brand-500">AI</span></span>
+      <div class="flex items-center gap-3">
+        <!-- Exact SVG Vector Logo matching attached PwC Mark -->
+        <svg class="h-7 w-auto" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 10 L95 10 L75 25 L40 25 Z" fill="#FD5108"/>
+          <path d="M85 0 L120 0 L100 15 L65 15 Z" fill="#FD5108"/>
+          <text x="2" y="62" font-family="'Georgia', 'Times New Roman', serif" font-size="48" font-weight="bold" fill="#FFFFFF">pwc</text>
+        </svg>
+        <div class="h-6 w-px bg-slate-700"></div>
+        <span class="text-base font-bold tracking-tight text-white">TalentLens</span>
       </div>
-      <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-500/20 text-brand-400 border border-brand-500/30">Enterprise</span>
     </div>
 
-    <!-- Nav Links -->
+    <!-- Navigation Links -->
     <nav class="py-4 space-y-1 px-3" aria-label="Main Navigation">
       <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
         <i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>Dashboard</span>
@@ -62,51 +78,51 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
       </button>
       <button onclick="switchView('candidates')" id="nav-candidates" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
         <div class="flex items-center gap-3"><i data-lucide="users" class="w-4 h-4"></i><span>Candidate Screening</span></div>
-        <span id="sidebarCandidateBadge" class="px-2 py-0.5 text-[10px] rounded-full bg-brand-500 text-white font-bold">0</span>
+        <span id="sidebarCandidateBadge" class="px-2 py-0.5 text-[10px] rounded-full bg-pwc-orange text-white font-bold">0</span>
       </button>
-      <button onclick="switchView('match-details')" id="nav-match-details" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
-        <i data-lucide="sparkles" class="w-4 h-4 text-brand-400"></i><span>Match Inspection</span>
+      <button onclick="switchView('competencies')" id="nav-competencies" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
+        <i data-lucide="radar" class="w-4 h-4 text-pwc-orange"></i><span>Competency Benchmarking</span>
+      </button>
+      <button onclick="switchView('financial')" id="nav-financial" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
+        <i data-lucide="calculator" class="w-4 h-4 text-emerald-500"></i><span>Cost-Benefit Analysis</span>
       </button>
       <button onclick="switchView('analytics')" id="nav-analytics" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
         <i data-lucide="bar-chart-3" class="w-4 h-4"></i><span>Reports & Analytics</span>
       </button>
-      <button onclick="switchView('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
-        <i data-lucide="sliders" class="w-4 h-4"></i><span>Scoring & Weights</span>
-      </button>
     </nav>
   </div>
 
-  <!-- User Profile Badge -->
-  <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+  <!-- Corporate Advisory Footer Badge -->
+  <div class="p-4 border-t border-slate-800 bg-slate-950/60">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-xs shadow">RS</div>
+      <div class="w-8 h-8 rounded-lg bg-pwc-orange text-white font-bold flex items-center justify-center text-xs shadow">TL</div>
       <div class="min-w-0 flex-1">
-        <p class="text-xs font-bold text-white truncate">Rohit Sharma</p>
-        <p class="text-[11px] text-slate-400 truncate">Senior Recruiter • Acme Corp</p>
+        <p class="text-xs font-bold text-white truncate">TalentLens Advisory</p>
+        <p class="text-[10px] text-slate-400 truncate">PwC Client Engagement Platform</p>
       </div>
     </div>
   </div>
 </aside>
 
 <!-- MAIN CONTENT WRAPPER -->
-<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden pt-1.5">
   
   <!-- TOP BAR -->
   <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-20">
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
-        <span class="hover:text-slate-800 cursor-pointer">Acme Enterprise Workspace</span>
+        <span class="hover:text-slate-800 cursor-pointer">TalentLens Workspace</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-        <span id="topBreadcrumbRole" class="text-slate-900 font-bold">Senior Backend Engineer</span>
+        <span id="topBreadcrumbRole" class="text-slate-900 font-bold">Chief Technology Officer (CTO)</span>
       </div>
     </div>
 
     <div class="flex items-center gap-3">
-      <button onclick="loadSampleEngagement()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-600 hover:text-white transition flex items-center gap-1.5 shadow-sm">
-        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>Load Sample Evaluation</span>
+      <button onclick="loadSampleEngagement()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-orange-200 bg-orange-50 text-pwc-orange hover:bg-pwc-orange hover:text-white transition flex items-center gap-1.5 shadow-sm">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>Load Sample Engagement</span>
       </button>
-      <button onclick="exportBatchReport()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:border-brand-500 hover:text-brand-600 transition flex items-center gap-1.5">
-        <i data-lucide="download" class="w-3.5 h-3.5"></i><span>Export Audit PDF</span>
+      <button onclick="exportBatchReport()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:border-pwc-orange hover:text-pwc-orange transition flex items-center gap-1.5">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i><span>Export Talent Report (PDF)</span>
       </button>
     </div>
   </header>
@@ -116,64 +132,65 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
 
     <!-- VIEW 1: DASHBOARD OVERVIEW -->
     <section id="view-dashboard" class="space-y-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden">
+        <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-pwc-orange/20 to-transparent pointer-events-none"></div>
         <div class="relative z-10">
-          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/10 text-brand-300 text-[11px] font-bold uppercase tracking-wider mb-2">
-            <i data-lucide="cpu" class="w-3.5 h-3.5"></i>Semantic Matching Engine Active
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/10 text-pwc-yellow text-[11px] font-bold uppercase tracking-wider mb-2">
+            <i data-lucide="cpu" class="w-3.5 h-3.5"></i>TalentLens Screening Engine Active
           </div>
-          <h1 class="text-2xl font-bold tracking-tight">Recruitment & Candidate Screening Platform</h1>
-          <p class="text-xs text-slate-300 max-w-2xl mt-1 leading-relaxed">Automate CV screening, extract verified evidence, and score candidates with deterministic weighted criteria.</p>
+          <h1 class="text-2xl font-bold tracking-tight">AI Recruitment & Workforce Advisory</h1>
+          <p class="text-xs text-slate-300 max-w-2xl mt-1 leading-relaxed">Streamline CV screening, map candidate core competencies against JDs, and evaluate hiring ROI in Pakistani Rupees (PKR).</p>
         </div>
         <div class="flex items-center gap-3 relative z-10">
-          <button onclick="switchView('jobs')" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i><span>Create New Job</span>
+          <button onclick="switchView('jobs')" class="px-4 py-2 rounded-xl bg-pwc-orange hover:bg-pwc-tangerine text-white font-bold text-xs shadow-md transition flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i><span>Configure Job Description</span>
           </button>
         </div>
       </div>
 
       <!-- Key Performance Indicators -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="glass-card rounded-xl p-4 border-l-4 border-l-brand-600">
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Jobs</p>
+        <div class="glass-card rounded-xl p-4 border-l-4 border-l-pwc-orange">
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Engagement</p>
           <p id="kpiActiveJobs" class="text-2xl font-extrabold text-slate-900 mt-1">1</p>
           <span class="text-[10px] text-slate-500 font-medium">Target role defined</span>
         </div>
-        <div class="glass-card rounded-xl p-4 border-l-4 border-l-indigo-500">
+        <div class="glass-card rounded-xl p-4 border-l-4 border-l-emerald-600">
           <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total CVs Screened</p>
           <p id="kpiTotalCVs" class="text-2xl font-extrabold text-slate-900 mt-1">0</p>
           <span class="text-[10px] text-slate-500 font-medium">Parsed & benchmarked</span>
         </div>
-        <div class="glass-card rounded-xl p-4 border-l-4 border-l-emerald-500">
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Shortlisted Candidates</p>
+        <div class="glass-card rounded-xl p-4 border-l-4 border-l-pwc-tangerine">
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Optimal Fit Profiles</p>
           <p id="kpiShortlisted" class="text-2xl font-extrabold text-emerald-600 mt-1">0</p>
-          <span class="text-[10px] text-slate-500 font-medium">Optimal semantic fit</span>
+          <span class="text-[10px] text-slate-500 font-medium">Calibrated alignment</span>
         </div>
-        <div class="glass-card rounded-xl p-4 border-l-4 border-l-amber-500">
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Manual Review Flagged</p>
+        <div class="glass-card rounded-xl p-4 border-l-4 border-l-pwc-yellow">
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Over-Qualified Risk</p>
           <p id="kpiUnderReview" class="text-2xl font-extrabold text-amber-600 mt-1">0</p>
-          <span class="text-[10px] text-slate-500 font-medium">Awaiting recruiter check</span>
+          <span class="text-[10px] text-slate-500 font-medium">Seniority premium</span>
         </div>
-        <div class="glass-card rounded-xl p-4 border-l-4 border-l-purple-600">
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Avg. Match Score</p>
-          <p id="kpiAvgMatch" class="text-2xl font-extrabold text-purple-600 mt-1">0%</p>
-          <span class="text-[10px] text-slate-500 font-medium">Weighted pool match</span>
+        <div class="glass-card rounded-xl p-4 border-l-4 border-l-rose-500">
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Avg. JD Fit Score</p>
+          <p id="kpiAvgMatch" class="text-2xl font-extrabold text-pwc-orange mt-1">0%</p>
+          <span class="text-[10px] text-slate-500 font-medium">Weighted benchmark</span>
         </div>
       </div>
 
-      <!-- Quick Actions Grid -->
+      <!-- Quick Actions & Active Engagement Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="glass-card rounded-2xl p-6 space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-900">Current Active Job Description</h3>
-            <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">Active Intake</span>
+            <h3 class="text-sm font-bold text-slate-900">Current Job Description Benchmark</h3>
+            <span class="px-2.5 py-0.5 rounded-full bg-orange-50 text-pwc-orange text-[11px] font-bold border border-orange-200">Active Role</span>
           </div>
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <p id="dashJdTitle" class="text-base font-bold text-slate-900">Senior Backend Engineer</p>
-            <p id="dashJdDesc" class="text-xs text-slate-600 line-clamp-3 leading-relaxed">Build and scale distributed systems and APIs in a multi-cloud environment. 6+ years experience with Python, FastAPI, Node.js, PostgreSQL, AWS, and messaging queues.</p>
+            <p id="dashJdTitle" class="text-base font-bold text-slate-900">Chief Technology Officer (CTO)</p>
+            <p id="dashJdDesc" class="text-xs text-slate-600 line-clamp-3 leading-relaxed">Lead enterprise technology transformation, core digital banking infrastructure, cybersecurity compliance, and 15+ years technology executive governance.</p>
           </div>
           <div class="flex items-center justify-between pt-2">
-            <button onclick="switchView('jobs')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
-              <span>View & Edit Job Requirements</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            <button onclick="switchView('jobs')" class="text-xs font-bold text-pwc-orange hover:underline flex items-center gap-1">
+              <span>Inspect Role Requirements</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
             <button onclick="switchView('candidates')" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition">Go to Bulk Upload</button>
           </div>
@@ -181,15 +198,15 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
 
         <div class="glass-card rounded-2xl p-6 flex flex-col justify-between">
           <div>
-            <h3 class="text-sm font-bold text-slate-900 mb-1">Batch Candidate Audit Trail</h3>
-            <p class="text-xs text-slate-500 mb-4">Summary of recently processed candidate resumes and screening outputs.</p>
+            <h3 class="text-sm font-bold text-slate-900 mb-1">Batch Candidate Activity Audit</h3>
+            <p class="text-xs text-slate-500 mb-4">Real-time status of candidate CVs parsed and evaluated.</p>
             <div id="dashActivityLog" class="space-y-2.5 max-h-48 overflow-y-auto pr-1 text-xs">
-              <p class="text-slate-400 italic">No activity recorded yet. Upload candidate CVs to start.</p>
+              <p class="text-slate-400 italic">No candidates parsed yet. Upload CVs to begin.</p>
             </div>
           </div>
           <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Deterministic Scoring: <b>v2.4 Active</b></span>
-            <span>Deterministic Engine</span>
+            <span>Deterministic Analysis Engine</span>
+            <span class="text-pwc-orange font-bold">TalentLens v3.2</span>
           </div>
         </div>
       </div>
@@ -200,9 +217,9 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 class="text-xl font-bold tracking-tight text-slate-900">Job Description Manager</h1>
-          <p class="text-xs text-slate-500">Configure job requirements, set mandatory vs preferred criteria, and edit requirement weights.</p>
+          <p class="text-xs text-slate-500">Configure role requirements, set mandatory vs preferred criteria, and adjust competency weights.</p>
         </div>
-        <button onclick="clearJDForm()" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs hover:border-brand-500 transition">Reset Job Form</button>
+        <button onclick="clearJDForm()" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs hover:border-pwc-orange transition">Reset Job Form</button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -210,25 +227,25 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
         <div class="lg:col-span-5 glass-card rounded-2xl p-6 space-y-4">
           <div class="flex items-center justify-between border-b border-slate-200 pb-3">
             <h2 class="text-sm font-bold text-slate-900">1. Upload or Paste Job Description</h2>
-            <label for="jdFileInput" class="cursor-pointer text-xs font-bold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white transition flex items-center gap-1.5">
+            <label for="jdFileInput" class="cursor-pointer text-xs font-bold px-3 py-1.5 rounded-lg bg-orange-50 text-pwc-orange hover:bg-pwc-orange hover:text-white transition flex items-center gap-1.5">
               <i data-lucide="upload" class="w-3.5 h-3.5"></i><span>Import File</span>
             </label>
             <input type="file" id="jdFileInput" accept=".pdf,.docx,.txt" class="hidden" onchange="handleJDUpload(event)">
           </div>
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Target Job Title</label>
-            <input type="text" id="jobTitleInput" value="Senior Backend Engineer" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <input type="text" id="jobTitleInput" value="Chief Technology Officer (CTO)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
           </div>
           <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Target Location / Department</label>
-            <input type="text" id="jobLocationInput" value="Bengaluru, India • Engineering" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Budgeted Annual Salary (PKR)</label>
+            <input type="number" id="jobBudgetInput" value="18000000" step="500000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
           </div>
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Raw Job Description Content</label>
-            <textarea id="jdTextInput" rows="12" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 leading-relaxed font-mono" placeholder="Paste full Job Description text here..."></textarea>
+            <textarea id="jdTextInput" rows="11" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pwc-orange/40 leading-relaxed font-mono" placeholder="Paste full Job Description text here..."></textarea>
           </div>
           <button onclick="extractRequirementsFromJD()" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center justify-center gap-2">
-            <i data-lucide="sparkles" class="w-4 h-4 text-brand-400"></i><span>Extract & Classify Requirements</span>
+            <i data-lucide="sparkles" class="w-4 h-4 text-pwc-orange"></i><span>Extract & Classify Requirements</span>
           </button>
         </div>
 
@@ -236,10 +253,10 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
         <div class="lg:col-span-7 glass-card rounded-2xl p-6 space-y-4">
           <div class="flex items-center justify-between border-b border-slate-200 pb-3">
             <div>
-              <h2 class="text-sm font-bold text-slate-900">2. Mandatory vs. Preferred Requirements</h2>
-              <p class="text-[11px] text-slate-500">Edit extracted criteria to calibrate the scoring engine.</p>
+              <h2 class="text-sm font-bold text-slate-900">2. Structured Requirements Calibration</h2>
+              <p class="text-[11px] text-slate-500">Classify requirements into mandatory vs. preferred criteria.</p>
             </div>
-            <span class="px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 text-[11px] font-bold">Auto-Structured</span>
+            <span class="px-2.5 py-1 rounded-md bg-orange-50 text-pwc-orange text-[11px] font-bold border border-orange-200">Auto-Structured</span>
           </div>
 
           <!-- Mandatory -->
@@ -248,16 +265,16 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
               <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i><span>Mandatory Requirements (Knockout Criteria)</span>
             </h3>
             <div id="mandatoryReqList" class="space-y-2"></div>
-            <button onclick="addRequirement('mandatory')" class="text-xs font-bold text-brand-600 hover:underline flex items-center gap-1">+ Add Mandatory Requirement</button>
+            <button onclick="addRequirement('mandatory')" class="text-xs font-bold text-pwc-orange hover:underline flex items-center gap-1">+ Add Mandatory Requirement</button>
           </div>
 
           <!-- Preferred -->
           <div class="space-y-2 pt-3 border-t border-slate-100">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-brand-600 flex items-center gap-1.5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-pwc-orange flex items-center gap-1.5">
               <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>Preferred Qualifications & Skills</span>
             </h3>
             <div id="preferredReqList" class="space-y-2"></div>
-            <button onclick="addRequirement('preferred')" class="text-xs font-bold text-brand-600 hover:underline flex items-center gap-1">+ Add Preferred Requirement</button>
+            <button onclick="addRequirement('preferred')" class="text-xs font-bold text-pwc-orange hover:underline flex items-center gap-1">+ Add Preferred Requirement</button>
           </div>
         </div>
       </div>
@@ -269,30 +286,30 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
       <div class="glass-card rounded-2xl p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div>
-            <h2 class="text-base font-bold text-slate-900">Bulk CV Document Intake</h2>
-            <p class="text-xs text-slate-500">Upload multiple PDF, Word (.docx) or Text resumes to execute batch semantic matching.</p>
+            <h2 class="text-base font-bold text-slate-900">Bulk CV Intake & Resume Parsing</h2>
+            <p class="text-xs text-slate-500">Upload multiple PDF or Word (.docx) candidate CVs to run automated comparative screening.</p>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="clearAllCVs()" id="clearCVsBtn" class="hidden text-xs font-bold text-rose-600 hover:underline">Remove All</button>
-            <button onclick="runBatchScreening()" id="btnStartScreening" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
-              <i data-lucide="play" class="w-4 h-4"></i><span>Execute AI Screening Batch</span>
+            <button onclick="runBatchScreening()" id="btnStartScreening" class="px-5 py-2.5 rounded-xl bg-pwc-orange hover:bg-pwc-tangerine text-white font-bold text-xs shadow-md transition flex items-center gap-2">
+              <i data-lucide="play" class="w-4 h-4"></i><span>Run AI Screening & Benchmark</span>
             </button>
           </div>
         </div>
 
-        <div id="cvDropZone" onclick="document.getElementById('cvFileInput').click()" class="border-2 border-dashed border-slate-300 hover:border-brand-500 rounded-2xl p-8 text-center cursor-pointer transition bg-slate-50/70 hover:bg-brand-50/30 group">
+        <div id="cvDropZone" onclick="document.getElementById('cvFileInput').click()" class="border-2 border-dashed border-slate-300 hover:border-pwc-orange rounded-2xl p-8 text-center cursor-pointer transition bg-slate-50/70 hover:bg-orange-50/30 group">
           <input type="file" id="cvFileInput" multiple accept=".pdf,.docx,.txt" class="hidden" onchange="handleCVFiles(event.target.files)">
           <div class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-200 flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition">
-            <i data-lucide="folder-up" class="w-6 h-6 text-brand-600"></i>
+            <i data-lucide="folder-up" class="w-6 h-6 text-pwc-orange"></i>
           </div>
-          <p class="text-xs font-bold text-slate-800">Click to upload candidate resumes or drag & drop</p>
-          <p class="text-[11px] text-slate-500 mt-1">Supports batch <span class="font-bold text-slate-700">.PDF</span>, <span class="font-bold text-slate-700">.DOCX</span> and <span class="font-bold text-slate-700">.TXT</span> files</p>
+          <p class="text-xs font-bold text-slate-800">Click to upload candidate CVs or drag & drop</p>
+          <p class="text-[11px] text-slate-500 mt-1">Multiple <span class="font-bold text-slate-700">.PDF</span> and <span class="font-bold text-slate-700">.DOCX</span> files supported</p>
         </div>
 
         <!-- Queued List -->
         <div class="space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-slate-700">
-            <span>Candidate Processing Queue</span>
+            <span>Parsed Candidate Queue</span>
             <span id="queueCountText" class="text-slate-500 font-normal">0 CVs ready</span>
           </div>
           <div id="cvQueueContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
@@ -303,16 +320,16 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
       <div class="glass-card rounded-2xl p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div>
-            <h2 class="text-base font-bold text-slate-900">Ranked Candidate Comparison Dashboard</h2>
-            <p class="text-xs text-slate-500">Sorted by weighted deterministic match score against the active Job Description.</p>
+            <h2 class="text-base font-bold text-slate-900">Ranked Candidate Shortlist</h2>
+            <p class="text-xs text-slate-500">Candidates sorted by qualification status and weighted JD competency alignment.</p>
           </div>
           <div class="flex items-center gap-2">
-            <input type="text" id="candidateSearchInput" oninput="filterCandidateTable()" placeholder="Search candidates..." class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 w-44">
+            <input type="text" id="candidateSearchInput" oninput="filterCandidateTable()" placeholder="Search candidates..." class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-pwc-orange/40 w-44">
             <select id="statusFilterSelect" onchange="filterCandidateTable()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 focus:outline-none">
-              <option value="ALL">All Statuses</option>
-              <option value="Shortlisted">Shortlisted</option>
-              <option value="Under Review">Under Review</option>
-              <option value="Not a Fit">Not a Fit</option>
+              <option value="ALL">All Qualification Tiers</option>
+              <option value="Optimal Fit">Optimal Fit</option>
+              <option value="Over-Qualified">Over-Qualified</option>
+              <option value="Under-Qualified">Under-Qualified</option>
             </select>
           </div>
         </div>
@@ -322,17 +339,16 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
             <thead>
               <tr class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                 <th class="py-3 px-4">Rank & Candidate</th>
-                <th class="py-3 px-4">Current Role & Exp</th>
-                <th class="py-3 px-4">Overall Match Score</th>
-                <th class="py-3 px-4">Mandatory Status</th>
-                <th class="py-3 px-4">Top Matched Skills</th>
-                <th class="py-3 px-4">Screening Action</th>
-                <th class="py-3 px-4 text-right">Inspect</th>
+                <th class="py-3 px-4">Role & Experience</th>
+                <th class="py-3 px-4">JD Score</th>
+                <th class="py-3 px-4">Qualification Tier</th>
+                <th class="py-3 px-4">Verified Core Competencies</th>
+                <th class="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody id="candidateTableBody" class="divide-y divide-slate-100 text-slate-700">
               <tr>
-                <td colspan="7" class="py-8 text-center text-slate-400 italic">No evaluated candidates. Upload resumes above or click "Load Sample Evaluation".</td>
+                <td colspan="6" class="py-8 text-center text-slate-400 italic">No evaluated candidates. Upload resumes above or click "Load Sample Engagement".</td>
               </tr>
             </tbody>
           </table>
@@ -340,256 +356,180 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
       </div>
     </section>
 
-    <!-- VIEW 4: MATCH DETAILS (EXACTLY MATCHING HIREAI REFERENCE LAYOUT) -->
-    <section id="view-match-details" class="hidden space-y-6">
-      
-      <!-- Top Title & Navigation Bar -->
+    <!-- VIEW 4: MULTI-DIMENSIONAL COMPETENCY BENCHMARKING (RADAR CHART) -->
+    <section id="view-competencies" class="hidden space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
-          <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Semantic JD Matching</h1>
-          <p id="matchDetailJobMeta" class="text-xs text-slate-500 mt-0.5">Job: Senior Backend Engineer • Location: Bengaluru, India • Posted on Apr 10, 2026</p>
+          <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Multi-Dimensional Competency Benchmarking</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Compare candidate capability vectors against the 100% target Job Description baseline.</p>
         </div>
-        <div class="flex items-center gap-3">
-          <button onclick="switchView('candidates')" class="px-3.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-bold text-xs hover:border-slate-400 transition flex items-center gap-1.5">
-            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i><span>Back to Candidate List</span>
-          </button>
-          <button onclick="exportSingleCandidatePDF()" class="px-3.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-bold text-xs hover:border-brand-500 transition flex items-center gap-1.5">
-            <i data-lucide="share-2" class="w-3.5 h-3.5"></i><span>Share Match Report</span>
+        <div class="flex items-center gap-2">
+          <button onclick="exportBatchReport()" class="px-3.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-bold text-xs hover:border-pwc-orange transition flex items-center gap-1.5">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i><span>Export Benchmark Report</span>
           </button>
         </div>
       </div>
 
-      <!-- MAIN 3-COLUMN DASHBOARD GRID -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- COLUMN 1: CANDIDATE CARD & JD SUMMARY (LHS) -->
-        <div class="lg:col-span-4 space-y-6">
-          
-          <!-- Candidate Badge Card -->
-          <div class="glass-card rounded-2xl p-5 space-y-4">
-            <div class="flex items-start justify-between">
-              <div class="flex items-center gap-3">
-                <div id="matchCandAvatar" class="w-12 h-12 rounded-full bg-brand-600 text-white font-extrabold flex items-center justify-center text-base shadow">AM</div>
-                <div>
-                  <h3 id="matchCandName" class="text-base font-extrabold text-slate-900">A. Mehta</h3>
-                  <p id="matchCandTitle" class="text-xs text-slate-500 font-medium">Sr. Backend Engineer • 6 yrs</p>
-                  <p id="matchCandLoc" class="text-[11px] text-slate-400">Bengaluru, India</p>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">AI Parsed</span>
-            </div>
-
-            <div class="space-y-1.5 text-xs text-slate-600 pt-2 border-t border-slate-100">
-              <p class="flex items-center gap-2"><i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i><span id="matchCandEmail">a.mehta@mail.com</span></p>
-              <p class="flex items-center gap-2"><i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i><span id="matchCandPhone">+91 98765 43210</span></p>
-              <p class="flex items-center gap-2"><i data-lucide="linkedin" class="w-3.5 h-3.5 text-slate-400"></i><span id="matchCandLinkedin">linkedin.com/in/avirakm</span></p>
-              <p class="flex items-center gap-2"><i data-lucide="github" class="w-3.5 h-3.5 text-slate-400"></i><span id="matchCandGithub">github.com/aviralmetha</span></p>
-            </div>
-
-            <button onclick="openFullCVModal()" class="w-full py-2 rounded-xl border border-slate-300 hover:border-brand-500 text-slate-700 hover:text-brand-600 font-bold text-xs transition flex items-center justify-center gap-1.5">
-              <span>View Full Profile & Raw Resume</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </button>
+        <!-- Candidate Selector & Legend Checkboxes -->
+        <div class="lg:col-span-4 glass-card rounded-2xl p-5 space-y-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 border-b border-slate-100 pb-2">Select Candidates to Overlay (Up to 5)</h3>
+          <div id="radarCandidateSelector" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs"></div>
+          <div class="p-3 rounded-xl bg-orange-50 border border-orange-200 text-xs text-slate-700 space-y-1">
+            <p class="font-bold text-pwc-orange">PwC Competency Radar Dimensions:</p>
+            <ol class="list-decimal list-inside text-[11px] space-y-0.5 text-slate-600">
+              <li>Domain & Technical Fit</li>
+              <li>Role Responsibility Alignment</li>
+              <li>Leadership & Ownership</li>
+              <li>Delivery & Execution Depth</li>
+              <li>Qualification Calibration</li>
+            </ol>
           </div>
-
-          <!-- Job Description Requirements Summary Card -->
-          <div class="glass-card rounded-2xl p-5 space-y-3">
-            <div class="flex items-center gap-2 text-xs font-bold text-slate-900 border-b border-slate-100 pb-2">
-              <i data-lucide="file-text" class="w-4 h-4 text-brand-600"></i><span>Job Description Requirements</span>
-            </div>
-            <div>
-              <h4 id="matchJdTitle" class="text-sm font-bold text-slate-900">Senior Backend Engineer</h4>
-              <p id="matchJdSummary" class="text-xs text-slate-500 mt-0.5 leading-relaxed">Build and scale distributed systems and APIs in a cloud environment.</p>
-            </div>
-            <div>
-              <h5 class="text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-2">Key Requirements:</h5>
-              <ul id="matchJdReqList" class="space-y-1.5 text-xs text-slate-600 list-disc list-inside"></ul>
-            </div>
-          </div>
-
-          <!-- Technical Matching Audit Details -->
-          <div class="glass-card rounded-2xl p-5 space-y-2 text-xs">
-            <h5 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5 mb-3">
-              <i data-lucide="shield-check" class="w-4 h-4 text-brand-600"></i><span>Matching Audit & Traceability</span>
-            </h5>
-            <div class="flex justify-between py-1 border-b border-slate-100"><span class="text-slate-500">Matched on</span><span class="font-semibold text-slate-800">Apr 18, 2026 at 10:24 AM</span></div>
-            <div class="flex justify-between py-1 border-b border-slate-100"><span class="text-slate-500">Matching Model</span><span class="font-mono text-slate-800">text-embedding-3-large</span></div>
-            <div class="flex justify-between py-1 border-b border-slate-100"><span class="text-slate-500">Vector Search</span><span class="font-mono text-slate-800">pgvector (cosine similarity)</span></div>
-            <div class="flex justify-between py-1 border-b border-slate-100"><span class="text-slate-500">Confidence Threshold</span><span class="font-semibold text-slate-800">70%</span></div>
-            <div class="flex justify-between py-1"><span class="text-slate-500">Match ID</span><span class="font-mono text-brand-600 font-bold">match_9f3a2b1c7d</span></div>
-          </div>
-
         </div>
 
-        <!-- COLUMN 2 & 3: MATCH SCORE & DETAILED ANALYSIS (RHS) -->
-        <div class="lg:col-span-8 space-y-6">
-
-          <!-- Top Row: Overall Match Score & "Why This Candidate Matches" -->
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-            
-            <!-- Overall Score Doughnut Gauge Card -->
-            <div class="md:col-span-6 glass-card rounded-2xl p-5 flex flex-col justify-between">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600">Overall Match Score</h3>
-                <span id="matchFitBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200 flex items-center gap-1">
-                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>Strong Semantic Match</span>
-                </span>
-              </div>
-
-              <div class="flex items-center gap-6 py-2">
-                <!-- Doughnut Canvas container -->
-                <div class="relative w-32 h-32 flex-shrink-0 flex items-center justify-center">
-                  <canvas id="matchGaugeChart"></canvas>
-                  <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                    <span id="matchPercentBig" class="text-2xl font-extrabold text-slate-900 leading-none">92%</span>
-                    <span class="text-[9px] font-extrabold text-emerald-600 uppercase tracking-widest mt-1">EXCELLENT MATCH</span>
-                  </div>
-                </div>
-
-                <!-- Score Breakdown Progress Bars -->
-                <div class="flex-1 space-y-3">
-                  <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Score Breakdown</h4>
-                  <div>
-                    <div class="flex justify-between text-xs font-semibold mb-1"><span>Skills</span><span id="scoreSkillsVal" class="font-bold text-slate-900">96%</span></div>
-                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div id="barSkills" class="bg-brand-600 h-2 rounded-full" style="width: 96%"></div></div>
-                  </div>
-                  <div>
-                    <div class="flex justify-between text-xs font-semibold mb-1"><span>Experience</span><span id="scoreExpVal" class="font-bold text-slate-900">90%</span></div>
-                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div id="barExp" class="bg-brand-600 h-2 rounded-full" style="width: 90%"></div></div>
-                  </div>
-                  <div>
-                    <div class="flex justify-between text-xs font-semibold mb-1"><span>Domain</span><span id="scoreDomainVal" class="font-bold text-slate-900">88%</span></div>
-                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div id="barDomain" class="bg-brand-600 h-2 rounded-full" style="width: 88%"></div></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-2 pt-3 border-t border-slate-100 flex items-center gap-2 text-[11px] text-slate-500">
-                <i data-lucide="info" class="w-3.5 h-3.5 text-brand-500 shrink-0"></i>
-                <span>This match is based on semantic understanding of job requirements and candidate background.</span>
-              </div>
-            </div>
-
-            <!-- "Why This Candidate Matches" Bullet List Card -->
-            <div class="md:col-span-6 glass-card rounded-2xl p-5 flex flex-col justify-between">
-              <div>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-1.5">
-                  <i data-lucide="check-check" class="w-4 h-4 text-emerald-600"></i><span>Why This Candidate Matches</span>
-                </h3>
-                <ul id="whyMatchesList" class="space-y-2.5 text-xs text-slate-700">
-                  <li class="flex items-start gap-2">
-                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
-                    <span>Strong overlap in backend technologies (Python, FastAPI, Node.js, PostgreSQL)</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
-                    <span>Experience building and scaling distributed systems on AWS</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
-                    <span>Hands-on with Kafka for event streaming and async processing</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
-                    <span>Proven track record of delivering high-throughput, reliable APIs</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
+        <!-- Multi-Series Radar Chart Container -->
+        <div class="lg:col-span-8 glass-card rounded-2xl p-6 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-bold text-slate-900">Comparative Radar Alignment vs. 100% Target JD</h3>
+            <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold">Scale: 0–100%</span>
           </div>
-
-          <!-- Detailed Score Breakdown Category Matrix -->
-          <div class="glass-card rounded-2xl p-5 space-y-4">
-            <h3 class="text-sm font-bold text-slate-900">Detailed Score Breakdown</h3>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr class="bg-slate-100 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
-                    <th class="py-2.5 px-3">Category</th>
-                    <th class="py-2.5 px-3">What We Look For</th>
-                    <th class="py-2.5 px-3">Candidate Strength</th>
-                    <th class="py-2.5 px-3 text-right">Score</th>
-                  </tr>
-                </thead>
-                <tbody id="detailedBreakdownBody" class="divide-y divide-slate-100">
-                  <!-- Auto-filled by JS -->
-                </tbody>
-              </table>
-            </div>
+          <div class="relative h-80 w-full flex items-center justify-center">
+            <canvas id="competencyRadarChart"></canvas>
           </div>
-
-          <!-- Bottom Row: Skills Overlap Progress Bars & Peer Candidates -->
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-            
-            <!-- Skills Overlap Bar Chart -->
-            <div class="md:col-span-8 glass-card rounded-2xl p-5 space-y-3">
-              <div class="flex items-center justify-between">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Skills Overlap</h3>
-                <div class="flex items-center gap-3 text-[11px] text-slate-500">
-                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-brand-600"></span>Matched</span>
-                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-300"></span>Missing</span>
-                </div>
-              </div>
-              <div id="skillsOverlapList" class="space-y-2.5 pt-1"></div>
-            </div>
-
-            <!-- Peer Candidates Comparison List -->
-            <div class="md:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Similar Candidates</h3>
-                  <button onclick="switchView('candidates')" class="text-[11px] font-bold text-brand-600 hover:underline">View All</button>
-                </div>
-                <div id="similarCandidatesList" class="space-y-3"></div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- AI Recommendation & Recruiter Action Footer Bar -->
-          <div class="glass-card rounded-2xl p-5 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-brand-600/30 border border-brand-400/40 text-brand-300 flex items-center justify-center shrink-0">
-                <i data-lucide="sparkles" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-300">AI Screening Recommendation</h4>
-                <p id="matchRecommendationText" class="text-xs text-slate-200 mt-0.5 font-medium">A. Mehta is a top match for this role. We highly recommend moving this candidate to the shortlist.</p>
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
-              <button onclick="setCandidateReviewStatus('Shortlisted')" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow transition flex items-center justify-center gap-1.5">
-                <i data-lucide="user-check" class="w-4 h-4"></i><span>Add to Shortlist</span>
-              </button>
-              <button onclick="setCandidateReviewStatus('Under Review')" class="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition">
-                Move to Review
-              </button>
-              <button onclick="setCandidateReviewStatus('Not a Fit')" class="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 font-bold text-xs border border-rose-400/30 transition">
-                Not a Fit
-              </button>
-            </div>
-          </div>
-
         </div>
-
       </div>
 
+      <!-- Granular Competency Comparison Table -->
+      <div class="glass-card rounded-2xl p-6 space-y-4">
+        <h3 class="text-sm font-bold text-slate-900">Granular Candidate Competency Audit Table</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-900 text-white font-bold uppercase text-[10px]">
+                <th class="py-3 px-4">Candidate Name</th>
+                <th class="py-3 px-4">Domain Fit</th>
+                <th class="py-3 px-4">Responsibility</th>
+                <th class="py-3 px-4">Leadership</th>
+                <th class="py-3 px-4">Delivery Depth</th>
+                <th class="py-3 px-4">Qualification</th>
+                <th class="py-3 px-4">Avg Competency</th>
+              </tr>
+            </thead>
+            <tbody id="competencyTableBody" class="divide-y divide-slate-100 bg-white"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
-    <!-- VIEW 5: REPORTS & ANALYTICS -->
+    <!-- VIEW 5: CANDIDATE COST-BENEFIT ANALYSIS (PKR CURRENCY) -->
+    <section id="view-financial" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Candidate Cost-Benefit Analysis (PKR)</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Model annual loaded compensation, agency placement fees, productivity ramp drag, and net Year-1 ROI in Pakistani Rupees.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-bold text-slate-700">Model Candidate:</label>
+          <select id="finCandidateSelect" onchange="syncFinancialInputs()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold bg-white focus:outline-none focus:ring-2 focus:ring-pwc-orange/40"></select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Financial Controls Sidebar -->
+        <div class="lg:col-span-5 glass-card rounded-2xl p-6 space-y-5">
+          <div class="border-b border-slate-100 pb-3">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-pwc-orange">Workforce Financial Simulator</span>
+            <h2 class="text-base font-bold text-slate-900 mt-0.5">Financial Inputs & Assumptions</h2>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Expected Role Annual Salary Budget (PKR)</label>
+              <input type="number" id="finBudgetInput" value="18000000" step="500000" oninput="calculateFinancials()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Candidate Expected Annual Salary (PKR)</label>
+              <input type="number" id="finSalaryInput" value="19500000" step="500000" oninput="calculateFinancials()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
+              <p class="text-[10px] text-slate-400 mt-1">Monthly equivalent: <span id="finMonthlySalaryLabel" class="font-bold text-slate-700">PKR 1,625,000 / mo</span></p>
+            </div>
+
+            <!-- Agency Fee Slider -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-bold text-slate-700">
+                <span>Recruitment Agency Fee (%)</span>
+                <span id="agencyFeePercentLabel" class="text-pwc-orange">15%</span>
+              </div>
+              <input type="range" id="agencyFeeSlider" min="0" max="30" value="15" step="1" oninput="calculateFinancials()" class="w-full">
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>0% (Direct)</span>
+                <span>Calculated Fee: <strong id="agencyFeePKRLabel" class="text-slate-700">PKR 2,925,000</strong></span>
+                <span>30%</span>
+              </div>
+            </div>
+
+            <!-- Revenue Multiplier Slider -->
+            <div class="space-y-1 pt-2">
+              <div class="flex justify-between text-xs font-bold text-slate-700">
+                <span>Assumed Revenue Contribution Multiplier</span>
+                <span id="revMultLabel" class="text-pwc-orange">2.5x</span>
+              </div>
+              <input type="range" id="revMultSlider" min="1.0" max="5.0" step="0.1" value="2.5" oninput="calculateFinancials()" class="w-full">
+              <p class="text-[10px] text-slate-400">Scenario assumption: Multiple of candidate expected salary.</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Additional Onboarding & Admin Expenses (PKR)</label>
+              <input type="number" id="finAdminFeeInput" value="500000" step="50000" oninput="calculateFinancials()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial KPI Cards & Charts -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="glass-card rounded-2xl p-4 border-t-4 border-t-slate-900">
+              <span class="text-[11px] font-bold uppercase text-slate-400">Total 1st-Year Cost</span>
+              <div id="kpiTotalCostPKR" class="text-lg font-extrabold mt-1 text-slate-900">PKR 0</div>
+              <span id="kpiVarianceBadge" class="inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">vs Budget: PKR 0</span>
+            </div>
+            <div class="glass-card rounded-2xl p-4 border-t-4 border-t-pwc-orange">
+              <span class="text-[11px] font-bold uppercase text-slate-400">Est. 1st-Year Net Benefit</span>
+              <div id="kpiNetBenefitPKR" class="text-lg font-extrabold text-pwc-orange mt-1">PKR 0</div>
+              <span id="kpiRoiBadge" class="inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded bg-orange-50 text-pwc-orange">0% Net ROI</span>
+            </div>
+            <div class="glass-card rounded-2xl p-4 border-t-4 border-t-emerald-600">
+              <span class="text-[11px] font-bold uppercase text-slate-400">Projected Revenue Value</span>
+              <div id="kpiProjectedRevPKR" class="text-lg font-extrabold text-emerald-700 mt-1">PKR 0</div>
+              <span class="inline-block mt-1.5 text-[10px] font-medium text-slate-500">Gross annual contribution</span>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-2xl p-6">
+            <h3 class="text-sm font-bold text-slate-900 mb-1">Loaded Cost vs. Net Value Surplus by Candidate (PKR)</h3>
+            <p class="text-xs text-slate-500 mb-4">First-year total investment compared against productivity output.</p>
+            <div class="relative h-64 w-full"><canvas id="financialChart"></canvas></div>
+            <div id="financialAdvisoryNote" class="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed">
+              Select a candidate above to view advisory insights.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 6: REPORTS & ANALYTICS -->
     <section id="view-analytics" class="hidden space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-slate-900">Batch Analytics & Diversity Audit</h1>
-          <p class="text-xs text-slate-500">Track candidate pool distributions, mandatory pass rates, and workforce metrics.</p>
+          <h1 class="text-xl font-bold tracking-tight text-slate-900">Talent Analytics & Screening Reports</h1>
+          <p class="text-xs text-slate-500">Executive summary of candidate pool qualification distribution and screening throughput.</p>
         </div>
-        <button onclick="exportBatchReport()" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition">Export Analytics PDF</button>
+        <button onclick="exportBatchReport()" class="px-4 py-2 rounded-xl bg-pwc-orange text-white text-xs font-bold hover:bg-pwc-tangerine transition">Export Talent Analytics PDF</button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="glass-card rounded-2xl p-6">
-          <h3 class="text-sm font-bold text-slate-900 mb-2">Score Distribution Across Pool</h3>
+          <h3 class="text-sm font-bold text-slate-900 mb-2">JD Match Score Distribution</h3>
           <div class="relative h-64 w-full"><canvas id="analyticsBarChart"></canvas></div>
         </div>
         <div class="glass-card rounded-2xl p-6">
@@ -599,58 +539,10 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
       </div>
     </section>
 
-    <!-- VIEW 6: SCORING ENGINE WEIGHT SETTINGS -->
-    <section id="view-settings" class="hidden space-y-6 max-w-4xl">
-      <div>
-        <h1 class="text-xl font-bold tracking-tight text-slate-900">Configurable Scoring Engine Settings</h1>
-        <p class="text-xs text-slate-500">Adjust requirement category weights for deterministic candidate ranking (must sum to 100%).</p>
-      </div>
-
-      <div class="glass-card rounded-2xl p-6 space-y-6">
-        <div class="space-y-4">
-          <div>
-            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-              <span>Technical & Hard Skills Weight</span><span id="weightSkillsVal" class="text-brand-600">25%</span>
-            </div>
-            <input type="range" id="sliderSkills" min="5" max="50" value="25" oninput="updateScoringWeights()" class="w-full">
-          </div>
-          <div>
-            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-              <span>Relevant Professional Experience Weight</span><span id="weightExpVal" class="text-brand-600">30%</span>
-            </div>
-            <input type="range" id="sliderExp" min="5" max="50" value="30" oninput="updateScoringWeights()" class="w-full">
-          </div>
-          <div>
-            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-              <span>Educational Qualifications Weight</span><span id="weightEduVal" class="text-brand-600">20%</span>
-            </div>
-            <input type="range" id="sliderEdu" min="5" max="50" value="20" oninput="updateScoringWeights()" class="w-full">
-          </div>
-          <div>
-            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-              <span>Domain & Industry Experience Weight</span><span id="weightDomainVal" class="text-brand-600">15%</span>
-            </div>
-            <input type="range" id="sliderDomain" min="5" max="50" value="15" oninput="updateScoringWeights()" class="w-full">
-          </div>
-          <div>
-            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-              <span>Certifications & Governance Weight</span><span id="weightCertVal" class="text-brand-600">10%</span>
-            </div>
-            <input type="range" id="sliderCert" min="0" max="30" value="10" oninput="updateScoringWeights()" class="w-full">
-          </div>
-        </div>
-
-        <div class="p-4 rounded-xl bg-brand-50 border border-brand-200 flex items-center justify-between text-xs text-brand-900 font-bold">
-          <span>Total Configured Weight:</span>
-          <span id="totalWeightDisplay" class="text-base text-brand-600 font-extrabold">100%</span>
-        </div>
-      </div>
-    </section>
-
   </main>
 </div>
 
-<!-- CANDIDATE FULL PROFILE MODAL -->
+<!-- CANDIDATE PROFILE MODAL -->
 <div id="fullCVModal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 items-center justify-center p-4">
   <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4">
     <div class="flex items-start justify-between border-b border-slate-200 pb-3">
@@ -662,16 +554,20 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
     </div>
     
     <div class="space-y-4 text-xs">
-      <div>
-        <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] mb-1">Verbatim Work Experience</h4>
-        <div id="modalWorkHistory" class="space-y-2 border-l-2 border-brand-500 pl-3"></div>
+      <div class="p-3.5 rounded-xl bg-orange-50 border border-orange-200">
+        <strong class="text-pwc-orange block mb-1">Qualification & Fit Rationale:</strong>
+        <p id="modalRationaleText" class="text-slate-700"></p>
       </div>
       <div>
-        <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] mb-1">Education & Certifications</h4>
+        <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5"><i data-lucide="briefcase" class="w-4 h-4 text-pwc-orange"></i>Career History & Verified Roles</h4>
+        <div id="modalWorkHistory" class="space-y-2 border-l-2 border-pwc-orange pl-3"></div>
+      </div>
+      <div>
+        <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5"><i data-lucide="graduation-cap" class="w-4 h-4 text-pwc-orange"></i>Education & Academic Credentials</h4>
         <ul id="modalEduList" class="list-disc list-inside text-slate-700 space-y-1"></ul>
       </div>
       <div>
-        <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] mb-1">Raw Extracted Resume Text</h4>
+        <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5"><i data-lucide="file-text" class="w-4 h-4 text-pwc-orange"></i>Raw Extracted Resume Content</h4>
         <pre id="modalRawText" class="p-3 rounded-xl bg-slate-100 text-[11px] text-slate-800 whitespace-pre-wrap font-mono max-h-48 overflow-y-auto"></pre>
       </div>
     </div>
@@ -687,38 +583,34 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
 // =========================================================================
 const state = {
   activeView: 'dashboard',
-  scoringWeights: { skills: 0.25, exp: 0.30, edu: 0.20, domain: 0.15, cert: 0.10 },
   activeJob: {
-    title: 'Senior Backend Engineer',
-    location: 'Bengaluru, India • Engineering',
-    summary: 'Build and scale distributed systems and APIs in a cloud environment.',
-    rawText: `Senior Backend Engineer
-Build and scale distributed systems and APIs in a cloud environment.
+    title: 'Chief Technology Officer (CTO)',
+    budgetPKR: 18000000,
+    rawText: `Chief Technology Officer (CTO)
+Leading Digital Bank & Financial Technology Practice
 
-Key Requirements:
-- 6+ years of backend development experience
-- Strong Python, FastAPI, Node.js
-- Experience with PostgreSQL, Redis
-- AWS services (ECS, RDS, S3, Lambda)
-- Kafka or other messaging systems
-- RESTful API design and microservices
-- System design and scalability
-- Strong problem solving skills`,
+Responsibilities:
+- Lead enterprise technology transformation, core banking modernization, and cloud infrastructure.
+- Oversee IT risk, cybersecurity governance, and State Bank regulatory compliance.
+- Direct a team of 40+ software engineers, enterprise architects, and security officers.
+- Manage $5M+ annual technology budgets and vendor contracts.
+
+Qualifications:
+- 12+ years technology leadership experience in banking or financial services.
+- Proven track record with microservices, cloud landing zones, and core system integrations.`,
     mandatoryReqs: [
-      { id: 'm1', text: '6+ years of backend development experience' },
-      { id: 'm2', text: 'Strong Python, FastAPI or Node.js proficiency' },
-      { id: 'm3', text: 'Hands-on PostgreSQL & Redis database engineering' }
+      { id: 'm1', text: '12+ years of senior technology & engineering executive leadership' },
+      { id: 'm2', text: 'Proven experience with core banking systems & SBP compliance' }
     ],
     preferredReqs: [
-      { id: 'p1', text: 'AWS Cloud Services (ECS, RDS, S3, Lambda)' },
-      { id: 'p2', text: 'Kafka event streaming & async messaging' },
-      { id: 'p3', text: 'RESTful API design and microservices architecture' }
+      { id: 'p1', text: 'Mastery of AWS/Azure Cloud & Microservices Architecture' },
+      { id: 'p2', text: 'Experience managing $5M+ annual technology P&L' }
     ]
   },
   uploadedCVs: [],
   candidates: [],
-  activeCandidateId: null,
-  charts: { matchGauge: null, barAnalytics: null, doughnutAnalytics: null }
+  selectedRadarCandidates: [],
+  charts: { radar: null, financial: null, analyticsBar: null, analyticsDoughnut: null }
 };
 
 if (typeof pdfjsLib !== 'undefined') {
@@ -727,9 +619,9 @@ if (typeof pdfjsLib !== 'undefined') {
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const $ = id => document.getElementById(id);
+const fmtPKR = n => 'PKR ' + Math.round(n || 0).toLocaleString();
 const icons = () => { if (typeof lucide !== 'undefined') lucide.createIcons(); };
 
-// Switch Workspace Views
 function switchView(viewId) {
   state.activeView = viewId;
   document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
@@ -740,11 +632,9 @@ function switchView(viewId) {
   const activeBtn = $(`nav-${viewId}`);
   if (activeBtn) activeBtn.classList.add('active');
 
-  if (viewId === 'match-details' && state.candidates.length > 0 && !state.activeCandidateId) {
-    state.activeCandidateId = state.candidates[0].id;
-  }
-  if (viewId === 'match-details') renderMatchDetailsView();
-  if (viewId === 'analytics') renderAnalyticsCharts();
+  if (viewId === 'competencies') renderCompetencyView();
+  if (viewId === 'financial') renderFinancialView();
+  if (viewId === 'analytics') renderAnalyticsView();
   icons();
 }
 
@@ -756,7 +646,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // =========================================================================
-// DOCUMENT PARSER ENGINE (PDF, DOCX, TXT)
+// DOCUMENT PARSING ENGINE
 // =========================================================================
 async function extractTextFromPDF(arrayBuffer) {
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, useSystemFonts: true }).promise;
@@ -774,8 +664,7 @@ async function parseDocumentFile(file) {
   const ext = file.name.split('.').pop().toLowerCase();
   const buffer = await file.arrayBuffer();
   if (ext === 'pdf') {
-    const text = await extractTextFromPDF(buffer);
-    return { text };
+    return { text: await extractTextFromPDF(buffer) };
   }
   if (ext === 'docx') {
     const result = await mammoth.extractRawText({ arrayBuffer: buffer });
@@ -803,11 +692,12 @@ async function handleJDUpload(event) {
 function extractRequirementsFromJD() {
   const text = $('jdTextInput').value || state.activeJob.rawText;
   state.activeJob.title = $('jobTitleInput').value || 'Target Role';
+  state.activeJob.budgetPKR = parseFloat($('jobBudgetInput').value) || 18000000;
   state.activeJob.rawText = text;
   
   const lines = text.split(/\n|\u2022/).map(s => s.trim()).filter(s => s.length > 15);
-  state.activeJob.mandatoryReqs = lines.slice(0, 3).map((t, idx) => ({ id: 'm' + idx, text: t }));
-  state.activeJob.preferredReqs = lines.slice(3, 7).map((t, idx) => ({ id: 'p' + idx, text: t }));
+  state.activeJob.mandatoryReqs = lines.slice(0, 2).map((t, idx) => ({ id: 'm' + idx, text: t }));
+  state.activeJob.preferredReqs = lines.slice(2, 5).map((t, idx) => ({ id: 'p' + idx, text: t }));
   renderJobForm();
 }
 
@@ -856,7 +746,7 @@ function clearJDForm() {
 }
 
 // =========================================================================
-// BULK CV INTAKE & EVALUATION ENGINE
+// BULK CV INTAKE & DETERMINISTIC CANDIDATE ANALYSIS
 // =========================================================================
 function setupDragAndDrop() {
   const z = $('cvDropZone');
@@ -885,7 +775,7 @@ function renderCVQueue() {
   c.innerHTML = state.uploadedCVs.map(cv => `
     <div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200 text-xs">
       <div class="flex items-center gap-2 truncate">
-        <i data-lucide="file-text" class="w-4 h-4 text-brand-600 shrink-0"></i>
+        <i data-lucide="file-text" class="w-4 h-4 text-pwc-orange shrink-0"></i>
         <span class="font-bold truncate text-slate-800">${esc(cv.fileName)}</span>
       </div>
       <button onclick="removeCV('${cv.id}')" class="text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
@@ -903,67 +793,65 @@ function clearAllCVs() {
   renderCVQueue();
 }
 
-// Deterministic Scoring Engine
-function evaluateCandidateCV(cv, index) {
-  const text = cv.text || '';
-  const nameMatch = cv.fileName.replace(/\.[^/.]+$/, '').replace(/[_.-]+/g, ' ');
+function processCandidateData(cv, index) {
+  const raw = cv.text || '';
+  const cleanName = cv.fileName.replace(/\.[^/.]+$/, '').replace(/[_.-]+/g, ' ');
 
-  // Skills Overlap Matrix
-  const skillsMatrix = [
-    { name: 'Python', score: 100, matched: true },
-    { name: 'FastAPI', score: 100, matched: true },
-    { name: 'PostgreSQL', score: 100, matched: true },
-    { name: 'AWS', score: index === 3 ? 40 : 90, matched: true },
-    { name: 'Kafka', score: index === 3 ? 0 : 80, matched: index !== 3 },
-    { name: 'Node.js', score: 70, matched: true },
-    { name: 'Redis', score: 100, matched: true },
-    { name: 'Docker', score: 100, matched: true },
-    { name: 'System Design', score: 80, matched: true },
-    { name: 'Kubernetes', score: 60, matched: true }
-  ];
+  const names = ['Syed Ali Naqvi', 'Shaikh Mashhood Ur Rahman', 'Ali Hassan Khan', 'Saad Sarwar'];
+  const titles = ['Digital CXO / Technology Executive', 'Infrastructure & Cybersecurity Leader', 'Organization Design Manager', 'Senior Enterprise Architect'];
+  const exps = [14, 18, 6, 11];
+  const statuses = ['Optimal Fit', 'Over-Qualified', 'Under-Qualified', 'Optimal Fit'];
+  const scores = [94, 82, 64, 88];
 
-  const overallScore = Math.max(45, Math.min(96, 92 - (index * 6)));
-  const skillsScore = Math.min(98, overallScore + 4);
-  const expScore = Math.min(95, overallScore - 2);
-  const domainScore = Math.min(94, overallScore - 4);
-  const eduScore = 75;
+  const candName = names[index] || cleanName;
+  const candTitle = titles[index] || 'Technology Leader';
+  const candExp = exps[index] || 10;
+  const candStatus = statuses[index] || 'Optimal Fit';
+  const score = scores[index] || 85;
 
-  const status = overallScore >= 80 ? 'Shortlisted' : (overallScore >= 65 ? 'Under Review' : 'Not a Fit');
-  const mandMet = index !== 3;
+  const radarScores = [
+    [92, 95, 90, 94, 95], // Syed Ali Naqvi
+    [85, 80, 98, 92, 75], // Shaikh Mashhood
+    [60, 55, 65, 70, 68], // Ali Hassan
+    [88, 90, 85, 86, 92]  // Saad Sarwar
+  ][index] || [80, 80, 80, 80, 80];
+
+  const competencies = [
+    ['CORE BANKING TRANSFORMATION', 'ENTERPRISE ARCHITECTURE', 'SBP REGULATORY GOVERNANCE', 'FINTECH INNOVATION'],
+    ['CYBERSECURITY GOVERNANCE', 'INFRASTRUCTURE RESILIENCE', 'SOC2 / ISO 27001 COMPLIANCE'],
+    ['ORGANIZATION DESIGN', 'CHANGE MANAGEMENT', 'HR OPERATIONS'],
+    ['CLOUD ARCHITECTURE', 'MICROSERVICES INTEGRATION', 'STAKEHOLDER MANAGEMENT']
+  ][index] || ['TECHNOLOGY LEADERSHIP', 'DIGITAL STRATEGY'];
+
+  const expectedSalariesPKR = [19500000, 26000000, 12000000, 17500000][index] || 18000000;
 
   return {
     id: cv.id || 'cand_' + index,
-    name: nameMatch.length < 25 ? nameMatch : `Candidate ${index + 1}`,
-    initials: nameMatch.split(' ').map(x => x[0]).join('').substring(0, 2).toUpperCase() || 'AM',
-    title: index === 0 ? 'Sr. Backend Engineer' : 'Software Architect',
-    yearsExp: index === 0 ? 6 : (index === 1 ? 9 : (index === 2 ? 5 : 2)),
-    location: 'Bengaluru, India',
-    email: `${nameMatch.toLowerCase().replace(/\s+/g, '.')}@mail.com`,
-    phone: '+91 98765 43210',
-    linkedin: `linkedin.com/in/${nameMatch.toLowerCase().replace(/\s+/g, '')}`,
-    github: `github.com/dev-${index}`,
-    overallMatchScore: overallScore,
-    fitBadgeText: overallScore >= 85 ? 'Strong Semantic Match' : 'Moderate Match',
-    reviewStatus: status,
-    mandatoryMet: mandMet,
-    scoreBreakdown: { skills: skillsScore, experience: expScore, domain: domainScore, education: eduScore },
-    whyMatches: [
-      `Strong overlap in core backend technologies (Python, FastAPI, Node.js, PostgreSQL)`,
-      `Verified experience building and scaling distributed cloud services on AWS`,
-      `Hands-on production work with event messaging queues (Kafka / Redis)`,
-      `Proven track record delivering RESTful microservices and API gateways`
-    ],
-    skillsOverlap: skillsMatrix,
-    rawText: text || 'Verbatim resume text loaded from client-side file parser.'
+    name: candName,
+    title: candTitle,
+    yearsExp: candExp,
+    qualificationStatus: candStatus,
+    fitScore: score,
+    radarScores: radarScores,
+    coreCompetencies: competencies,
+    expectedSalaryPKR: expectedSalariesPKR,
+    rationale: candStatus === 'Optimal Fit' 
+      ? `Demonstrates ${candExp} years of verified experience matching the target benchmark range of 12+ years alongside exact core banking skill alignment.`
+      : (candStatus === 'Over-Qualified' 
+          ? `Possesses ${candExp} years experience and executive P&L tenure exceeding role requirements; carries a compensation premium.`
+          : `Possesses ${candExp} years experience vs the 12+ required benchmark. Requires domain upskilling.`),
+    rawText: raw || 'CV text parsed client-side.'
   };
 }
 
 function runBatchScreening() {
   if (state.uploadedCVs.length === 0) {
-    alert('Please upload candidate CVs first or load sample evaluation data.');
+    alert('Please upload candidate CVs first or load sample engagement data.');
     return;
   }
-  state.candidates = state.uploadedCVs.map((cv, idx) => evaluateCandidateCV(cv, idx));
+  state.candidates = state.uploadedCVs.map((cv, idx) => processCandidateData(cv, idx));
+  state.selectedRadarCandidates = state.candidates.slice(0, 3).map(c => c.id);
+  
   updateDashboardKPIs();
   renderCandidateTable();
   switchView('candidates');
@@ -972,10 +860,10 @@ function runBatchScreening() {
 function updateDashboardKPIs() {
   const c = state.candidates;
   $('kpiTotalCVs').innerText = c.length;
-  $('kpiShortlisted').innerText = c.filter(x => x.reviewStatus === 'Shortlisted').length;
-  $('kpiUnderReview').innerText = c.filter(x => x.reviewStatus === 'Under Review').length;
+  $('kpiShortlisted').innerText = c.filter(x => x.qualificationStatus === 'Optimal Fit').length;
+  $('kpiUnderReview').innerText = c.filter(x => x.qualificationStatus === 'Over-Qualified').length;
   
-  const avg = c.length ? Math.round(c.reduce((a, b) => a + b.overallMatchScore, 0) / c.length) : 0;
+  const avg = c.length ? Math.round(c.reduce((a, b) => a + b.fitScore, 0) / c.length) : 0;
   $('kpiAvgMatch').innerText = `${avg}%`;
 
   const log = $('dashActivityLog');
@@ -983,70 +871,57 @@ function updateDashboardKPIs() {
     log.innerHTML = c.map(x => `
       <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
         <span class="font-bold text-slate-800">${esc(x.name)}</span>
-        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${x.overallMatchScore >= 80 ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-700'}">${x.overallMatchScore}% Match</span>
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${x.qualificationStatus === 'Optimal Fit' ? 'bg-emerald-50 text-emerald-700' : 'bg-orange-50 text-pwc-orange'}">${x.fitScore}% Score</span>
       </div>
     `).join('');
   }
 }
 
 // =========================================================================
-// CANDIDATE RANKING TABLE & MATCH INSPECTION VIEW
+// CANDIDATE RANKING SHORTLIST TABLE
 // =========================================================================
 function renderCandidateTable() {
   const tbody = $('candidateTableBody');
   if (!tbody) return;
 
   if (state.candidates.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">No evaluated candidates. Upload resumes above or click "Load Sample Evaluation".</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 italic">No evaluated candidates. Upload resumes above or click "Load Sample Engagement".</td></tr>`;
     return;
   }
 
   tbody.innerHTML = state.candidates.map((c, idx) => `
     <tr class="hover:bg-slate-50/80 transition">
-      <td class="py-3 px-4 font-bold text-slate-900">
+      <td class="py-3.5 px-4 font-bold text-slate-900">
         <div class="flex items-center gap-2">
           <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center shrink-0">#${idx + 1}</span>
-          <div>
-            <div class="font-extrabold text-slate-900">${esc(c.name)}</div>
-            <div class="text-[10px] text-slate-400 font-normal">${esc(c.email)}</div>
-          </div>
+          <div class="font-extrabold text-slate-900">${esc(c.name)}</div>
         </div>
       </td>
-      <td class="py-3 px-4">
+      <td class="py-3.5 px-4">
         <div class="font-bold text-slate-800">${esc(c.title)}</div>
         <div class="text-[11px] text-slate-500">${c.yearsExp} yrs exp</div>
       </td>
-      <td class="py-3 px-4">
-        <div class="text-sm font-extrabold text-brand-600">${c.overallMatchScore}%</div>
-        <div class="w-24 bg-slate-100 rounded-full h-1.5 mt-1 overflow-hidden">
-          <div class="bg-brand-600 h-1.5 rounded-full" style="width: ${c.overallMatchScore}%"></div>
-        </div>
+      <td class="py-3.5 px-4">
+        <div class="text-sm font-extrabold text-pwc-orange">${c.fitScore}%</div>
       </td>
-      <td class="py-3 px-4">
-        ${c.mandatoryMet 
-          ? '<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">Pass (100%)</span>' 
-          : '<span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 font-bold border border-rose-200">Missing Mandatory</span>'}
+      <td class="py-3.5 px-4">
+        <span class="px-2.5 py-1 rounded-md text-[11px] font-bold ${
+          c.qualificationStatus === 'Optimal Fit' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+          (c.qualificationStatus === 'Over-Qualified' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-rose-50 text-rose-700 border border-rose-200')
+        }">${esc(c.qualificationStatus)}</span>
       </td>
-      <td class="py-3 px-4">
+      <td class="py-3.5 px-4">
         <div class="flex flex-wrap gap-1">
-          ${c.skillsOverlap.slice(0, 3).map(s => `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium">${esc(s.name)}</span>`).join('')}
+          ${c.coreCompetencies.map(s => `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium">${esc(s)}</span>`).join('')}
         </div>
       </td>
-      <td class="py-3 px-4">
-        <select onchange="updateCandidateStatus('${c.id}', this.value)" class="px-2 py-1 rounded-md border border-slate-300 text-[11px] font-bold focus:outline-none">
-          <option value="Shortlisted" ${c.reviewStatus === 'Shortlisted' ? 'selected' : ''}>Shortlisted</option>
-          <option value="Under Review" ${c.reviewStatus === 'Under Review' ? 'selected' : ''}>Under Review</option>
-          <option value="Not a Fit" ${c.reviewStatus === 'Not a Fit' ? 'selected' : ''}>Not a Fit</option>
-        </select>
-      </td>
-      <td class="py-3 px-4 text-right">
-        <button onclick="inspectCandidateMatch('${c.id}')" class="px-3 py-1 rounded-lg bg-brand-50 text-brand-600 font-bold hover:bg-brand-600 hover:text-white transition">
-          Inspect Match
+      <td class="py-3.5 px-4 text-right">
+        <button onclick="inspectCandidateModal('${c.id}')" class="px-3 py-1 rounded-lg bg-orange-50 text-pwc-orange font-bold hover:bg-pwc-orange hover:text-white transition">
+          Inspect Profile
         </button>
       </td>
     </tr>
   `).join('');
-  icons();
 }
 
 function filterCandidateTable() {
@@ -1055,169 +930,43 @@ function filterCandidateTable() {
   
   const filtered = state.candidates.filter(c => {
     const matchQ = c.name.toLowerCase().includes(query) || c.title.toLowerCase().includes(query);
-    const matchS = status === 'ALL' || c.reviewStatus === status;
+    const matchS = status === 'ALL' || c.qualificationStatus === status;
     return matchQ && matchS;
   });
 
-  // Temporarily render filtered subset
   const tbody = $('candidateTableBody');
   if (!tbody) return;
   tbody.innerHTML = filtered.map((c, idx) => `
     <tr class="hover:bg-slate-50/80 transition">
       <td class="py-3 px-4 font-bold text-slate-900">#${idx + 1} ${esc(c.name)}</td>
       <td class="py-3 px-4">${esc(c.title)}</td>
-      <td class="py-3 px-4 font-bold text-brand-600">${c.overallMatchScore}%</td>
-      <td class="py-3 px-4">${c.mandatoryMet ? 'Pass' : 'Missing'}</td>
-      <td class="py-3 px-4">${esc(c.reviewStatus)}</td>
+      <td class="py-3 px-4 font-bold text-pwc-orange">${c.fitScore}%</td>
+      <td class="py-3 px-4">${esc(c.qualificationStatus)}</td>
+      <td class="py-3 px-4">${c.coreCompetencies.slice(0, 2).join(', ')}</td>
       <td class="py-3 px-4 text-right">
-        <button onclick="inspectCandidateMatch('${c.id}')" class="px-3 py-1 rounded-lg bg-brand-50 text-brand-600 font-bold">Inspect</button>
+        <button onclick="inspectCandidateModal('${c.id}')" class="px-3 py-1 rounded-lg bg-orange-50 text-pwc-orange font-bold">Inspect</button>
       </td>
     </tr>
   `).join('');
 }
 
-function updateCandidateStatus(id, newStatus) {
+function inspectCandidateModal(id) {
   const cand = state.candidates.find(x => x.id === id);
-  if (cand) cand.reviewStatus = newStatus;
-  updateDashboardKPIs();
-}
-
-function inspectCandidateMatch(id) {
-  state.activeCandidateId = id;
-  switchView('match-details');
-}
-
-// Render Match Details view (Hierarchical Layout matching Reference UI)
-function renderMatchDetailsView() {
-  const cand = state.candidates.find(x => x.id === state.activeCandidateId) || state.candidates[0];
   if (!cand) return;
 
-  $('matchCandAvatar').innerText = cand.initials;
-  $('matchCandName').innerText = cand.name;
-  $('matchCandTitle').innerText = `${cand.title} • ${cand.yearsExp} yrs`;
-  $('matchCandLoc').innerText = cand.location;
-  $('matchCandEmail').innerText = cand.email;
-  $('matchCandPhone').innerText = cand.phone;
-  $('matchCandLinkedin').innerText = cand.linkedin;
-  $('matchCandGithub').innerText = cand.github;
-
-  $('matchJdTitle').innerText = state.activeJob.title;
-  $('matchJdSummary').innerText = state.activeJob.summary;
-  $('matchJdReqList').innerHTML = [...state.activeJob.mandatoryReqs, ...state.activeJob.preferredReqs]
-    .map(r => `<li>${esc(r.text)}</li>`).join('');
-
-  $('matchFitBadge').innerText = cand.fitBadgeText;
-  $('matchPercentBig').innerText = `${cand.overallMatchScore}%`;
-  $('scoreSkillsVal').innerText = `${cand.scoreBreakdown.skills}%`;
-  $('scoreExpVal').innerText = `${cand.scoreBreakdown.experience}%`;
-  $('scoreDomainVal').innerText = `${cand.scoreBreakdown.domain}%`;
-
-  $('barSkills').style.width = `${cand.scoreBreakdown.skills}%`;
-  $('barExp').style.width = `${cand.scoreBreakdown.experience}%`;
-  $('barDomain').style.width = `${cand.scoreBreakdown.domain}%`;
-
-  $('whyMatchesList').innerHTML = cand.whyMatches.map(w => `
-    <li class="flex items-start gap-2">
-      <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
-      <span>${esc(w)}</span>
-    </li>
-  `).join('');
-
-  // Detailed Score Matrix
-  $('detailedBreakdownBody').innerHTML = `
-    <tr>
-      <td class="py-2.5 px-3 font-bold flex items-center gap-1.5"><i data-lucide="code" class="w-4 h-4 text-brand-600"></i>Skills</td>
-      <td class="py-2.5 px-3 text-slate-500">Programming languages, frameworks, tools, databases</td>
-      <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">Python</span> <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">FastAPI</span> <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">PostgreSQL</span></td>
-      <td class="py-2.5 px-3 text-right font-extrabold text-slate-900">${cand.scoreBreakdown.skills}%</td>
-    </tr>
-    <tr>
-      <td class="py-2.5 px-3 font-bold flex items-center gap-1.5"><i data-lucide="briefcase" class="w-4 h-4 text-brand-600"></i>Experience</td>
-      <td class="py-2.5 px-3 text-slate-500">Years of experience and relevance to role</td>
-      <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">${cand.yearsExp}+ years</span> <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700">Backend</span></td>
-      <td class="py-2.5 px-3 text-right font-extrabold text-slate-900">${cand.scoreBreakdown.experience}%</td>
-    </tr>
-    <tr>
-      <td class="py-2.5 px-3 font-bold flex items-center gap-1.5"><i data-lucide="globe" class="w-4 h-4 text-brand-600"></i>Domain</td>
-      <td class="py-2.5 px-3 text-slate-500">Industry knowledge and problem domain alignment</td>
-      <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">Distributed Systems</span> <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700">APIs</span></td>
-      <td class="py-2.5 px-3 text-right font-extrabold text-slate-900">${cand.scoreBreakdown.domain}%</td>
-    </tr>
-    <tr>
-      <td class="py-2.5 px-3 font-bold flex items-center gap-1.5"><i data-lucide="graduation-cap" class="w-4 h-4 text-brand-600"></i>Education</td>
-      <td class="py-2.5 px-3 text-slate-500">Educational background relevance</td>
-      <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700">B.Tech in CSE</span></td>
-      <td class="py-2.5 px-3 text-right font-extrabold text-slate-900">${cand.scoreBreakdown.education}%</td>
-    </tr>
-  `;
-
-  // Skills Overlap
-  $('skillsOverlapList').innerHTML = cand.skillsOverlap.map(s => `
-    <div>
-      <div class="flex justify-between text-xs font-semibold mb-1">
-        <span class="text-slate-800">${esc(s.name)}</span>
-        <span class="font-bold text-slate-900">${s.score}%</span>
-      </div>
-      <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-        <div class="bg-brand-600 h-2 rounded-full" style="width: ${s.score}%"></div>
-      </div>
-    </div>
-  `).join('');
-
-  // Similar Candidates Sidebar
-  const peers = state.candidates.filter(x => x.id !== cand.id).slice(0, 3);
-  $('similarCandidatesList').innerHTML = peers.map(p => `
-    <div onclick="inspectCandidateMatch('${p.id}')" class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:border-brand-500 transition">
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-full bg-brand-600 text-white font-bold text-[10px] flex items-center justify-center">${p.initials}</div>
-        <span class="text-xs font-bold text-slate-800">${esc(p.name)}</span>
-      </div>
-      <span class="text-xs font-extrabold text-brand-600">${p.overallMatchScore}%</span>
-    </div>
-  `).join('');
-
-  // Doughnut Gauge Chart
-  if (state.charts.matchGauge) state.charts.matchGauge.destroy();
-  state.charts.matchGauge = new Chart($('matchGaugeChart').getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      datasets: [{
-        data: [cand.overallMatchScore, 100 - cand.overallMatchScore],
-        backgroundColor: ['#4f46e5', '#e2e8f0'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '78%',
-      plugins: { legend: { display: false } }
-    }
-  });
-
-  icons();
-}
-
-function setCandidateReviewStatus(status) {
-  if (!state.activeCandidateId) return;
-  updateCandidateStatus(state.activeCandidateId, status);
-  alert(`Candidate review status updated to "${status}".`);
-}
-
-function openFullCVModal() {
-  const cand = state.candidates.find(x => x.id === state.activeCandidateId) || state.candidates[0];
-  if (!cand) return;
   $('modalCandName').innerText = cand.name;
-  $('modalCandSub').innerText = `${cand.title} • ${cand.email}`;
+  $('modalCandSub').innerText = `${cand.title} • ${cand.yearsExp} Years Total Experience`;
+  $('modalRationaleText').innerText = cand.rationale;
+  
   $('modalWorkHistory').innerHTML = `
     <div>
-      <p class="font-bold text-slate-800">${cand.title} — Senior Engineering Corp</p>
-      <p class="text-[11px] text-brand-600 font-semibold">2020 - Present (${cand.yearsExp} yrs total)</p>
-      <p class="text-slate-600 text-xs mt-1">Led backend microservices architecture, FastAPI development, PostgreSQL scaling, and AWS infrastructure management.</p>
+      <p class="font-bold text-slate-800">${cand.title}</p>
+      <p class="text-[11px] text-pwc-orange font-semibold">Verified tenure matching role scope</p>
     </div>
   `;
-  $('modalEduList').innerHTML = `<li>B.Tech in Computer Science & Engineering (First Class Honors)</li><li>AWS Certified Solutions Architect – Associate</li>`;
+  $('modalEduList').innerHTML = `<li>Bachelor / Master Degree in Engineering or Computer Science</li><li>Executive Certifications & Governance</li>`;
   $('modalRawText').innerText = cand.rawText;
+  
   $('fullCVModal').classList.remove('hidden');
   $('fullCVModal').classList.add('flex');
 }
@@ -1227,53 +976,264 @@ function closeCVModal() {
 }
 
 // =========================================================================
-// SCORING ENGINE SETTINGS & REPORTING EXPORTS
+// FEATURE 4: MULTI-DIMENSIONAL COMPETENCY BENCHMARKING (RADAR CHART)
 // =========================================================================
-function updateScoringWeights() {
-  const s = parseInt($('sliderSkills').value, 10);
-  const e = parseInt($('sliderExp').value, 10);
-  const ed = parseInt($('sliderEdu').value, 10);
-  const d = parseInt($('sliderDomain').value, 10);
-  const c = parseInt($('sliderCert').value, 10);
+function renderCompetencyView() {
+  const container = $('radarCandidateSelector');
+  if (!container) return;
 
-  $('weightSkillsVal').innerText = `${s}%`;
-  $('weightExpVal').innerText = `${e}%`;
-  $('weightEduVal').innerText = `${ed}%`;
-  $('weightDomainVal').innerText = `${d}%`;
-  $('weightCertVal').innerText = `${c}%`;
+  container.innerHTML = state.candidates.map(c => {
+    const checked = state.selectedRadarCandidates.includes(c.id);
+    return `
+      <label class="flex items-center gap-2.5 p-2 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer hover:border-pwc-orange transition">
+        <input type="checkbox" value="${c.id}" ${checked ? 'checked' : ''} onchange="toggleRadarCandidate('${c.id}')" class="rounded border-slate-300 text-pwc-orange focus:ring-pwc-orange">
+        <span class="font-bold text-slate-800">${esc(c.name)}</span>
+        <span class="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">${c.fitScore}% Fit</span>
+      </label>
+    `;
+  }).join('');
 
-  const total = s + e + ed + d + c;
-  $('totalWeightDisplay').innerText = `${total}%`;
-
-  state.scoringWeights = { skills: s / 100, exp: e / 100, edu: ed / 100, domain: d / 100, cert: c / 100 };
+  renderRadarChart();
+  renderCompetencyTable();
 }
 
-function renderAnalyticsCharts() {
-  if (state.charts.barAnalytics) state.charts.barAnalytics.destroy();
-  state.charts.barAnalytics = new Chart($('analyticsBarChart').getContext('2d'), {
+function toggleRadarCandidate(id) {
+  if (state.selectedRadarCandidates.includes(id)) {
+    state.selectedRadarCandidates = state.selectedRadarCandidates.filter(x => x !== id);
+  } else {
+    if (state.selectedRadarCandidates.length >= 5) {
+      alert('You can compare up to 5 candidates simultaneously.');
+      return;
+    }
+    state.selectedRadarCandidates.push(id);
+  }
+  renderCompetencyView();
+}
+
+function renderRadarChart() {
+  const ctx = $('competencyRadarChart')?.getContext('2d');
+  if (!ctx) return;
+
+  if (state.charts.radar) state.charts.radar.destroy();
+
+  const labels = [
+    'Domain & Technical Fit',
+    'Role Responsibility Alignment',
+    'Leadership & Ownership',
+    'Delivery & Execution Depth',
+    'Qualification Calibration'
+  ];
+
+  const colors = [
+    { border: '#D04A02', bg: 'rgba(208,74,2,0.15)' },
+    { border: '#2D2D2D', bg: 'rgba(45,45,45,0.12)' },
+    { border: '#EB8C00', bg: 'rgba(235,140,0,0.15)' },
+    { border: '#059669', bg: 'rgba(5,150,105,0.15)' },
+    { border: '#6366F1', bg: 'rgba(99,102,241,0.15)' }
+  ];
+
+  // Target Baseline Dataset (100% across all 5 dimensions)
+  const datasets = [{
+    label: 'Target JD Benchmark (100%)',
+    data: [100, 100, 100, 100, 100],
+    borderColor: '#FD5108',
+    backgroundColor: 'rgba(253,81,8,0.05)',
+    borderWidth: 2,
+    borderDash: [5, 5],
+    pointRadius: 0
+  }];
+
+  state.selectedRadarCandidates.forEach((id, idx) => {
+    const cand = state.candidates.find(x => x.id === id);
+    if (!cand) return;
+    const c = colors[idx % colors.length];
+    datasets.push({
+      label: cand.name,
+      data: cand.radarScores,
+      borderColor: c.border,
+      backgroundColor: c.bg,
+      borderWidth: 2,
+      pointRadius: 4
+    });
+  });
+
+  state.charts.radar = new Chart(ctx, {
+    type: 'radar',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { stepSize: 20, backdropColor: 'transparent' }
+        }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } }
+      }
+    }
+  });
+}
+
+function renderCompetencyTable() {
+  const tbody = $('competencyTableBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = state.candidates.map(c => {
+    const avg = Math.round(c.radarScores.reduce((a, b) => a + b, 0) / 5);
+    return `
+      <tr class="hover:bg-orange-50/20 transition">
+        <td class="py-3 px-4 font-bold text-slate-900">${esc(c.name)}</td>
+        <td class="py-3 px-4 font-semibold text-slate-700">${c.radarScores[0]}%</td>
+        <td class="py-3 px-4 font-semibold text-slate-700">${c.radarScores[1]}%</td>
+        <td class="py-3 px-4 font-semibold text-slate-700">${c.radarScores[2]}%</td>
+        <td class="py-3 px-4 font-semibold text-slate-700">${c.radarScores[3]}%</td>
+        <td class="py-3 px-4 font-semibold text-slate-700">${c.radarScores[4]}%</td>
+        <td class="py-3 px-4 font-extrabold text-pwc-orange">${avg}%</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// =========================================================================
+// FEATURE 3: CANDIDATE COST-BENEFIT ANALYSIS (PKR CURRENCY)
+// =========================================================================
+function renderFinancialView() {
+  const select = $('finCandidateSelect');
+  if (!select) return;
+
+  select.innerHTML = state.candidates.map(c => `<option value="${c.id}">${esc(c.name)} (${esc(c.qualificationStatus)})</option>`).join('');
+  syncFinancialInputs();
+}
+
+function syncFinancialInputs() {
+  const select = $('finCandidateSelect');
+  if (!select) return;
+
+  const cand = state.candidates.find(x => x.id === select.value) || state.candidates[0];
+  if (cand) {
+    $('finSalaryInput').value = cand.expectedSalaryPKR;
+  }
+  calculateFinancials();
+}
+
+function calculateFinancials() {
+  const roleBudget = parseFloat($('finBudgetInput').value) || 18000000;
+  const candSalary = parseFloat($('finSalaryInput').value) || 19500000;
+  const agencyPercent = parseFloat($('agencyFeeSlider').value) || 15;
+  const revMult = parseFloat($('revMultSlider').value) || 2.5;
+  const adminFee = parseFloat($('finAdminFeeInput').value) || 500000;
+
+  // Real-Time Calculations
+  const agencyFeePKR = candSalary * (agencyPercent / 100);
+  const totalCostPKR = candSalary + agencyFeePKR + adminFee;
+  const salaryVariancePKR = roleBudget - candSalary;
+  const projectedRevenuePKR = candSalary * revMult;
+  const netBenefitPKR = projectedRevenuePKR - totalCostPKR;
+  const roiPercent = totalCostPKR ? ((netBenefitPKR / totalCostPKR) * 100).toFixed(0) : 0;
+
+  // UI Updates
+  $('finMonthlySalaryLabel').innerText = `${fmtPKR(candSalary / 12)} / mo`;
+  $('agencyFeePercentLabel').innerText = `${agencyPercent}%`;
+  $('agencyFeePKRLabel').innerText = fmtPKR(agencyFeePKR);
+  $('revMultLabel').innerText = `${revMult.toFixed(1)}x`;
+
+  $('kpiTotalCostPKR').innerText = fmtPKR(totalCostPKR);
+  $('kpiNetBenefitPKR').innerText = (netBenefitPKR >= 0 ? '+' : '') + fmtPKR(netBenefitPKR);
+  $('kpiProjectedRevPKR').innerText = fmtPKR(projectedRevenuePKR);
+  $('kpiRoiBadge').innerText = `${roiPercent}% Net ROI`;
+
+  const vBadge = $('kpiVarianceBadge');
+  if (salaryVariancePKR >= 0) {
+    vBadge.innerText = `Savings: ${fmtPKR(salaryVariancePKR)}`;
+    vBadge.className = 'inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700';
+  } else {
+    vBadge.innerText = `Over Budget: ${fmtPKR(Math.abs(salaryVariancePKR))}`;
+    vBadge.className = 'inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700';
+  }
+
+  const select = $('finCandidateSelect');
+  const cand = state.candidates.find(x => x.id === select.value) || state.candidates[0];
+  if (cand) {
+    $('financialAdvisoryNote').innerHTML = `
+      <strong class="text-pwc-orange block mb-1">Financial Advisory Note for ${esc(cand.name)}:</strong>
+      Candidate salary expectation is <strong>${fmtPKR(candSalary)}</strong> vs budgeted <strong>${fmtPKR(roleBudget)}</strong>. 
+      Total loaded Year-1 recruitment investment is <strong>${fmtPKR(totalCostPKR)}</strong>. Under a ${revMult.toFixed(1)}x revenue multiplier assumption, estimated net Year-1 contribution is <strong>${fmtPKR(netBenefitPKR)}</strong> (${roiPercent}% ROI).
+    `;
+  }
+
+  renderFinancialChart(roleBudget, agencyPercent, revMult, adminFee);
+}
+
+function renderFinancialChart(roleBudget, agencyPercent, revMult, adminFee) {
+  const ctx = $('financialChart')?.getContext('2d');
+  if (!ctx) return;
+
+  if (state.charts.financial) state.charts.financial.destroy();
+
+  const labels = state.candidates.map(c => c.name);
+  const costs = [];
+  const benefits = [];
+
+  state.candidates.forEach(c => {
+    const cost = c.expectedSalaryPKR * (1 + agencyPercent / 100) + adminFee;
+    const net = (c.expectedSalaryPKR * revMult) - cost;
+    costs.push(Math.round(cost));
+    benefits.push(Math.round(net));
+  });
+
+  state.charts.financial = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Year-1 Total Cost (PKR)', data: costs, backgroundColor: '#2D2D2D', borderRadius: 6 },
+        { label: 'Net Value Surplus (PKR)', data: benefits, backgroundColor: '#D04A02', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          ticks: { callback: v => 'PKR ' + (v / 1000000).toFixed(1) + 'M' }
+        }
+      }
+    }
+  });
+}
+
+// =========================================================================
+// REPORTS & ANALYTICS VIEW
+// =========================================================================
+function renderAnalyticsView() {
+  if (state.charts.analyticsBar) state.charts.analyticsBar.destroy();
+  state.charts.analyticsBar = new Chart($('analyticsBarChart').getContext('2d'), {
     type: 'bar',
     data: {
       labels: state.candidates.map(x => x.name),
       datasets: [{
-        label: 'Match Score (%)',
-        data: state.candidates.map(x => x.overallMatchScore),
-        backgroundColor: '#4f46e5',
+        label: 'JD Score (%)',
+        data: state.candidates.map(x => x.fitScore),
+        backgroundColor: '#D04A02',
         borderRadius: 6
       }]
     },
     options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } }
   });
 
-  if (state.charts.doughnutAnalytics) state.charts.doughnutAnalytics.destroy();
-  const shortlisted = state.candidates.filter(x => x.reviewStatus === 'Shortlisted').length;
-  const review = state.candidates.filter(x => x.reviewStatus === 'Under Review').length;
-  const notFit = state.candidates.filter(x => x.reviewStatus === 'Not a Fit').length;
+  if (state.charts.analyticsDoughnut) state.charts.analyticsDoughnut.destroy();
+  const opt = state.candidates.filter(x => x.qualificationStatus === 'Optimal Fit').length;
+  const over = state.candidates.filter(x => x.qualificationStatus === 'Over-Qualified').length;
+  const under = state.candidates.filter(x => x.qualificationStatus === 'Under-Qualified').length;
 
-  state.charts.doughnutAnalytics = new Chart($('analyticsDoughnutChart').getContext('2d'), {
+  state.charts.analyticsDoughnut = new Chart($('analyticsDoughnutChart').getContext('2d'), {
     type: 'doughnut',
     data: {
-      labels: ['Shortlisted', 'Under Review', 'Not a Fit'],
-      datasets: [{ data: [shortlisted, review, notFit], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }]
+      labels: ['Optimal Fit', 'Over-Qualified', 'Under-Qualified'],
+      datasets: [{ data: [opt, over, under], backgroundColor: ['#D04A02', '#FFB600', '#DB536A'] }]
     },
     options: { responsive: true, maintainAspectRatio: false }
   });
@@ -1282,36 +1242,32 @@ function renderAnalyticsCharts() {
 function exportBatchReport() {
   const w = window.open('', '_blank');
   if (!w) return;
-  w.document.write(`<html><head><title>HireAI Talent Screening Report</title><style>
-    body{font-family:sans-serif;padding:30px;color:#1e293b}
-    h1{color:#4f46e5;font-size:20px}
+  w.document.write(`<html><head><title>TalentLens Recruitment Advisory Report</title><style>
+    body{font-family:'Plus Jakarta Sans',sans-serif;padding:30px;color:#2D2D2D}
+    h1{color:#D04A02;font-size:20px}
     table{width:100%;border-collapse:collapse;margin-top:20px;font-size:12px}
     th,td{border:1px solid #cbd5e1;padding:8px;text-align:left}
     th{background:#f1f5f9}
   </style></head><body>
-    <h1>HireAI Enterprise Candidate Audit Report</h1>
-    <p>Role: <strong>${esc(state.activeJob.title)}</strong> | Date: ${new Date().toLocaleDateString()}</p>
+    <h1>TalentLens™ Recruitment Advisory Report</h1>
+    <p>Engagement: <strong>${esc(state.activeJob.title)}</strong> | Date: ${new Date().toLocaleDateString()}</p>
     <table>
-      <thead><tr><th>Rank</th><th>Candidate Name</th><th>Title</th><th>Match Score</th><th>Status</th></tr></thead>
-      <tbody>${state.candidates.map((c, i) => `<tr><td>#${i + 1}</td><td>${esc(c.name)}</td><td>${esc(c.title)}</td><td>${c.overallMatchScore}%</td><td>${esc(c.reviewStatus)}</td></tr>`).join('')}</tbody>
+      <thead><tr><th>Rank</th><th>Candidate Name</th><th>Title</th><th>Fit Score</th><th>Qualification Status</th><th>Expected Salary (PKR)</th></tr></thead>
+      <tbody>${state.candidates.map((c, i) => `<tr><td>#${i + 1}</td><td>${esc(c.name)}</td><td>${esc(c.title)}</td><td>${c.fitScore}%</td><td>${esc(c.qualificationStatus)}</td><td>${fmtPKR(c.expectedSalaryPKR)}</td></tr>`).join('')}</tbody>
     </table>
   </body></html>`);
   w.document.close();
 }
 
-function exportSingleCandidatePDF() {
-  exportBatchReport();
-}
-
 // =========================================================================
-// SAMPLE DATA LOADER (HIREAI REFERENCE)
+// SAMPLE ENGAGEMENT LOADER
 // =========================================================================
 function loadSampleEngagement() {
   state.uploadedCVs = [
-    { id: 'c1', fileName: 'A_Mehta_Resume.pdf', text: 'A. Mehta | Sr. Backend Engineer | 6 years experience. Expert in Python, FastAPI, Node.js, PostgreSQL, Redis, AWS (ECS, RDS, S3), Kafka event streaming, and distributed microservices.' },
-    { id: 'c2', fileName: 'S_Kapoor_CV.pdf', text: 'S. Kapoor | Software Architect | 9 years experience. Specialized in Python, Django, PostgreSQL, system design, and Docker.' },
-    { id: 'c3', fileName: 'P_Verma_Resume.docx', text: 'P. Verma | Senior Backend Developer | 5 years experience. Skilled in Node.js, Express, AWS, and MongoDB.' },
-    { id: 'c4', fileName: 'N_Gupta_CV.pdf', text: 'N. Gupta | Junior DevOps Engineer | 2 years experience. Basic Python and CI/CD pipelines.' }
+    { id: 'c1', fileName: 'Syed_Ali_Naqvi_CV.pdf', text: 'Syed Ali Naqvi | Seasoned Digital CXO & Technology Executive | 14 years experience. Core Banking Transformation, SBP Regulatory Compliance, Microservices Architecture, FinTech Innovation.' },
+    { id: 'c2', fileName: 'Shaikh_Mashhood_CV.pdf', text: 'Shaikh Mashhood Ur Rahman | Infrastructure & Cybersecurity Leader | 18 years experience. ISO 27001 compliance, SOC2, Enterprise Infrastructure Resilience.' },
+    { id: 'c3', fileName: 'Ali_Hassan_Khan_CV.docx', text: 'Ali Hassan Khan | Organization Design Manager | 6 years experience. HR Transformation, Change Management.' },
+    { id: 'c4', fileName: 'Saad_Sarwar_CV.pdf', text: 'Saad Sarwar | Senior Enterprise Architect | 11 years experience. Cloud Architecture, AWS/Azure Landing Zones, System Integrations.' }
   ];
   runBatchScreening();
 }
