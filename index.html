@@ -1521,8 +1521,14 @@ INSTRUCTIONS:
             const evaluated = cvs.map((cv) => {
                 const cleanCVText = sanitizeText(cv.text);
                 const cleanName = cv.fileName.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').replace(/\b(cv|resume|final|updated)\b/gi, '').trim() || cv.fileName;
-                const lowerCV = cleanCVText.toLowerCase();
 
+                // Extract exact bullet points or line items from CV for verbatim representation
+                const cvLines = cleanCVText
+                    .split(/\n|\u2022|\u2013|-|\*/)
+                    .map(s => s.trim())
+                    .filter(s => s.length > 20 && s.length < 180 && !/address|zip|email|phone|contact|street|suite|linkedin|github|page\s+\d+/i.test(s));
+
+                const lowerCV = cleanCVText.toLowerCase();
                 const matchedSkills = jdKeywords.filter(kw => lowerCV.includes(kw));
                 const rawRatio = jdKeywords.length ? (matchedSkills.length / Math.min(jdKeywords.length, 12)) : 0.65;
                 const domainScore = Math.min(96, Math.max(42, Math.round(rawRatio * 100)));
@@ -1533,32 +1539,38 @@ INSTRUCTIONS:
                 const isExec = /\b(vp|vice president|director|head of|chief|cto|cfo|cio|managing director|partner)\b/i.test(cleanCVText);
                 let qualificationStatus = 'Optimal Fit';
                 let overallFitScore = Math.min(95, Math.max(45, Math.round(domainScore * 0.75 + 22)));
-                let qualificationRationale = `Directly calibrated to role scope. Demonstrates ${yearsExp} years of relevant experience, perfectly matching the target range of ${targetYears}+ years alongside strong core skill alignment.`;
+                let qualificationRationale = `Directly calibrated to role scope. Demonstrates ${yearsExp} years of verified experience matching the target range of ${targetYears}+ years alongside exact skill alignment.`;
                 let bestFitRationale = '';
                 let estSalary = 135000;
                 let rampWeeks = 4;
 
+                // Strict qualification calibration: Over-Qualified if executive or >7 years over target
                 if (yearsExp >= targetYears + 7 || (isExec && !/director|vp|head|chief|partner/i.test(jobTitle))) {
                     qualificationStatus = 'Over-Qualified';
-                    overallFitScore = Math.min(89, Math.max(74, overallFitScore - 6));
-                    qualificationRationale = `Over-Qualified Rationale: Candidate brings ${yearsExp} years of experience and senior/executive background, significantly exceeding the target range of ${targetYears} years. This creates potential salary expectations premium and attrition risk.`;
+                    overallFitScore = Math.min(84, Math.max(70, overallFitScore - 8));
+                    qualificationRationale = `Over-Qualified Rationale: Candidate brings ${yearsExp} years of experience and senior VP/Executive tenure, exceeding the ${targetYears}-year target scope. This indicates potential compensation premiums and flight risk.`;
                     estSalary = 195000;
                     rampWeeks = 2;
                 } else if (yearsExp < Math.max(1, targetYears - 2) || domainScore < 52) {
                     qualificationStatus = 'Under-Qualified';
                     overallFitScore = Math.min(62, Math.max(38, domainScore));
-                    qualificationRationale = `Under-Qualified Rationale: Possesses ${yearsExp} years of experience versus the ${targetYears}+ years benchmark required by the JD. Key technical competencies will require upskilling.`;
+                    qualificationRationale = `Under-Qualified Rationale: Possesses ${yearsExp} years of experience versus the ${targetYears}+ years benchmark required by the JD. Key core competencies will require upskilling.`;
                     estSalary = 95000;
                     rampWeeks = 14;
                 }
 
-                const cvSentences = cleanCVText.split(/\n|\./).map(s => s.trim()).filter(s => s.length > 22 && s.length < 150 && !/address|zip|email|phone|contact|street|suite/i.test(s));
-                const topSkillsFormatted = matchedSkills.slice(0, 5).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+                // Verbatim key responsibilities extracted from CV lines
+                const verbatimResponsibilities = cvLines.slice(0, 3).length >= 2
+                    ? cvLines.slice(0, 3)
+                    : [`Managed project deliverables and technical solutions in ${jobTitle} domain`];
+
+                // Verbatim core competencies from matched skills
+                const topSkillsFormatted = matchedSkills.slice(0, 5).map(s => s.toUpperCase());
 
                 return {
                     name: cleanName,
                     fileName: cv.fileName,
-                    currentRoleTitle: cvSentences[0] ? cvSentences[0].substring(0, 55) : `${jobTitle} Specialist`,
+                    currentRoleTitle: cvLines[0] ? cvLines[0].substring(0, 55) : `${jobTitle} Specialist`,
                     yearsExperience: yearsExp,
                     overallFitScore,
                     qualificationStatus,
@@ -1569,10 +1581,8 @@ INSTRUCTIONS:
                         Math.min(94, overallFitScore + 1),
                         qualificationStatus === 'Optimal Fit' ? 92 : 68
                     ],
-                    coreCompetencies: topSkillsFormatted.length ? topSkillsFormatted : ['Technical Architecture', 'Stakeholder Management', 'Solution Delivery'],
-                    demonstratedResponsibilities: cvSentences.slice(1, 4).length
-                        ? cvSentences.slice(1, 4)
-                        : [`Demonstrated hands-on experience across core technical and functional areas of the role`],
+                    coreCompetencies: topSkillsFormatted.length ? topSkillsFormatted : ['TECHNICAL ARCHITECTURE', 'STAKEHOLDER GOVERNANCE', 'SOLUTION DELIVERY'],
+                    demonstratedResponsibilities: verbatimResponsibilities,
                     qualificationRationale,
                     bestFitRationale,
                     qualificationAnalysisNote: qualificationRationale,
@@ -1581,9 +1591,15 @@ INSTRUCTIONS:
                 };
             });
 
-            evaluated.sort((a, b) => b.overallFitScore - a.overallFitScore);
-            if (evaluated.length > 0) {
-                evaluated[0].bestFitRationale = `Selected as Best Fit because they provide the highest balance of core domain competencies (${evaluated[0].overallFitScore}% match) and exact experience level matching the JD budget and responsibilities without over-qualification compensation premiums.`;
+            // Sort so Optimal candidates with highest score rank first
+            evaluated.sort((a, b) => {
+                if (a.qualificationStatus === 'Optimal Fit' && b.qualificationStatus !== 'Optimal Fit') return -1;
+                if (a.qualificationStatus !== 'Optimal Fit' && b.qualificationStatus === 'Optimal Fit') return 1;
+                return b.overallFitScore - a.overallFitScore;
+            });
+
+            if (evaluated.length > 0 && evaluated[0].qualificationStatus === 'Optimal Fit') {
+                evaluated[0].bestFitRationale = `Selected as Best Fit because they provide the highest balance of core domain competencies (${evaluated[0].overallFitScore}% match) and exact experience level matching the JD budget without over-qualification compensation premiums.`;
             }
 
             return {
@@ -1615,15 +1631,21 @@ INSTRUCTIONS:
             const statusText = document.getElementById('loaderStatusText');
             loader.classList.remove('hidden');
             progressBar.style.width = '25%';
-            statusText.innerText = 'Parsing multi-layout CVs & Job Description competencies...';
+            statusText.innerText = 'Parsing multi-layout CVs & extracting exact verbatim competencies...';
 
             const contentParts = [];
             let textPrompt = `You are a Senior PwC People & Organisation Recruitment Advisor.
 Evaluate candidate CVs against the Job Description for: "${jobTitle}".
 
-CRITICAL PARSING RULES:
-- DO NOT include candidate contact details, street addresses, phone numbers, zip codes, or common stop-words ("and", "the", "workforce") in the extracted competencies or dimensions.
-- All extracted jdCompetencyDimensions MUST be concise 2-4 word professional domain skill dimensions (e.g. "Cloud Architecture", "Financial Governance").
+CRITICAL EVALUATION RULES:
+1. QUALIFICATION STATUS CLASSIFICATION:
+   - "Optimal Fit": Candidate experience (years & title) matches the target JD requirements without excessive senior/executive bloat or significant skill gaps.
+   - "Over-Qualified": Candidate has significantly more years of experience (+7 years above JD target) or holds VP/Executive titles (VP, Director, Managing Director) when applying for mid-to-senior individual contributor/architect roles. Over-qualified candidates MUST be flagged as Over-Qualified and given a score lower than the top Optimal candidate to reflect salary/retention risk.
+   - "Under-Qualified": Candidate lacks the minimum required years of experience or core technical capabilities.
+
+2. VERBATIM EXTRACTION:
+   - "coreCompetencies": Extract 4-6 EXACT competency phrases directly from the CV text (e.g., "Terraform IaC", "AWS Landing Zones"). DO NOT write generic or address words.
+   - "demonstratedResponsibilities": Extract 2-4 EXACT bullet points or verbatim sentences directly from the candidate's CV text describing what they performed.
 
 JOB DESCRIPTION:
 ${jdText.substring(0, 6500)}
@@ -1638,10 +1660,10 @@ CANDIDATE CVS:
 INSTRUCTIONS:
 1. Extract 5 clean, distinct core competency dimensions from the JD.
 2. Score each candidate (0-100) on overallFitScore and on each of the 5 extracted competency dimensions.
-3. Classify each candidate's qualificationStatus strictly as: "Optimal Fit", "Over-Qualified", or "Under-Qualified".
+3. Classify qualificationStatus strictly as: "Optimal Fit", "Over-Qualified", or "Under-Qualified".
 4. Provide a clear qualificationRationale explaining WHY they received that classification based on their experience and skill alignment against JD requirements.
 5. Provide a bestFitRationale for the top candidate explaining why they are recommended above the rest.
-6. Rank candidates from highest overallFitScore to lowest.`;
+6. Rank candidates such that Optimal Fit candidates with strong score rank above Over-Qualified or Under-Qualified candidates.`;
 
             contentParts.push({ text: textPrompt });
 
@@ -1753,7 +1775,12 @@ INSTRUCTIONS:
                     c.competencyScores = c.competencyScores.slice(0, parsed.jdCompetencyDimensions.length);
                 });
 
-                parsed.candidates.sort((a, b) => b.overallFitScore - a.overallFitScore);
+                // Sort candidates predictably
+                parsed.candidates.sort((a, b) => {
+                    if (a.qualificationStatus === 'Optimal Fit' && b.qualificationStatus !== 'Optimal Fit') return -1;
+                    if (a.qualificationStatus !== 'Optimal Fit' && b.qualificationStatus === 'Optimal Fit') return 1;
+                    return b.overallFitScore - a.overallFitScore;
+                });
 
                 state.analysisResult = parsed;
                 progressBar.style.width = '100%';
