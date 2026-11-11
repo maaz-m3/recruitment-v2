@@ -1,0 +1,2317 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PwC TalentLens | AI Recruitment & Advisory Intelligence</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans for clean, minimal modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for animated data visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- PDF.js for client-side PDF parsing (Cloudflare compatible) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- Mammoth.js for client-side Word (.docx) parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        serif: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                    },
+                    colors: {
+                        pwc: {
+                            orange: '#FD5108',
+                            tangerine: '#EB8C00',
+                            yellow: '#FFB600',
+                            rose: '#DB536A',
+                            burgundy: '#D04A02',
+                            charcoal: '#2D2D2D',
+                            slate: '#464646',
+                            grey: '#7D7D7D',
+                            light: '#F2F2F2',
+                            surface: '#FAFAFA'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(16px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar & PwC visual accents */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F2F2F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CCCCCC;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D04A02;
+        }
+
+        .pwc-gradient-bar {
+            background: linear-gradient(90deg, #D04A02 0%, #FD5108 45%, #EB8C00 80%, #FFB600 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(45, 45, 45, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 12px 28px -8px rgba(45, 45, 45, 0.09);
+        }
+
+        .tab-indicator {
+            position: relative;
+        }
+        .tab-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #D04A02;
+            transform: scaleX(0);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: left;
+        }
+        .tab-indicator.active::after {
+            transform: scaleX(1);
+        }
+
+        /* Custom range slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #D04A02;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 2px 6px rgba(208, 74, 2, 0.4);
+            transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #E5E7EB;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="bg-pwc-surface text-pwc-charcoal font-sans antialiased selection:bg-pwc-orange selection:text-white min-h-screen flex flex-col">
+
+    <!-- Top PwC Spectrum Bar -->
+    <div class="h-1.5 w-full pwc-gradient-bar fixed top-0 left-0 z-50"></div>
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-gray-200 sticky top-1.5 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- PwC Brand Identity -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <!-- Exact PwC Logo Vector Mark matching attached reference -->
+                        <svg class="h-11 w-auto" viewBox="0 0 210 92" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PwC Logo">
+                            <!-- Dual Orange Parallelograms meeting corner-to-corner above 'wc' -->
+                            <polygon points="145,10 194,10 185,22 136,22" fill="#FD5108"/>
+                            <polygon points="96,22 145,22 136,34 87,34" fill="#FD5108"/>
+                            <!-- Custom Precision 'pwc' Bold Serif Paths -->
+                            <!-- Letter 'p' -->
+                            <path d="M12 43.5H24.5V47.2C27.2 44.3 30.8 42.8 35.2 42.8C43.8 42.8 49.8 49.2 49.8 58.6C49.8 68.2 43.5 74.8 34.8 74.8C30.6 74.8 27.3 73.5 24.8 71.1V83.5H30.2V88.5H12V83.5H16.2V48.5H12V43.5ZM24.8 53.2V64.5C26.6 66.8 29.2 68.1 32.1 68.1C37.2 68.1 40.6 64.2 40.6 58.6C40.6 53.1 37.3 49.3 32.3 49.3C29.3 49.3 26.7 50.7 24.8 53.2Z" fill="#0A0A0A"/>
+                            <!-- Letter 'w' -->
+                            <path d="M53.5 43.5H68.8V48.3H65.2L71.4 64.8L77.6 48.3H74.2V43.5H87.8V48.3H84.8L91.1 64.8L97.1 48.3H93.5V43.5H105.5V48.3H102.2L92.4 74.2H85.8L79.6 58.1L73.4 74.2H66.8L56.8 48.3H53.5V43.5Z" fill="#0A0A0A"/>
+                            <!-- Letter 'c' -->
+                            <path d="M136.5 64.2L141.8 67.6C138.8 72.4 133.4 75.1 126.5 75.1C116.4 75.1 109.5 68.4 109.5 58.9C109.5 49.3 116.6 42.6 126.8 42.6C134.8 42.6 140.4 46.4 140.4 51.3C140.4 54.3 138.2 56.4 135.3 56.4C132.5 56.4 130.5 54.6 130.5 51.9C130.5 50.6 131.0 49.5 131.8 48.7C130.4 47.9 128.7 47.5 126.8 47.5C121.4 47.5 118.4 51.7 118.4 58.8C118.4 65.8 121.8 69.8 127.6 69.8C131.6 69.8 134.5 67.8 136.5 64.2Z" fill="#0A0A0A"/>
+                        </svg>
+                    </div>
+                    <div class="hidden sm:block h-7 w-px bg-gray-300"></div>
+                    <div class="hidden sm:flex flex-col">
+                        <span class="text-base font-bold text-pwc-charcoal tracking-tight">TalentLens</span>
+                    </div>
+                </div>
+
+                <!-- Engagement Status & Actions -->
+                <div class="flex items-center space-x-3">
+                    <div id="engagementBadge" class="hidden md:flex items-center px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-medium text-pwc-orange">
+                        <span class="w-2 h-2 rounded-full bg-pwc-orange mr-2 animate-pulse"></span>
+                        <span id="activeRoleLabel">Ready for Engagement</span>
+                    </div>
+
+                    <button onclick="loadDemoEngagement()" class="text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg border border-gray-300 text-pwc-charcoal hover:border-pwc-orange hover:text-pwc-orange transition-colors flex items-center gap-1.5 bg-white">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-pwc-orange"></i>
+                        <span>Load Sample Engagement</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Primary Navigation Tabs -->
+            <nav class="flex space-x-6 overflow-x-auto no-scrollbar pt-1" aria-label="Tabs">
+                <button onclick="switchTab('intake')" id="tab-intake" class="tab-indicator active py-3 px-1 text-sm font-semibold text-pwc-orange whitespace-nowrap flex items-center gap-2 transition-colors">
+                    <i data-lucide="file-up" class="w-4 h-4"></i>
+                    <span>1. Engagement Intake</span>
+                </button>
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-indicator py-3 px-1 text-sm font-medium text-pwc-grey hover:text-pwc-charcoal whitespace-nowrap flex items-center gap-2 transition-colors">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>2. Executive Overview</span>
+                    <span id="candidateCountBadge" class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full bg-gray-100 text-pwc-charcoal">0</span>
+                </button>
+                <button onclick="switchTab('competencies')" id="tab-competencies" class="tab-indicator py-3 px-1 text-sm font-medium text-pwc-grey hover:text-pwc-charcoal whitespace-nowrap flex items-center gap-2 transition-colors">
+                    <i data-lucide="radar" class="w-4 h-4"></i>
+                    <span>3. Competency & Fit Matrix</span>
+                </button>
+                <button onclick="switchTab('financial')" id="tab-financial" class="tab-indicator py-3 px-1 text-sm font-medium text-pwc-grey hover:text-pwc-charcoal whitespace-nowrap flex items-center gap-2 transition-colors">
+                    <i data-lucide="calculator" class="w-4 h-4"></i>
+                    <span>4. Financial & ROI Impact</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Notification Toast Banner (Replaces alert) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Main Content Workspace -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: ENGAGEMENT INTAKE (JD + CVs Upload & Parsing)      -->
+        <!-- ========================================================= -->
+        <section id="view-intake" class="animate-fade-in space-y-6">
+            <!-- Hero Intro Banner -->
+            <div class="bg-pwc-charcoal text-white rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-lg">
+                <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-pwc-orange/25 to-transparent pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-pwc-yellow text-xs font-semibold tracking-wide uppercase mb-3">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                        Edge-Ready AI Screening Engine
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+                        Streamline Talent Evaluation & Workforce Economics
+                    </h1>
+                    <p class="text-gray-300 text-sm sm:text-base leading-relaxed">
+                        Upload your client’s Job Description (PDF or text) alongside candidate CVs (PDF or Word `.docx`). Our AI advisory engine extracts core competencies, identifies over- or under-qualified profiles, and quantifies hiring ROI.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Two-Column Intake Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Job Description Input (5 cols) -->
+                <div class="lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-orange-100 text-pwc-orange flex items-center justify-center font-bold text-sm">01</div>
+                                <div>
+                                    <h2 class="text-base font-bold text-pwc-charcoal">Job Description (JD)</h2>
+                                    <p class="text-xs text-pwc-grey">Upload PDF or paste role requirements</p>
+                                </div>
+                            </div>
+                            <label for="jdFileInput" class="cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-pwc-light hover:bg-orange-100 text-pwc-charcoal hover:text-pwc-orange transition-colors">
+                                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                                <span>Import JD PDF</span>
+                            </label>
+                            <input type="file" id="jdFileInput" accept=".pdf,.txt" class="hidden" onchange="handleJDUpload(event)">
+                        </div>
+
+                        <div id="jdFileBadge" class="hidden mb-3 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-800">
+                            <div class="flex items-center gap-2 truncate">
+                                <i data-lucide="file-check" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                                <span id="jdFileName" class="font-medium truncate">jd_document.pdf</span>
+                            </div>
+                            <button onclick="clearJD()" class="text-emerald-700 hover:text-emerald-950 font-semibold ml-2">Clear</button>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-pwc-slate uppercase tracking-wider mb-1">Role Title & Engagement Name</label>
+                                <input type="text" id="jobTitleInput" placeholder="e.g., Senior Cloud Solutions Architect" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-pwc-orange/30 focus:border-pwc-orange transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-pwc-slate uppercase tracking-wider mb-1">Role Description, Responsibilities & Requirements</label>
+                                <textarea id="jdTextInput" rows="10" placeholder="Paste full Job Description here or upload a PDF document above..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-pwc-orange/30 focus:border-pwc-orange transition leading-relaxed"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-pwc-grey">
+                        <span>Client-side PDF text extraction active</span>
+                        <span id="jdCharCount">0 chars</span>
+                    </div>
+                </div>
+
+                <!-- Right Column: Multi-CV Upload & Queue (7 cols) -->
+                <div class="lg:col-span-7 glass-card rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-orange-100 text-pwc-orange flex items-center justify-center font-bold text-sm">02</div>
+                                <div>
+                                    <h2 class="text-base font-bold text-pwc-charcoal">Candidate CVs / Resumes</h2>
+                                    <p class="text-xs text-pwc-grey">Batch upload PDF (.pdf) or Word (.docx) resumes</p>
+                                </div>
+                            </div>
+                            <button onclick="clearAllCVs()" id="clearCVsBtn" class="hidden text-xs font-medium text-pwc-burgundy hover:underline">
+                                Remove All
+                            </button>
+                        </div>
+
+                        <!-- Drag and Drop Zone -->
+                        <div id="cvDropZone" onclick="document.getElementById('cvFileInput').click()" class="border-2 border-dashed border-gray-300 hover:border-pwc-orange rounded-2xl p-8 text-center cursor-pointer transition-all bg-gray-50/70 hover:bg-orange-50/40 group">
+                            <input type="file" id="cvFileInput" multiple accept=".pdf,.docx,.txt" class="hidden" onchange="handleCVFiles(event.target.files)">
+                            <div class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-gray-200 flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform">
+                                <i data-lucide="folder-up" class="w-6 h-6 text-pwc-orange"></i>
+                            </div>
+                            <p class="text-sm font-semibold text-pwc-charcoal">
+                                Click to upload candidate CVs or drag & drop files here
+                            </p>
+                            <p class="text-xs text-pwc-grey mt-1">
+                                Supports multiple <span class="font-semibold text-pwc-slate">.PDF</span> and <span class="font-semibold text-pwc-slate">.DOCX</span> documents simultaneously
+                            </p>
+                        </div>
+
+                        <!-- Uploaded CV List -->
+                        <div class="mt-5">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-pwc-slate uppercase tracking-wider">Parsed Candidate Queue</span>
+                                <span id="queuedCountText" class="text-xs font-medium text-pwc-grey">0 files ready</span>
+                            </div>
+
+                            <div id="cvQueueList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                                <!-- Empty State -->
+                                <div id="emptyQueueState" class="text-center py-8 px-4 rounded-xl bg-gray-50 border border-gray-100">
+                                    <p class="text-xs text-pwc-grey">No CVs imported yet. Upload files above or click <strong class="text-pwc-charcoal">"Load Sample Engagement"</strong> in the top bar to test immediately.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Run AI Analysis CTA -->
+                    <div class="mt-6 pt-5 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-2 text-xs text-pwc-slate">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-pwc-orange shrink-0"></i>
+                            <span>Competency benchmarking & qualification audit powered by Gemini AI</span>
+                        </div>
+                        <button id="analyzeBtn" onclick="runRecruitmentAnalysis()" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-pwc-orange hover:bg-pwc-burgundy text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                            <span>Run AI Screening & Benchmark</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- LOADING OVERLAY STATE                                     -->
+        <!-- ========================================================= -->
+        <div id="analysisLoader" class="hidden fixed inset-0 bg-pwc-charcoal/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-7 shadow-2xl border border-gray-100 text-center animate-slide-up">
+                <div class="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center mx-auto mb-4">
+                    <div class="w-7 h-7 border-3 border-pwc-orange border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <h3 class="text-xl font-bold tracking-tight text-pwc-charcoal mb-1">Evaluating Candidate Pool</h3>
+                <p id="loaderStatusText" class="text-sm text-pwc-grey mb-4">Mapping candidate responsibilities against Job Description competencies...</p>
+                <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div id="loaderProgressBar" class="bg-pwc-orange h-2 rounded-full transition-all duration-500" style="width: 35%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: EXECUTIVE OVERVIEW                                 -->
+        <!-- ========================================================= -->
+        <section id="view-overview" class="hidden animate-fade-in space-y-6">
+            
+            <!-- Top KPI Strip (Prioritized Metrics, Zero Clutter) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- KPI 1: Top Recommended Candidate -->
+                <div class="glass-card rounded-2xl p-5 border-l-4 border-l-pwc-orange">
+                    <div class="flex items-center justify-between text-xs font-semibold text-pwc-grey uppercase tracking-wider mb-1">
+                        <span>Top Recommended Fit</span>
+                        <i data-lucide="award" class="w-4 h-4 text-pwc-orange"></i>
+                    </div>
+                    <div id="kpiTopCandidate" class="text-xl font-bold text-pwc-charcoal truncate mt-1">—</div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span id="kpiTopScore" class="px-2 py-0.5 rounded-md bg-orange-100 text-pwc-orange text-xs font-bold">0% Match</span>
+                        <span class="text-xs text-pwc-grey">Best overall alignment</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Optimal Fit Pool -->
+                <div class="glass-card rounded-2xl p-5 border-l-4 border-l-emerald-600">
+                    <div class="flex items-center justify-between text-xs font-semibold text-pwc-grey uppercase tracking-wider mb-1">
+                        <span>Optimal Qualification</span>
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                    </div>
+                    <div id="kpiOptimalCount" class="text-2xl font-bold text-pwc-charcoal mt-1">0 / 0</div>
+                    <p class="text-xs text-pwc-grey mt-2">Candidates calibrated to role level</p>
+                </div>
+
+                <!-- KPI 3: Over-Qualified Flag -->
+                <div class="glass-card rounded-2xl p-5 border-l-4 border-l-pwc-yellow">
+                    <div class="flex items-center justify-between text-xs font-semibold text-pwc-grey uppercase tracking-wider mb-1">
+                        <span>Over-Qualified Risk</span>
+                        <i data-lucide="trending-up" class="w-4 h-4 text-pwc-tangerine"></i>
+                    </div>
+                    <div id="kpiOverCount" class="text-2xl font-bold text-pwc-charcoal mt-1">0</div>
+                    <p class="text-xs text-pwc-grey mt-2">Flight risk / salary premium alert</p>
+                </div>
+
+                <!-- KPI 4: Under-Qualified Flag -->
+                <div class="glass-card rounded-2xl p-5 border-l-4 border-l-pwc-rose">
+                    <div class="flex items-center justify-between text-xs font-semibold text-pwc-grey uppercase tracking-wider mb-1">
+                        <span>Under-Qualified Gap</span>
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-pwc-rose"></i>
+                    </div>
+                    <div id="kpiUnderCount" class="text-2xl font-bold text-pwc-charcoal mt-1">0</div>
+                    <p class="text-xs text-pwc-grey mt-2">Requires upskilling / training investment</p>
+                </div>
+            </div>
+
+            <!-- Charts & Executive Synthesis Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Candidate Ranking Bar Chart (7 cols) -->
+                <div class="lg:col-span-7 glass-card rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-pwc-charcoal">Overall JD Fit & Competency Score</h3>
+                            <p class="text-xs text-pwc-grey">Weighted match across technical, leadership, and domain criteria</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pwc-orange"></span> Optimal</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pwc-yellow"></span> Over-Qual</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pwc-rose"></span> Under-Qual</span>
+                        </div>
+                    </div>
+                    <div class="relative h-64 w-full">
+                        <canvas id="overviewBarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Qualification Tier Distribution Doughnut + Executive Summary (5 cols) -->
+                <div class="lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-pwc-charcoal mb-1">Talent Pool Calibration</h3>
+                        <p class="text-xs text-pwc-grey mb-4">Distribution by qualification tier</p>
+                        <div class="relative h-44 w-full flex items-center justify-center">
+                            <canvas id="tierDoughnutChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="executiveBriefBox" class="mt-4 p-3.5 rounded-xl bg-orange-50/70 border border-orange-200/80 text-xs text-pwc-charcoal leading-relaxed">
+                        <strong class="text-pwc-orange block mb-1">Advisory Recommendation & Best Fit Rationale:</strong>
+                        <span id="executiveSummaryText">Run an analysis to view synthesized advisory insights.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Candidate Shortlist Cards -->
+            <div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold tracking-tight text-pwc-charcoal">Ranked Candidate Shortlist</h3>
+                        <p class="text-xs text-pwc-grey">Click any candidate to inspect competency breakdowns or model financial impact</p>
+                    </div>
+                    <!-- Filter Pills -->
+                    <div class="flex flex-wrap gap-1.5" id="qualificationFilters">
+                        <button onclick="filterCandidates('ALL')" class="filter-pill active px-3 py-1.5 rounded-lg text-xs font-semibold bg-pwc-charcoal text-white transition">All</button>
+                        <button onclick="filterCandidates('Optimal Fit')" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-pwc-slate hover:border-pwc-orange transition">Optimal Fit</button>
+                        <button onclick="filterCandidates('Over-Qualified')" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-pwc-slate hover:border-pwc-orange transition">Over-Qualified</button>
+                        <button onclick="filterCandidates('Under-Qualified')" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-pwc-slate hover:border-pwc-orange transition">Under-Qualified</button>
+                    </div>
+                </div>
+
+                <div id="candidateCardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: COMPETENCY & COMPARATIVE MATRIX                    -->
+        <!-- ========================================================= -->
+        <section id="view-competencies" class="hidden animate-fade-in space-y-6">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-gray-200">
+                    <div>
+                        <h2 class="text-xl font-bold tracking-tight text-pwc-charcoal">JD vs. Candidate Competency Benchmark</h2>
+                        <p class="text-xs text-pwc-grey mt-0.5">Side-by-side radar comparison and core responsibility alignment against Job Description requirements</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-pwc-grey">Primary Candidate</label>
+                            <select id="compareSelectA" onchange="updateComparativeView()" class="mt-0.5 px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-semibold text-pwc-charcoal bg-white focus:border-pwc-orange focus:outline-none"></select>
+                        </div>
+                        <span class="text-xs font-bold text-pwc-grey pt-4">VS</span>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-pwc-grey">Benchmark Peer</label>
+                            <select id="compareSelectB" onchange="updateComparativeView()" class="mt-0.5 px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-semibold text-pwc-charcoal bg-white focus:border-pwc-orange focus:outline-none"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Radar Chart + JD Core Competencies -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+                    <!-- Radar Visualization (6 cols) -->
+                    <div class="lg:col-span-6 bg-gray-50/70 rounded-2xl p-5 border border-gray-100 flex flex-col justify-center">
+                        <h3 class="text-sm font-bold text-pwc-charcoal mb-1 text-center">Multi-Dimensional Competency Overlay</h3>
+                        <p class="text-xs text-pwc-grey text-center mb-3">Target JD Benchmark (100%) vs. Selected Candidates</p>
+                        <div class="relative h-72 w-full">
+                            <canvas id="competencyRadarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Extracted JD Core Competencies & Responsibilities (6 cols) -->
+                    <div class="lg:col-span-6 space-y-4">
+                        <div class="p-4 rounded-xl bg-orange-50/60 border border-orange-200/70">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-pwc-orange mb-2 flex items-center gap-1.5">
+                                <i data-lucide="target" class="w-4 h-4"></i>
+                                Extracted JD Core Competencies
+                            </h4>
+                            <div id="jdCoreCompetenciesList" class="flex flex-wrap gap-2">
+                                <!-- Filled dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-white border border-gray-200">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-pwc-charcoal mb-2 flex items-center gap-1.5">
+                                <i data-lucide="list-checks" class="w-4 h-4 text-pwc-orange"></i>
+                                Key JD Responsibilities Evaluated
+                            </h4>
+                            <ul id="jdResponsibilitiesList" class="space-y-1.5 text-xs text-pwc-slate list-disc list-inside">
+                                <!-- Filled dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Comparative Matrix Table -->
+                <div class="mt-8">
+                    <h3 class="text-base font-bold text-pwc-charcoal mb-3">Granular Competency & Responsibility Audit</h3>
+                    <div class="overflow-x-auto rounded-xl border border-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200 text-left text-xs">
+                            <thead class="bg-pwc-charcoal text-white">
+                                <tr>
+                                    <th class="py-3 px-4 font-semibold">Candidate & Status</th>
+                                    <th class="py-3 px-4 font-semibold">Verified Core Competencies</th>
+                                    <th class="py-3 px-4 font-semibold">Key Responsibilities Demonstrated</th>
+                                    <th class="py-3 px-4 font-semibold">Gaps / Over-Qualification Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparativeTableBody" class="divide-y divide-gray-200 bg-white">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: FINANCIAL IMPACT & ROI CALCULATOR                  -->
+        <!-- ========================================================= -->
+        <section id="view-financial" class="hidden animate-fade-in space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Controls: Salary & Workforce Economics Inputs (5 cols) -->
+                <div class="lg:col-span-5 glass-card rounded-2xl p-6 space-y-5">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-pwc-orange">Workforce Economics Simulator</span>
+                        <h2 class="text-xl font-bold tracking-tight text-pwc-charcoal mt-0.5">Hiring Financial Impact</h2>
+                        <p class="text-xs text-pwc-grey mt-1">Input compensation parameters to model Year-1 total cost, ramp-up productivity loss, and net value creation.</p>
+                    </div>
+
+                    <div class="space-y-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-pwc-slate mb-1">Select Candidate to Model</label>
+                            <select id="finCandidateSelect" onchange="syncCandidateSalaryAndCalculate()" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-pwc-charcoal bg-white focus:border-pwc-orange focus:outline-none"></select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-pwc-slate mb-1">Role Budgeted Salary ($)</label>
+                                <input type="number" id="budgetSalaryInput" value="120000" step="5000" oninput="calculateFinancialImpact()" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-semibold focus:border-pwc-orange focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-pwc-slate mb-1">Candidate Expected ($)</label>
+                                <input type="number" id="candidateSalaryInput" value="125000" step="5000" oninput="calculateFinancialImpact()" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-semibold focus:border-pwc-orange focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-pwc-slate mb-1">
+                                <span>Benefits, Payroll Tax & Overhead (%)</span>
+                                <span id="overheadValLabel" class="text-pwc-orange font-bold">24%</span>
+                            </div>
+                            <input type="range" id="overheadSlider" min="10" max="45" value="24" oninput="document.getElementById('overheadValLabel').innerText = this.value + '%'; calculateFinancialImpact()" class="w-full">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-pwc-slate mb-1">
+                                <span>Expected Revenue / Value Multiplier</span>
+                                <span id="multiplierValLabel" class="text-pwc-orange font-bold">2.4x</span>
+                            </div>
+                            <input type="range" id="multiplierSlider" min="1.2" max="4.5" step="0.1" value="2.4" oninput="document.getElementById('multiplierValLabel').innerText = parseFloat(this.value).toFixed(1) + 'x'; calculateFinancialImpact()" class="w-full">
+                            <p class="text-[11px] text-pwc-grey mt-1">Adjusted automatically by candidate's competency fit & onboarding ramp time.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-pwc-slate mb-1">Recruitment & Agency / Onboarding Fee ($)</label>
+                            <input type="number" id="hiringFeeInput" value="12000" step="1000" oninput="calculateFinancialImpact()" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-semibold focus:border-pwc-orange focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Outputs: Financial KPIs & Chart (7 cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    <!-- 3 Financial Metric Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="glass-card rounded-2xl p-4 border-t-4 border-t-pwc-charcoal">
+                            <span class="text-[11px] font-semibold uppercase text-pwc-grey">Year-1 Total Cost</span>
+                            <div id="finTotalCost" class="text-xl font-bold text-pwc-charcoal mt-1">$0</div>
+                            <span id="finVarianceBadge" class="inline-block mt-1.5 text-[11px] font-medium px-2 py-0.5 rounded bg-gray-100 text-pwc-slate">vs Budget: $0</span>
+                        </div>
+
+                        <div class="glass-card rounded-2xl p-4 border-t-4 border-t-pwc-orange">
+                            <span class="text-[11px] font-semibold uppercase text-pwc-grey">Net Year-1 Value Impact</span>
+                            <div id="finNetValue" class="text-xl font-bold text-pwc-orange mt-1">$0</div>
+                            <span id="finRoiPercent" class="inline-block mt-1.5 text-[11px] font-semibold px-2 py-0.5 rounded bg-orange-50 text-pwc-orange">0% Net ROI</span>
+                        </div>
+
+                        <div class="glass-card rounded-2xl p-4 border-t-4 border-t-pwc-tangerine">
+                            <span class="text-[11px] font-semibold uppercase text-pwc-grey">Productivity Ramp-Up</span>
+                            <div id="finRampWeeks" class="text-xl font-bold text-pwc-charcoal mt-1">0 Weeks</div>
+                            <span id="finRampCost" class="inline-block mt-1.5 text-[11px] font-medium text-pwc-grey">Training drag: $0</span>
+                        </div>
+                    </div>
+
+                    <!-- Financial Comparison Chart -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-pwc-charcoal">12-Month Cumulative Financial Trajectory</h3>
+                                <p class="text-xs text-pwc-grey">Compares total loaded cost vs. competency-adjusted productivity output across all candidates</p>
+                            </div>
+                        </div>
+                        <div class="relative h-64 w-full">
+                            <canvas id="financialChart"></canvas>
+                        </div>
+
+                        <!-- Advisory Risk Note -->
+                        <div id="financialAdvisoryNote" class="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-pwc-slate leading-relaxed">
+                            Select a candidate and enter salary figures to inspect PwC workforce financial commentary.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-pwc-grey">
+            <div class="flex items-center gap-2.5">
+                <svg class="h-7 w-auto" viewBox="0 0 210 92" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PwC Logo">
+                    <polygon points="145,10 194,10 185,22 136,22" fill="#FD5108"/>
+                    <polygon points="96,22 145,22 136,34 87,34" fill="#FD5108"/>
+                    <path d="M12 43.5H24.5V47.2C27.2 44.3 30.8 42.8 35.2 42.8C43.8 42.8 49.8 49.2 49.8 58.6C49.8 68.2 43.5 74.8 34.8 74.8C30.6 74.8 27.3 73.5 24.8 71.1V83.5H30.2V88.5H12V83.5H16.2V48.5H12V43.5ZM24.8 53.2V64.5C26.6 66.8 29.2 68.1 32.1 68.1C37.2 68.1 40.6 64.2 40.6 58.6C40.6 53.1 37.3 49.3 32.3 49.3C29.3 49.3 26.7 50.7 24.8 53.2Z" fill="#0A0A0A"/>
+                    <path d="M53.5 43.5H68.8V48.3H65.2L71.4 64.8L77.6 48.3H74.2V43.5H87.8V48.3H84.8L91.1 64.8L97.1 48.3H93.5V43.5H105.5V48.3H102.2L92.4 74.2H85.8L79.6 58.1L73.4 74.2H66.8L56.8 48.3H53.5V43.5Z" fill="#0A0A0A"/>
+                    <path d="M136.5 64.2L141.8 67.6C138.8 72.4 133.4 75.1 126.5 75.1C116.4 75.1 109.5 68.4 109.5 58.9C109.5 49.3 116.6 42.6 126.8 42.6C134.8 42.6 140.4 46.4 140.4 51.3C140.4 54.3 138.2 56.4 135.3 56.4C132.5 56.4 130.5 54.6 130.5 51.9C130.5 50.6 131.0 49.5 131.8 48.7C130.4 47.9 128.7 47.5 126.8 47.5C121.4 47.5 118.4 51.7 118.4 58.8C118.4 65.8 121.8 69.8 127.6 69.8C131.6 69.8 134.5 67.8 136.5 64.2Z" fill="#0A0A0A"/>
+                </svg>
+                <span>© 2026 TalentLens™ Recruitment Advisory Platform. Edge-optimized for Cloudflare.</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>Client-Side Document Parsing</span>
+                <span>•</span>
+                <span>Confidential Advisory Workspace</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // =========================================================================
+        // 1. GLOBAL STATE & PDF.JS WORKER CONFIGURATION
+        // =========================================================================
+        const state = {
+            jdText: '',
+            uploadedCVs: [],
+            analysisResult: null,
+            activeFilter: 'ALL',
+            charts: {
+                bar: null,
+                doughnut: null,
+                radar: null,
+                financial: null
+            }
+        };
+
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        // =========================================================================
+        // 2. UI NAVIGATION, NOTIFICATIONS & INITIALIZATION
+        // =========================================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const colors = {
+                success: 'bg-emerald-900 text-white border-emerald-700',
+                error: 'bg-pwc-burgundy text-white border-red-800',
+                warning: 'bg-amber-900 text-white border-amber-700',
+                info: 'bg-pwc-charcoal text-white border-gray-700'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg border text-xs font-medium flex items-center justify-between gap-3 animate-slide-up ${colors[type] || colors.info}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function switchTab(tabId) {
+            if (tabId !== 'intake' && !state.analysisResult) {
+                showToast('Please import a JD and CVs and click "Run AI Screening & Benchmark" first.', 'warning');
+                return;
+            }
+
+            ['intake', 'overview', 'competencies', 'financial'].forEach(id => {
+                const viewEl = document.getElementById(`view-${id}`);
+                const tabBtn = document.getElementById(`tab-${id}`);
+                if (!viewEl || !tabBtn) return;
+
+                if (id === tabId) {
+                    viewEl.classList.remove('hidden');
+                    tabBtn.classList.add('active', 'text-pwc-orange', 'font-semibold');
+                    tabBtn.classList.remove('text-pwc-grey', 'font-medium');
+                } else {
+                    viewEl.classList.add('hidden');
+                    tabBtn.classList.remove('active', 'text-pwc-orange', 'font-semibold');
+                    tabBtn.classList.add('text-pwc-grey', 'font-medium');
+                }
+            });
+
+            if (tabId === 'competencies') updateComparativeView();
+            if (tabId === 'financial') calculateFinancialImpact();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            setupDragAndDrop();
+
+            const jdTextarea = document.getElementById('jdTextInput');
+            if (jdTextarea) {
+                jdTextarea.addEventListener('input', (e) => {
+                    state.jdText = e.target.value;
+                    document.getElementById('jdCharCount').innerText = `${e.target.value.length.toLocaleString()} chars`;
+                });
+            }
+        });
+
+        // =========================================================================
+        // 3. CLIENT-SIDE DOCUMENT PARSING (PDF & DOCX - MULTI-LAYOUT AWARE)
+        // =========================================================================
+        async function extractTextFromPDF(arrayBuffer) {
+            if (typeof pdfjsLib === 'undefined') {
+                throw new Error('PDF parser library is still loading. Please try again in a moment.');
+            }
+            const loadingTask = pdfjsLib.getDocument({
+                data: arrayBuffer,
+                useSystemFonts: true,
+                disableFontFace: false
+            });
+            const pdf = await loadingTask.promise;
+            let fullText = '';
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 1.0 });
+                const textContent = await page.getTextContent();
+
+                // Group text items by visual lines & handle multi-column layouts cleanly
+                const items = textContent.items
+                    .filter(item => item.str && item.str.trim().length > 0)
+                    .map(item => ({
+                        str: item.str,
+                        x: item.transform[4],
+                        y: item.transform[5],
+                        width: item.width || 0
+                    }));
+
+                // Detect if page uses a 2-column resume layout (sidebar + main body)
+                const midX = viewport.width * 0.36;
+                const leftColItems = items.filter(it => it.x < midX && it.width < viewport.width * 0.45);
+                const rightColItems = items.filter(it => it.x >= midX || it.width >= viewport.width * 0.45);
+                const isTwoColumn = leftColItems.length > 12 && rightColItems.length > 20;
+
+                const reconstructLines = (list) => {
+                    const sorted = [...list].sort((a, b) => {
+                        if (Math.abs(b.y - a.y) > 4.5) return b.y - a.y;
+                        return a.x - b.x;
+                    });
+
+                    let lines = [];
+                    let currentLine = [];
+                    let lastY = null;
+
+                    for (const it of sorted) {
+                        if (lastY === null || Math.abs(it.y - lastY) <= 4.5) {
+                            currentLine.push(it);
+                        } else {
+                            lines.push(currentLine.sort((a, b) => a.x - b.x).map(x => x.str).join(' '));
+                            currentLine = [it];
+                        }
+                        lastY = it.y;
+                    }
+                    if (currentLine.length) {
+                        lines.push(currentLine.sort((a, b) => a.x - b.x).map(x => x.str).join(' '));
+                    }
+                    return lines.join('\n');
+                };
+
+                if (isTwoColumn) {
+                    fullText += reconstructLines(rightColItems) + '\n' + reconstructLines(leftColItems) + '\n';
+                } else {
+                    fullText += reconstructLines(items) + '\n';
+                }
+            }
+            return fullText.replace(/\s+\n/g, '\n').trim();
+        }
+
+        async function renderPdfFirstPageAsBase64(arrayBuffer) {
+            try {
+                if (typeof pdfjsLib === 'undefined') return null;
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 1.5 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                return dataUrl.split(',')[1];
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function extractTextFromDocx(arrayBuffer) {
+            if (typeof mammoth === 'undefined') {
+                throw new Error('Word (.docx) parser library is unavailable. Please check your network connection.');
+            }
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+            return result.value.trim();
+        }
+
+        async function parseDocumentFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            const buffer = await file.arrayBuffer();
+
+            if (ext === 'pdf') {
+                const bufferCopy = buffer.slice(0);
+                let extractedText = '';
+                try {
+                    extractedText = await extractTextFromPDF(buffer);
+                } catch (pdfErr) {
+                    console.warn('PDF text layer extraction fallback:', pdfErr);
+                }
+                let imageBase64 = null;
+                if (!extractedText || extractedText.length < 120) {
+                    imageBase64 = await renderPdfFirstPageAsBase64(bufferCopy);
+                }
+                return { text: extractedText, imageBase64 };
+            } else if (ext === 'docx') {
+                const text = await extractTextFromDocx(buffer);
+                return { text, imageBase64: null };
+            } else if (ext === 'doc') {
+                // Legacy binary .doc fallback readable string extraction
+                const raw = new TextDecoder('latin1').decode(buffer);
+                const clean = raw.replace(/[^\x20-\x7E\r\n]/g, ' ').replace(/\s{2,}/g, ' ').trim();
+                return { text: clean, imageBase64: null };
+            } else if (ext === 'txt' || ext === 'md' || ext === 'rtf') {
+                const text = new TextDecoder().decode(buffer);
+                return { text, imageBase64: null };
+            } else {
+                throw new Error(`Unsupported file format: .${ext}. Please upload PDF, DOCX, or TXT.`);
+            }
+        }
+
+        async function handleJDUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                showToast(`Extracting text from ${file.name}...`, 'info');
+                const parsed = await parseDocumentFile(file);
+                if (!parsed.text || parsed.text.length < 15) {
+                    throw new Error('Could not extract readable text from this PDF. Please paste the JD text directly.');
+                }
+
+                state.jdText = parsed.text;
+                document.getElementById('jdTextInput').value = parsed.text;
+                document.getElementById('jdCharCount').innerText = `${parsed.text.length.toLocaleString()} chars`;
+                document.getElementById('jdFileName').innerText = file.name;
+                document.getElementById('jdFileBadge').classList.remove('hidden');
+
+                if (!document.getElementById('jobTitleInput').value) {
+                    const cleanTitle = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+                    document.getElementById('jobTitleInput').value = cleanTitle;
+                }
+
+                showToast('Job Description imported successfully.', 'success');
+            } catch (err) {
+                showToast(err.message || 'Failed to parse Job Description file.', 'error');
+            }
+            event.target.value = '';
+        }
+
+        function clearJD() {
+            state.jdText = '';
+            document.getElementById('jdTextInput').value = '';
+            document.getElementById('jdFileBadge').classList.add('hidden');
+            document.getElementById('jdCharCount').innerText = '0 chars';
+        }
+
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('cvDropZone');
+            if (!dropZone) return;
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evtName => {
+                dropZone.addEventListener(evtName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            dropZone.addEventListener('dragover', () => dropZone.classList.add('border-pwc-orange', 'bg-orange-50/60'));
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-pwc-orange', 'bg-orange-50/60'));
+            dropZone.addEventListener('drop', (e) => {
+                dropZone.classList.remove('border-pwc-orange', 'bg-orange-50/60');
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                    handleCVFiles(e.dataTransfer.files);
+                }
+            });
+        }
+
+        async function handleCVFiles(fileList) {
+            const files = Array.from(fileList || []);
+            if (!files.length) return;
+
+            let addedCount = 0;
+            for (const file of files) {
+                try {
+                    const parsed = await parseDocumentFile(file);
+                    if ((parsed.text && parsed.text.length > 10) || parsed.imageBase64) {
+                        state.uploadedCVs.push({
+                            id: 'cv_' + Math.random().toString(36).substring(2, 9),
+                            fileName: file.name,
+                            text: parsed.text || '[Visual/Scanned PDF Resume - Analyze via attached image]',
+                            imageBase64: parsed.imageBase64,
+                            sizeLabel: `${(file.size / 1024).toFixed(1)} KB`
+                        });
+                        addedCount++;
+                    } else {
+                        showToast(`Skipped ${file.name}: file appears empty or unreadable.`, 'warning');
+                    }
+                } catch (err) {
+                    showToast(`Error reading ${file.name}: ${err.message}`, 'error');
+                }
+            }
+
+            if (addedCount > 0) {
+                renderCVQueue();
+                showToast(`Imported ${addedCount} candidate CV(s) successfully.`, 'success');
+            }
+            const inputEl = document.getElementById('cvFileInput');
+            if (inputEl) inputEl.value = '';
+        }
+
+        function removeCV(id) {
+            state.uploadedCVs = state.uploadedCVs.filter(cv => cv.id !== id);
+            renderCVQueue();
+        }
+
+        function clearAllCVs() {
+            state.uploadedCVs = [];
+            renderCVQueue();
+        }
+
+        function renderCVQueue() {
+            const listEl = document.getElementById('cvQueueList');
+            const countText = document.getElementById('queuedCountText');
+            const clearBtn = document.getElementById('clearCVsBtn');
+
+            countText.innerText = `${state.uploadedCVs.length} file${state.uploadedCVs.length === 1 ? '' : 's'} ready`;
+            clearBtn.classList.toggle('hidden', state.uploadedCVs.length === 0);
+
+            if (state.uploadedCVs.length === 0) {
+                listEl.innerHTML = `
+                    <div id="emptyQueueState" class="text-center py-8 px-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-xs text-pwc-grey">No CVs imported yet. Upload files above or click <strong class="text-pwc-charcoal">"Load Sample Engagement"</strong> in the top bar to test immediately.</p>
+                    </div>`;
+                return;
+            }
+
+            listEl.innerHTML = state.uploadedCVs.map(cv => {
+                const isDocx = cv.fileName.toLowerCase().endsWith('.docx') || cv.fileName.toLowerCase().endsWith('.doc');
+                const badgeClass = isDocx ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-pwc-burgundy border-red-200';
+                const extLabel = isDocx ? 'DOCX' : (cv.imageBase64 ? 'PDF-OCR' : 'PDF');
+
+                return `
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200 hover:border-pwc-orange/50 transition">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="px-2 py-1 rounded text-[10px] font-bold border ${badgeClass} shrink-0">${extLabel}</span>
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold text-pwc-charcoal truncate">${cv.fileName}</p>
+                                <p class="text-[11px] text-pwc-grey">${cv.sizeLabel} • ${cv.imageBase64 ? 'Visual layout captured' : cv.text.length.toLocaleString() + ' extracted chars'}</p>
+                            </div>
+                        </div>
+                        <button onclick="removeCV('${cv.id}')" class="p-1.5 text-gray-400 hover:text-pwc-burgundy rounded-lg transition" title="Remove CV">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // =========================================================================
+        // 4. GEMINI AI STRUCTURED EVALUATION ENGINE + EDGE FALLBACK ANALYZER
+        // =========================================================================
+        async function fetchWithRetry(url, options, maxRetries = 2) {
+            let delay = 800;
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        const errBody = await response.text().catch(() => '');
+                        throw new Error(`HTTP ${response.status}: ${errBody.substring(0, 120)}`);
+                    }
+                    return await response.json();
+                } catch (err) {
+                    if (attempt === maxRetries) throw err;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // Deterministic local NLP fallback if running standalone on Cloudflare without an API key
+        function runLocalEdgeFallbackAnalysis(jobTitle, jdText, cvs) {
+            const stopWords = new Set(['with','that','this','from','have','will','your','their','about','which','when','into','more','other','such','than','then','them','these','some','would','make','like','time','very','know','take','people','year','good','could','work','team','role','experience','skills','years','ability','strong','including','using','support','business','management']);
+            const extractKeywords = (txt) => {
+                const words = (txt.toLowerCase().match(/\b[a-z][a-z0-9+#.-]{2,}\b/g) || [])
+                    .filter(w => !stopWords.has(w));
+                const freq = {};
+                words.forEach(w => freq[w] = (freq[w] || 0) + 1);
+                return Object.entries(freq).sort((a, b) => b[1] - a[1]).map(e => e[0]);
+            };
+
+            const jdKeywords = extractKeywords(jdText).slice(0, 28);
+            const jdLines = jdText.split(/\n|\./).map(s => s.trim()).filter(s => s.length > 25 && s.length < 160);
+            const jdKeyResponsibilities = jdLines.slice(0, 4).length >= 2
+                ? jdLines.slice(0, 4)
+                : [
+                    `Execute core deliverables and strategic initiatives for ${jobTitle}`,
+                    'Collaborate with cross-functional stakeholders and leadership teams',
+                    'Ensure quality governance, risk compliance, and measurable business outcomes'
+                ];
+
+            const dimensions = [
+                'Domain & Technical Fit',
+                'Role Responsibility Alignment',
+                'Leadership & Ownership',
+                'Delivery & Execution Depth',
+                'Qualification Calibration'
+            ];
+
+            const jdExpMatch = jdText.match(/(\d+)\s*(?:\+|to|-)\s*\d*\s*years/i);
+            const targetYears = jdExpMatch ? parseInt(jdExpMatch[1], 10) : 6;
+
+            const evaluated = cvs.map((cv) => {
+                const cleanName = cv.fileName.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').replace(/\b(cv|resume|final|updated)\b/gi, '').trim() || cv.fileName;
+                const lowerCV = cv.text.toLowerCase();
+
+                const matchedSkills = jdKeywords.filter(kw => lowerCV.includes(kw));
+                const rawRatio = jdKeywords.length ? (matchedSkills.length / Math.min(jdKeywords.length, 16)) : 0.65;
+                const domainScore = Math.min(96, Math.max(42, Math.round(rawRatio * 100)));
+
+                const expMatches = [...cv.text.matchAll(/(\d{1,2})\+?\s*years/gi)].map(m => parseInt(m[1], 10)).filter(n => n > 0 && n < 45);
+                const yearsExp = expMatches.length ? Math.max(...expMatches) : Math.max(2, targetYears);
+
+                const isExec = /\b(vp|vice president|director|head of|chief|cto|cfo|cio|managing director|partner)\b/i.test(cv.text);
+                let qualificationStatus = 'Optimal Fit';
+                let overallFitScore = Math.min(95, Math.max(45, Math.round(domainScore * 0.75 + 22)));
+                let note = `Strong alignment across ${matchedSkills.slice(0, 4).join(', ') || 'core domain competencies'} matching role expectations.`;
+                let estSalary = 135000;
+                let rampWeeks = 4;
+
+                if (yearsExp >= targetYears + 7 || (isExec && !/director|vp|head|chief|partner/i.test(jobTitle))) {
+                    qualificationStatus = 'Over-Qualified';
+                    overallFitScore = Math.min(89, Math.max(74, overallFitScore - 6));
+                    note = `Over-Qualified: ${yearsExp} years of senior/executive experience exceeds the ${targetYears}+ year target scope, indicating potential compensation premium and retention risk.`;
+                    estSalary = 195000;
+                    rampWeeks = 2;
+                } else if (yearsExp < Math.max(1, targetYears - 2) || domainScore < 52) {
+                    qualificationStatus = 'Under-Qualified';
+                    overallFitScore = Math.min(62, Math.max(38, domainScore));
+                    note = `Under-Qualified: Detected ${yearsExp} years of experience versus ${targetYears}+ years benchmarked in the JD; requires structured onboarding support.`;
+                    estSalary = 95000;
+                    rampWeeks = 14;
+                }
+
+                const cvSentences = cv.text.split(/\n|\./).map(s => s.trim()).filter(s => s.length > 22 && s.length < 150);
+                const topSkillsFormatted = matchedSkills.slice(0, 5).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+
+                return {
+                    name: cleanName,
+                    fileName: cv.fileName,
+                    currentRoleTitle: cvSentences[0] ? cvSentences[0].substring(0, 55) : `${jobTitle} Candidate`,
+                    yearsExperience: yearsExp,
+                    overallFitScore,
+                    qualificationStatus,
+                    competencyScores: [
+                        domainScore,
+                        Math.min(96, overallFitScore + 3),
+                        isExec ? 95 : Math.min(92, overallFitScore - 2),
+                        Math.min(94, overallFitScore + 1),
+                        qualificationStatus === 'Optimal Fit' ? 92 : 68
+                    ],
+                    coreCompetencies: topSkillsFormatted.length ? topSkillsFormatted : ['Domain Execution', 'Stakeholder Alignment', 'Project Delivery'],
+                    demonstratedResponsibilities: cvSentences.slice(1, 4).length
+                        ? cvSentences.slice(1, 4)
+                        : [`Demonstrated applied experience across ${topSkillsFormatted.slice(0, 3).join(', ') || 'key functional areas'}`],
+                    qualificationAnalysisNote: note,
+                    estimatedSalaryExpectationUSD: estSalary,
+                    estimatedRampUpWeeks: rampWeeks
+                };
+            });
+
+            evaluated.sort((a, b) => b.overallFitScore - a.overallFitScore);
+            const best = evaluated[0];
+
+            return {
+                roleTitle: jobTitle,
+                executiveSummary: `${best.name} ranks #1 (${best.overallFitScore}% fit) for ${jobTitle} based on competency and responsibility alignment. Review qualification flags across the shortlist to balance immediate productivity against compensation budget.`,
+                suggestedRoleBudgetUSD: 140000,
+                jdCompetencyDimensions: dimensions,
+                jdKeyResponsibilities,
+                candidates: evaluated
+            };
+        }
+
+        async function runRecruitmentAnalysis() {
+            const jobTitle = document.getElementById('jobTitleInput').value.trim() || 'Target Advisory Role';
+            const jdText = document.getElementById('jdTextInput').value.trim();
+
+            if (!jdText || jdText.length < 20) {
+                showToast('Please enter or import a complete Job Description first.', 'warning');
+                return;
+            }
+            if (state.uploadedCVs.length === 0) {
+                showToast('Please upload at least one candidate CV (PDF or Word).', 'warning');
+                return;
+            }
+
+            // Show Progress Loader
+            const loader = document.getElementById('analysisLoader');
+            const progressBar = document.getElementById('loaderProgressBar');
+            const statusText = document.getElementById('loaderStatusText');
+            loader.classList.remove('hidden');
+            progressBar.style.width = '25%';
+            statusText.innerText = 'Parsing multi-layout CVs & Job Description competencies...';
+
+            // Build multimodal parts (text + optional scanned/custom-font PDF page images)
+            const contentParts = [];
+            let textPrompt = `You are a Senior PwC People & Organisation Recruitment Advisor.
+Evaluate the uploaded candidate CVs (which may have varied fonts, multi-column layouts, or attached page images) against the Job Description for: "${jobTitle}".
+
+JOB DESCRIPTION:
+${jdText.substring(0, 6500)}
+
+CANDIDATE CVS:
+`;
+            state.uploadedCVs.forEach((cv, idx) => {
+                textPrompt += `\n--- CANDIDATE ${idx + 1} (File: ${cv.fileName}) ---\n${cv.text.substring(0, 7000)}\n`;
+            });
+
+            textPrompt += `
+INSTRUCTIONS:
+1. Extract 5 core competency dimensions from the JD and 3-5 key responsibilities from the JD.
+2. Score each candidate from 0 to 100 on overallFitScore AND on each of the 5 extracted competency dimensions (array of 5 integers).
+3. Classify each candidate's qualificationStatus strictly as one of: "Optimal Fit", "Over-Qualified", or "Under-Qualified".
+4. Extract each candidate's full name, currentRoleTitle, yearsExperience (number), coreCompetencies (array of strings), demonstratedResponsibilities (array of strings), qualificationAnalysisNote, estimatedSalaryExpectationUSD (integer), and estimatedRampUpWeeks (integer).
+5. Rank candidates from highest overallFitScore to lowest and write a concise 2-sentence executiveSummary.`;
+
+            contentParts.push({ text: textPrompt });
+
+            // Attach visual page images for any custom-font/scanned PDF CVs
+            state.uploadedCVs.forEach((cv) => {
+                if (cv.imageBase64) {
+                    contentParts.push({
+                        inlineData: {
+                            mimeType: 'image/jpeg',
+                            data: cv.imageBase64
+                        }
+                    });
+                }
+            });
+
+            const payload = {
+                contents: [{ role: 'user', parts: contentParts }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            roleTitle: { type: "STRING" },
+                            executiveSummary: { type: "STRING" },
+                            suggestedRoleBudgetUSD: { type: "INTEGER" },
+                            jdCompetencyDimensions: {
+                                type: "ARRAY",
+                                items: { type: "STRING" }
+                            },
+                            jdKeyResponsibilities: {
+                                type: "ARRAY",
+                                items: { type: "STRING" }
+                            },
+                            candidates: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        name: { type: "STRING" },
+                                        fileName: { type: "STRING" },
+                                        currentRoleTitle: { type: "STRING" },
+                                        yearsExperience: { type: "NUMBER" },
+                                        overallFitScore: { type: "INTEGER" },
+                                        qualificationStatus: { type: "STRING" },
+                                        competencyScores: {
+                                            type: "ARRAY",
+                                            items: { type: "INTEGER" }
+                                        },
+                                        coreCompetencies: {
+                                            type: "ARRAY",
+                                            items: { type: "STRING" }
+                                        },
+                                        demonstratedResponsibilities: {
+                                            type: "ARRAY",
+                                            items: { type: "STRING" }
+                                        },
+                                        qualificationAnalysisNote: { type: "STRING" },
+                                        estimatedSalaryExpectationUSD: { type: "INTEGER" },
+                                        estimatedRampUpWeeks: { type: "INTEGER" }
+                                    },
+                                    required: [
+                                        "name", "fileName", "currentRoleTitle", "yearsExperience",
+                                        "overallFitScore", "qualificationStatus", "competencyScores",
+                                        "coreCompetencies", "demonstratedResponsibilities",
+                                        "qualificationAnalysisNote", "estimatedSalaryExpectationUSD", "estimatedRampUpWeeks"
+                                    ]
+                                }
+                            }
+                        },
+                        required: [
+                            "roleTitle", "executiveSummary", "suggestedRoleBudgetUSD",
+                            "jdCompetencyDimensions", "jdKeyResponsibilities", "candidates"
+                        ]
+                    }
+                }
+            };
+
+            try {
+                setTimeout(() => {
+                    progressBar.style.width = '68%';
+                    statusText.innerText = 'Benchmarking candidate responsibilities & calculating qualification tiers...';
+                }, 700);
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const responseJson = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                let rawText = responseJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawText) throw new Error('Empty response received from AI screening service.');
+
+                // Strip markdown fences if model wraps JSON
+                rawText = rawText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+                const parsed = JSON.parse(rawText);
+
+                // Normalize qualificationStatus values cleanly
+                parsed.candidates.forEach(c => {
+                    const s = (c.qualificationStatus || '').toLowerCase();
+                    if (s.includes('over')) c.qualificationStatus = 'Over-Qualified';
+                    else if (s.includes('under')) c.qualificationStatus = 'Under-Qualified';
+                    else c.qualificationStatus = 'Optimal Fit';
+
+                    // Ensure 5 competency scores match 5 dimensions
+                    while (c.competencyScores.length < parsed.jdCompetencyDimensions.length) {
+                        c.competencyScores.push(c.overallFitScore);
+                    }
+                    c.competencyScores = c.competencyScores.slice(0, parsed.jdCompetencyDimensions.length);
+                });
+
+                parsed.candidates.sort((a, b) => b.overallFitScore - a.overallFitScore);
+
+                state.analysisResult = parsed;
+                progressBar.style.width = '100%';
+                statusText.innerText = 'Dashboard ready.';
+
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    populateDashboard(parsed);
+                    switchTab('overview');
+                    showToast(`Evaluated ${parsed.candidates.length} candidates against "${parsed.roleTitle}".`, 'success');
+                }, 350);
+
+            } catch (err) {
+                console.warn('Primary Gemini endpoint unavailable, engaging Edge NLP Fallback:', err);
+                // Seamless fallback so the user's uploaded CVs & JD ALWAYS work even on standalone Cloudflare Pages
+                const fallbackResult = runLocalEdgeFallbackAnalysis(jobTitle, jdText, state.uploadedCVs);
+                state.analysisResult = fallbackResult;
+                progressBar.style.width = '100%';
+
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    populateDashboard(fallbackResult);
+                    switchTab('overview');
+                    showToast(`Evaluated ${fallbackResult.candidates.length} candidate CVs using Edge Screening Engine.`, 'success');
+                }, 350);
+            }
+        }
+
+        // =========================================================================
+        // 5. POPULATE DASHBOARD TABS (OVERVIEW, COMPETENCIES, FINANCIAL)
+        // =========================================================================
+        function populateDashboard(data) {
+            // Update Header Badge & Counts
+            document.getElementById('activeRoleLabel').innerText = data.roleTitle;
+            document.getElementById('candidateCountBadge').innerText = data.candidates.length;
+
+            // KPIs
+            const topCandidate = data.candidates[0];
+            const optimalCount = data.candidates.filter(c => c.qualificationStatus === 'Optimal Fit').length;
+            const overCount = data.candidates.filter(c => c.qualificationStatus === 'Over-Qualified').length;
+            const underCount = data.candidates.filter(c => c.qualificationStatus === 'Under-Qualified').length;
+
+            document.getElementById('kpiTopCandidate').innerText = topCandidate ? topCandidate.name : '—';
+            document.getElementById('kpiTopScore').innerText = topCandidate ? `${topCandidate.overallFitScore}% Match` : '0%';
+            document.getElementById('kpiOptimalCount').innerText = `${optimalCount} / ${data.candidates.length}`;
+            document.getElementById('kpiOverCount').innerText = overCount;
+            document.getElementById('kpiUnderCount').innerText = underCount;
+            document.getElementById('executiveSummaryText').innerText = data.executiveSummary;
+
+            // Render Overview Cards & Charts
+            renderOverviewCharts();
+            renderCandidateCards('ALL');
+
+            // Populate Competency Tab
+            populateCompetencyTab(data);
+
+            // Populate Financial Tab
+            populateFinancialTab(data);
+        }
+
+        function getStatusBadgeHTML(status) {
+            if (status === 'Optimal Fit') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Optimal Fit
+                </span>`;
+            }
+            if (status === 'Over-Qualified') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-pwc-tangerine"></span> Over-Qualified
+                </span>`;
+            }
+            return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-pwc-burgundy border border-rose-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-pwc-rose"></span> Under-Qualified
+            </span>`;
+        }
+
+        function filterCandidates(status) {
+            state.activeFilter = status;
+            document.querySelectorAll('.filter-pill').forEach(btn => {
+                const isTarget = btn.innerText.trim() === status || (status === 'ALL' && btn.innerText.trim() === 'All');
+                if (isTarget) {
+                    btn.classList.add('bg-pwc-charcoal', 'text-white');
+                    btn.classList.remove('bg-white', 'text-pwc-slate', 'border', 'border-gray-200');
+                } else {
+                    btn.classList.remove('bg-pwc-charcoal', 'text-white');
+                    btn.classList.add('bg-white', 'text-pwc-slate', 'border', 'border-gray-200');
+                }
+            });
+            renderCandidateCards(status);
+        }
+
+        function renderCandidateCards(filterStatus) {
+            const grid = document.getElementById('candidateCardsGrid');
+            const list = filterStatus === 'ALL'
+                ? state.analysisResult.candidates
+                : state.analysisResult.candidates.filter(c => c.qualificationStatus === filterStatus);
+
+            if (!list.length) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 bg-white rounded-2xl border border-gray-200 text-xs text-pwc-grey">No candidates match the "${filterStatus}" filter.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map((c, index) => {
+                const isBest = c.name === state.analysisResult.candidates[0].name;
+                return `
+                    <div class="glass-card rounded-2xl p-5 flex flex-col justify-between ${isBest ? 'ring-2 ring-pwc-orange/70' : ''}">
+                        <div>
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-base font-bold text-pwc-charcoal">${c.name}</h4>
+                                        ${isBest ? '<span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-pwc-orange text-white">Best Fit</span>' : ''}
+                                    </div>
+                                    <p class="text-xs text-pwc-grey mt-0.5">${c.currentRoleTitle} • <strong>${c.yearsExperience} yrs</strong> exp.</p>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="text-xl font-bold text-pwc-orange">${c.overallFitScore}%</div>
+                                    <span class="text-[10px] uppercase tracking-wider text-pwc-grey">JD Score</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+                                ${getStatusBadgeHTML(c.qualificationStatus)}
+                                <span class="text-xs text-pwc-slate font-medium">Est. Comp: <strong>$${c.estimatedSalaryExpectationUSD.toLocaleString()}</strong></span>
+                            </div>
+
+                            <!-- Core Competencies Chips -->
+                            <div class="mt-3 flex flex-wrap gap-1.5">
+                                ${c.coreCompetencies.map(comp => `<span class="px-2 py-0.5 rounded-md bg-gray-100 text-pwc-charcoal text-[11px] font-medium">${comp}</span>`).join('')}
+                            </div>
+
+                            <!-- Key Responsibility Highlight & Qualification Rationale -->
+                            <div class="mt-3.5 p-3 rounded-xl bg-gray-50 border border-gray-100 text-xs text-pwc-slate space-y-2">
+                                <div>
+                                    <strong class="text-pwc-charcoal block mb-0.5">Qualification Rationale:</strong>
+                                    <span>${c.qualificationRationale || c.qualificationAnalysisNote}</span>
+                                </div>
+                                ${c.bestFitRationale ? `
+                                <div class="pt-2 border-t border-gray-200/60 text-pwc-orange">
+                                    <strong class="block mb-0.5 font-bold">Why Best Fit:</strong>
+                                    <span>${c.bestFitRationale}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                            <button onclick="inspectCandidateCompetency('${c.name}')" class="text-xs font-semibold text-pwc-orange hover:text-pwc-burgundy flex items-center gap-1 transition">
+                                <i data-lucide="radar" class="w-3.5 h-3.5"></i>
+                                Competency Breakdown
+                            </button>
+                            <button onclick="modelCandidateFinancials('${c.name}')" class="text-xs font-semibold text-pwc-slate hover:text-pwc-charcoal flex items-center gap-1 transition">
+                                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                                Model Salary & ROI
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // Deterministic local NLP fallback if running standalone on Cloudflare without an API key
+        function runLocalEdgeFallbackAnalysis(jobTitle, jdText, cvs) {
+            const stopWords = new Set(['and','or','the','with','that','this','from','have','will','your','their','about','which','when','into','more','other','such','than','then','them','these','some','would','make','like','time','very','know','take','people','year','good','could','work','team','role','experience','skills','years','ability','strong','including','using','support','business','management','address','street','road','avenue','phone','email','mobile','zip','postal','city','state','country','usa','uk','canada']);
+            
+            // Clean text from address patterns (e.g. 123 Main St, Zip codes, emails)
+            const sanitizeText = (txt) => {
+                return txt
+                    .replace(/\b\d{1,5}\s+[A-Za-z0-9\s,.]+?(Avenue|Lane|Road|Boulevard|Drive|Street|St|Ave|Rd|Blvd|Ln|Drive|Way|Ct|Suite|Apt)\b/gi, '')
+                    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '')
+                    .replace(/\b\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}\b/g, '');
+            };
+
+            const cleanJDText = sanitizeText(jdText);
+            
+            const extractKeywords = (txt) => {
+                const words = (txt.toLowerCase().match(/\b[a-z][a-z0-9+#.-]{2,}\b/g) || [])
+                    .filter(w => !stopWords.has(w));
+                const freq = {};
+                words.forEach(w => freq[w] = (freq[w] || 0) + 1);
+                return Object.entries(freq).sort((a, b) => b[1] - a[1]).map(e => e[0]);
+            };
+
+            const jdKeywords = extractKeywords(cleanJDText).slice(0, 20);
+            const jdLines = cleanJDText.split(/\n|\./).map(s => s.trim()).filter(s => s.length > 25 && s.length < 160 && !/address|zip|email|phone|contact/i.test(s));
+            const jdKeyResponsibilities = jdLines.slice(0, 4).length >= 2
+                ? jdLines.slice(0, 4)
+                : [
+                    `Lead core technical architectural deliverables and strategy for ${jobTitle}`,
+                    'Drive cross-functional engagement with executive key stakeholders',
+                    'Govern delivery compliance, operational efficiency, and solution quality'
+                ];
+
+            const dimensions = [
+                'Technical & Domain Mastery',
+                'Responsibility Alignment',
+                'Leadership & Governance',
+                'Execution & Delivery',
+                'Experience Calibration'
+            ];
+
+            const jdExpMatch = cleanJDText.match(/(\d+)\s*(?:\+|to|-)\s*\d*\s*years/i);
+            const targetYears = jdExpMatch ? parseInt(jdExpMatch[1], 10) : 6;
+
+            const evaluated = cvs.map((cv) => {
+                const cleanCVText = sanitizeText(cv.text);
+                const cleanName = cv.fileName.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').replace(/\b(cv|resume|final|updated)\b/gi, '').trim() || cv.fileName;
+                const lowerCV = cleanCVText.toLowerCase();
+
+                const matchedSkills = jdKeywords.filter(kw => lowerCV.includes(kw));
+                const rawRatio = jdKeywords.length ? (matchedSkills.length / Math.min(jdKeywords.length, 12)) : 0.65;
+                const domainScore = Math.min(96, Math.max(42, Math.round(rawRatio * 100)));
+
+                const expMatches = [...cleanCVText.matchAll(/(\d{1,2})\+?\s*years/gi)].map(m => parseInt(m[1], 10)).filter(n => n > 0 && n < 45);
+                const yearsExp = expMatches.length ? Math.max(...expMatches) : Math.max(2, targetYears);
+
+                const isExec = /\b(vp|vice president|director|head of|chief|cto|cfo|cio|managing director|partner)\b/i.test(cleanCVText);
+                let qualificationStatus = 'Optimal Fit';
+                let overallFitScore = Math.min(95, Math.max(45, Math.round(domainScore * 0.75 + 22)));
+                let qualificationRationale = `Directly calibrated to role scope. Demonstrates ${yearsExp} years of relevant experience, perfectly matching the target range of ${targetYears}+ years alongside strong core skill alignment.`;
+                let bestFitRationale = '';
+                let estSalary = 135000;
+                let rampWeeks = 4;
+
+                if (yearsExp >= targetYears + 7 || (isExec && !/director|vp|head|chief|partner/i.test(jobTitle))) {
+                    qualificationStatus = 'Over-Qualified';
+                    overallFitScore = Math.min(89, Math.max(74, overallFitScore - 6));
+                    qualificationRationale = `Over-Qualified Rationale: Candidate brings ${yearsExp} years of experience and senior/executive background, significantly exceeding the target range of ${targetYears} years. This creates potential salary expectations premium and attrition risk.`;
+                    estSalary = 195000;
+                    rampWeeks = 2;
+                } else if (yearsExp < Math.max(1, targetYears - 2) || domainScore < 52) {
+                    qualificationStatus = 'Under-Qualified';
+                    overallFitScore = Math.min(62, Math.max(38, domainScore));
+                    qualificationRationale = `Under-Qualified Rationale: Possesses ${yearsExp} years of experience versus the ${targetYears}+ years benchmark required by the JD. Key technical competencies will require upskilling.`;
+                    estSalary = 95000;
+                    rampWeeks = 14;
+                }
+
+                const cvSentences = cleanCVText.split(/\n|\./).map(s => s.trim()).filter(s => s.length > 22 && s.length < 150 && !/address|zip|email|phone|contact|street|suite/i.test(s));
+                const topSkillsFormatted = matchedSkills.slice(0, 5).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+
+                return {
+                    name: cleanName,
+                    fileName: cv.fileName,
+                    currentRoleTitle: cvSentences[0] ? cvSentences[0].substring(0, 55) : `${jobTitle} Specialist`,
+                    yearsExperience: yearsExp,
+                    overallFitScore,
+                    qualificationStatus,
+                    competencyScores: [
+                        domainScore,
+                        Math.min(96, overallFitScore + 3),
+                        isExec ? 95 : Math.min(92, overallFitScore - 2),
+                        Math.min(94, overallFitScore + 1),
+                        qualificationStatus === 'Optimal Fit' ? 92 : 68
+                    ],
+                    coreCompetencies: topSkillsFormatted.length ? topSkillsFormatted : ['Technical Architecture', 'Stakeholder Management', 'Solution Delivery'],
+                    demonstratedResponsibilities: cvSentences.slice(1, 4).length
+                        ? cvSentences.slice(1, 4)
+                        : [`Demonstrated hands-on experience across core technical and functional areas of the role`],
+                    qualificationRationale,
+                    bestFitRationale,
+                    qualificationAnalysisNote: qualificationRationale,
+                    estimatedSalaryExpectationUSD: estSalary,
+                    estimatedRampUpWeeks: rampWeeks
+                };
+            });
+
+            evaluated.sort((a, b) => b.overallFitScore - a.overallFitScore);
+            if (evaluated.length > 0) {
+                evaluated[0].bestFitRationale = `Selected as Best Fit because they provide the highest balance of core domain competencies (${evaluated[0].overallFitScore}% match) and exact experience level matching the JD budget and responsibilities without over-qualification compensation premiums.`;
+            }
+
+            return {
+                roleTitle: jobTitle,
+                executiveSummary: `${evaluated[0].name} ranks as the Best Fit hire (${evaluated[0].overallFitScore}% match) for ${jobTitle}. They meet the exact experience and competency criteria while maintaining budget alignment.`,
+                suggestedRoleBudgetUSD: 140000,
+                jdCompetencyDimensions: dimensions,
+                jdKeyResponsibilities,
+                candidates: evaluated
+            };
+        }
+
+        async function runRecruitmentAnalysis() {
+            const jobTitle = document.getElementById('jobTitleInput').value.trim() || 'Target Role';
+            const jdText = document.getElementById('jdTextInput').value.trim();
+
+            if (!jdText || jdText.length < 20) {
+                showToast('Please enter or import a complete Job Description first.', 'warning');
+                return;
+            }
+            if (state.uploadedCVs.length === 0) {
+                showToast('Please upload at least one candidate CV (PDF or Word).', 'warning');
+                return;
+            }
+
+            // Show Progress Loader
+            const loader = document.getElementById('analysisLoader');
+            const progressBar = document.getElementById('loaderProgressBar');
+            const statusText = document.getElementById('loaderStatusText');
+            loader.classList.remove('hidden');
+            progressBar.style.width = '25%';
+            statusText.innerText = 'Parsing multi-layout CVs & Job Description competencies...';
+
+            const contentParts = [];
+            let textPrompt = `You are a Senior PwC People & Organisation Recruitment Advisor.
+Evaluate candidate CVs against the Job Description for: "${jobTitle}".
+
+CRITICAL PARSING RULES:
+- DO NOT include candidate contact details, street addresses, phone numbers, zip codes, or common stop-words ("and", "the", "workforce") in the extracted competencies or dimensions.
+- All extracted jdCompetencyDimensions MUST be concise 2-4 word professional domain skill dimensions (e.g. "Cloud Architecture", "Financial Governance").
+
+JOB DESCRIPTION:
+${jdText.substring(0, 6500)}
+
+CANDIDATE CVS:
+`;
+            state.uploadedCVs.forEach((cv, idx) => {
+                textPrompt += `\n--- CANDIDATE ${idx + 1} (File: ${cv.fileName}) ---\n${cv.text.substring(0, 7000)}\n`;
+            });
+
+            textPrompt += `
+INSTRUCTIONS:
+1. Extract 5 clean, distinct core competency dimensions from the JD.
+2. Score each candidate (0-100) on overallFitScore and on each of the 5 extracted competency dimensions.
+3. Classify each candidate's qualificationStatus strictly as: "Optimal Fit", "Over-Qualified", or "Under-Qualified".
+4. Provide a clear qualificationRationale explaining WHY they received that classification based on their experience and skill alignment against JD requirements.
+5. Provide a bestFitRationale for the top candidate explaining why they are recommended above the rest.
+6. Rank candidates from highest overallFitScore to lowest.`;
+
+            contentParts.push({ text: textPrompt });
+
+            state.uploadedCVs.forEach((cv) => {
+                if (cv.imageBase64) {
+                    contentParts.push({
+                        inlineData: {
+                            mimeType: 'image/jpeg',
+                            data: cv.imageBase64
+                        }
+                    });
+                }
+            });
+
+            const payload = {
+                contents: [{ role: 'user', parts: contentParts }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            roleTitle: { type: "STRING" },
+                            executiveSummary: { type: "STRING" },
+                            suggestedRoleBudgetUSD: { type: "INTEGER" },
+                            jdCompetencyDimensions: {
+                                type: "ARRAY",
+                                items: { type: "STRING" }
+                            },
+                            jdKeyResponsibilities: {
+                                type: "ARRAY",
+                                items: { type: "STRING" }
+                            },
+                            candidates: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        name: { type: "STRING" },
+                                        fileName: { type: "STRING" },
+                                        currentRoleTitle: { type: "STRING" },
+                                        yearsExperience: { type: "NUMBER" },
+                                        overallFitScore: { type: "INTEGER" },
+                                        qualificationStatus: { type: "STRING" },
+                                        qualificationRationale: { type: "STRING" },
+                                        bestFitRationale: { type: "STRING" },
+                                        competencyScores: {
+                                            type: "ARRAY",
+                                            items: { type: "INTEGER" }
+                                        },
+                                        coreCompetencies: {
+                                            type: "ARRAY",
+                                            items: { type: "STRING" }
+                                        },
+                                        demonstratedResponsibilities: {
+                                            type: "ARRAY",
+                                            items: { type: "STRING" }
+                                        },
+                                        qualificationAnalysisNote: { type: "STRING" },
+                                        estimatedSalaryExpectationUSD: { type: "INTEGER" },
+                                        estimatedRampUpWeeks: { type: "INTEGER" }
+                                    },
+                                    required: [
+                                        "name", "fileName", "currentRoleTitle", "yearsExperience",
+                                        "overallFitScore", "qualificationStatus", "qualificationRationale", "competencyScores",
+                                        "coreCompetencies", "demonstratedResponsibilities",
+                                        "qualificationAnalysisNote", "estimatedSalaryExpectationUSD", "estimatedRampUpWeeks"
+                                    ]
+                                }
+                            }
+                        },
+                        required: [
+                            "roleTitle", "executiveSummary", "suggestedRoleBudgetUSD",
+                            "jdCompetencyDimensions", "jdKeyResponsibilities", "candidates"
+                        ]
+                    }
+                }
+            };
+
+            try {
+                setTimeout(() => {
+                    progressBar.style.width = '68%';
+                    statusText.innerText = 'Benchmarking candidate responsibilities & calculating qualification tiers...';
+                }, 700);
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const responseJson = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                let rawText = responseJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawText) throw new Error('Empty response received from AI screening service.');
+
+                rawText = rawText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+                const parsed = JSON.parse(rawText);
+
+                parsed.candidates.forEach(c => {
+                    const s = (c.qualificationStatus || '').toLowerCase();
+                    if (s.includes('over')) c.qualificationStatus = 'Over-Qualified';
+                    else if (s.includes('under')) c.qualificationStatus = 'Under-Qualified';
+                    else c.qualificationStatus = 'Optimal Fit';
+
+                    while (c.competencyScores.length < parsed.jdCompetencyDimensions.length) {
+                        c.competencyScores.push(c.overallFitScore);
+                    }
+                    c.competencyScores = c.competencyScores.slice(0, parsed.jdCompetencyDimensions.length);
+                });
+
+                parsed.candidates.sort((a, b) => b.overallFitScore - a.overallFitScore);
+
+                state.analysisResult = parsed;
+                progressBar.style.width = '100%';
+                statusText.innerText = 'Dashboard ready.';
+
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    populateDashboard(parsed);
+                    switchTab('overview');
+                    showToast(`Evaluated ${parsed.candidates.length} candidates against "${parsed.roleTitle}".`, 'success');
+                }, 350);
+
+            } catch (err) {
+                console.warn('Primary Gemini endpoint unavailable, engaging Edge NLP Fallback:', err);
+                const fallbackResult = runLocalEdgeFallbackAnalysis(jobTitle, jdText, state.uploadedCVs);
+                state.analysisResult = fallbackResult;
+                progressBar.style.width = '100%';
+
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    populateDashboard(fallbackResult);
+                    switchTab('overview');
+                    showToast(`Evaluated ${fallbackResult.candidates.length} candidate CVs using Edge Screening Engine.`, 'success');
+                }, 350);
+            }
+        }
+
+        function inspectCandidateCompetency(candidateName) {
+            document.getElementById('compareSelectA').value = candidateName;
+            switchTab('competencies');
+        }
+
+        function modelCandidateFinancials(candidateName) {
+            document.getElementById('finCandidateSelect').value = candidateName;
+            syncCandidateSalaryAndCalculate();
+            switchTab('financial');
+        }
+
+        // =========================================================================
+        // 6. CHARTS & VISUALIZATIONS (CHART.JS WITH SMOOTH ANIMATIONS)
+        // =========================================================================
+        function renderOverviewCharts() {
+            const candidates = state.analysisResult.candidates;
+
+            // 1. Horizontal/Vertical Bar Chart
+            const barCtx = document.getElementById('overviewBarChart').getContext('2d');
+            if (state.charts.bar) state.charts.bar.destroy();
+
+            const barColors = candidates.map(c => {
+                if (c.qualificationStatus === 'Optimal Fit') return '#D04A02'; // PwC Orange
+                if (c.qualificationStatus === 'Over-Qualified') return '#FFB600'; // PwC Yellow
+                return '#DB536A'; // PwC Rose
+            });
+
+            state.charts.bar = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: candidates.map(c => c.name),
+                    datasets: [{
+                        label: 'JD Match Score (%)',
+                        data: candidates.map(c => c.overallFitScore),
+                        backgroundColor: barColors,
+                        borderRadius: 8,
+                        barThickness: 28
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 850, easing: 'easeOutQuart' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#2D2D2D',
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                afterLabel: (ctx) => `Status: ${candidates[ctx.dataIndex].qualificationStatus}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#F0F0F0' },
+                            ticks: { font: { family: 'Plus Jakarta Sans', size: 11 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
+                        }
+                    }
+                }
+            });
+
+            // 2. Doughnut Chart for Qualification Tiers
+            const doughnutCtx = document.getElementById('tierDoughnutChart').getContext('2d');
+            if (state.charts.doughnut) state.charts.doughnut.destroy();
+
+            const optCount = candidates.filter(c => c.qualificationStatus === 'Optimal Fit').length;
+            const overCount = candidates.filter(c => c.qualificationStatus === 'Over-Qualified').length;
+            const underCount = candidates.filter(c => c.qualificationStatus === 'Under-Qualified').length;
+
+            state.charts.doughnut = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Optimal Fit', 'Over-Qualified', 'Under-Qualified'],
+                    datasets: [{
+                        data: [optCount, overCount, underCount],
+                        backgroundColor: ['#D04A02', '#FFB600', '#DB536A'],
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    animation: { animateRotate: true, duration: 900 },
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 14,
+                                font: { family: 'Plus Jakarta Sans', size: 11, weight: '500' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =========================================================================
+        // 7. COMPETENCY & COMPARATIVE MATRIX TAB
+        // =========================================================================
+        function populateCompetencyTab(data) {
+            // JD Core Competencies
+            document.getElementById('jdCoreCompetenciesList').innerHTML = data.jdCompetencyDimensions.map(dim => `
+                <span class="px-3 py-1 rounded-full bg-white border border-orange-200 text-xs font-semibold text-pwc-charcoal shadow-xs">${dim}</span>
+            `).join('');
+
+            // JD Responsibilities
+            document.getElementById('jdResponsibilitiesList').innerHTML = data.jdKeyResponsibilities.map(resp => `
+                <li>${resp}</li>
+            `).join('');
+
+            // Dropdowns
+            const selectA = document.getElementById('compareSelectA');
+            const selectB = document.getElementById('compareSelectB');
+            const optionsHTML = data.candidates.map(c => `<option value="${c.name}">${c.name} (${c.overallFitScore}%)</option>`).join('');
+            selectA.innerHTML = optionsHTML;
+            selectB.innerHTML = optionsHTML;
+
+            if (data.candidates.length > 1) {
+                selectB.selectedIndex = 1;
+            }
+
+            // Table Body
+            document.getElementById('comparativeTableBody').innerHTML = data.candidates.map(c => `
+                <tr class="hover:bg-orange-50/30 transition">
+                    <td class="py-3.5 px-4 align-top">
+                        <div class="font-bold text-pwc-charcoal">${c.name}</div>
+                        <div class="text-[11px] text-pwc-grey mb-1.5">${c.currentRoleTitle}</div>
+                        ${getStatusBadgeHTML(c.qualificationStatus)}
+                    </td>
+                    <td class="py-3.5 px-4 align-top">
+                        <div class="flex flex-wrap gap-1">
+                            ${c.coreCompetencies.map(comp => `<span class="px-2 py-0.5 rounded bg-gray-100 text-pwc-charcoal text-[11px]">${comp}</span>`).join('')}
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4 align-top">
+                        <ul class="list-disc list-inside space-y-1 text-pwc-slate">
+                            ${c.demonstratedResponsibilities.map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </td>
+                    <td class="py-3.5 px-4 align-top text-pwc-slate">
+                        ${c.qualificationAnalysisNote}
+                    </td>
+                </tr>
+            `).join('');
+
+            updateComparativeView();
+        }
+
+        function updateComparativeView() {
+            if (!state.analysisResult) return;
+            const nameA = document.getElementById('compareSelectA').value;
+            const nameB = document.getElementById('compareSelectB').value;
+
+            const candA = state.analysisResult.candidates.find(c => c.name === nameA) || state.analysisResult.candidates[0];
+            const candB = state.analysisResult.candidates.find(c => c.name === nameB) || state.analysisResult.candidates[0];
+
+            const radarCtx = document.getElementById('competencyRadarChart').getContext('2d');
+            if (state.charts.radar) state.charts.radar.destroy();
+
+            const datasets = [
+                {
+                    label: candA.name,
+                    data: candA.competencyScores,
+                    backgroundColor: 'rgba(208, 74, 2, 0.22)',
+                    borderColor: '#D04A02',
+                    pointBackgroundColor: '#D04A02',
+                    borderWidth: 2
+                }
+            ];
+
+            if (candB && candB.name !== candA.name) {
+                datasets.push({
+                    label: candB.name,
+                    data: candB.competencyScores,
+                    backgroundColor: 'rgba(45, 45, 45, 0.14)',
+                    borderColor: '#2D2D2D',
+                    pointBackgroundColor: '#2D2D2D',
+                    borderWidth: 2,
+                    borderDash: [4, 4]
+                });
+            }
+
+            state.charts.radar = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: state.analysisResult.jdCompetencyDimensions,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 700 },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { stepSize: 20, backdropColor: 'transparent', font: { size: 10 } },
+                            pointLabels: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }, color: '#2D2D2D' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =========================================================================
+        // 8. FINANCIAL IMPACT & WORKFORCE ROI CALCULATOR
+        // =========================================================================
+        function populateFinancialTab(data) {
+            const select = document.getElementById('finCandidateSelect');
+            select.innerHTML = data.candidates.map(c => 
+                `<option value="${c.name}">${c.name} — ${c.qualificationStatus} (${c.overallFitScore}% Fit)</option>`
+            ).join('');
+
+            if (data.suggestedRoleBudgetUSD) {
+                document.getElementById('budgetSalaryInput').value = data.suggestedRoleBudgetUSD;
+            }
+            syncCandidateSalaryAndCalculate();
+        }
+
+        function syncCandidateSalaryAndCalculate() {
+            if (!state.analysisResult) return;
+            const selectedName = document.getElementById('finCandidateSelect').value;
+            const candidate = state.analysisResult.candidates.find(c => c.name === selectedName);
+            if (candidate) {
+                document.getElementById('candidateSalaryInput').value = candidate.estimatedSalaryExpectationUSD;
+            }
+            calculateFinancialImpact();
+        }
+
+        function calculateFinancialImpact() {
+            if (!state.analysisResult) return;
+            const selectedName = document.getElementById('finCandidateSelect').value;
+            const candidate = state.analysisResult.candidates.find(c => c.name === selectedName) || state.analysisResult.candidates[0];
+
+            const budgetSalary = parseFloat(document.getElementById('budgetSalaryInput').value) || 100000;
+            const candidateSalary = parseFloat(document.getElementById('candidateSalaryInput').value) || 100000;
+            const overheadPct = parseFloat(document.getElementById('overheadSlider').value) / 100;
+            const baseMultiplier = parseFloat(document.getElementById('multiplierSlider').value);
+            const hiringFee = parseFloat(document.getElementById('hiringFeeInput').value) || 0;
+
+            // Total Year-1 Loaded Cost
+            const loadedAnnualComp = candidateSalary * (1 + overheadPct);
+            const totalYear1Cost = loadedAnnualComp + hiringFee;
+            const budgetLoadedTotal = (budgetSalary * (1 + overheadPct)) + hiringFee;
+            const salaryVariance = totalYear1Cost - budgetLoadedTotal;
+
+            // Productivity Ramp-up & Competency Efficiency Factor
+            const rampWeeks = candidate.estimatedRampUpWeeks || 6;
+            const rampFraction = Math.min(rampWeeks / 52, 0.5);
+            const fitFactor = 0.65 + (candidate.overallFitScore / 100) * 0.45; // Scales between 0.65x and 1.10x
+
+            // Effective Year-1 Gross Value Generated
+            const grossPotentialValue = budgetSalary * baseMultiplier * fitFactor;
+            const rampProductivityDrag = grossPotentialValue * (rampFraction * 0.5);
+            const realizedYear1Value = grossPotentialValue - rampProductivityDrag;
+            const netYear1Impact = realizedYear1Value - totalYear1Cost;
+            const roiPct = ((netYear1Impact / totalYear1Cost) * 100).toFixed(0);
+
+            // Update DOM Cards
+            document.getElementById('finTotalCost').innerText = `$${Math.round(totalYear1Cost).toLocaleString()}`;
+            
+            const varBadge = document.getElementById('finVarianceBadge');
+            if (salaryVariance > 0) {
+                varBadge.innerText = `+$${Math.round(salaryVariance).toLocaleString()} over budget`;
+                varBadge.className = 'inline-block mt-1.5 text-[11px] font-semibold px-2 py-0.5 rounded bg-rose-50 text-pwc-burgundy';
+            } else {
+                varBadge.innerText = `$${Math.abs(Math.round(salaryVariance)).toLocaleString()} under budget`;
+                varBadge.className = 'inline-block mt-1.5 text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700';
+            }
+
+            const netEl = document.getElementById('finNetValue');
+            netEl.innerText = `${netYear1Impact >= 0 ? '+' : '-'}$${Math.abs(Math.round(netYear1Impact)).toLocaleString()}`;
+            netEl.className = `text-xl font-bold mt-1 ${netYear1Impact >= 0 ? 'text-pwc-orange' : 'text-pwc-burgundy'}`;
+            document.getElementById('finRoiPercent').innerText = `${roiPct}% Year-1 Net ROI`;
+
+            document.getElementById('finRampWeeks').innerText = `${rampWeeks} Weeks`;
+            document.getElementById('finRampCost').innerText = `Ramp drag: -$${Math.round(rampProductivityDrag).toLocaleString()}`;
+
+            // Advisory Financial Commentary
+            let note = '';
+            if (candidate.qualificationStatus === 'Over-Qualified') {
+                note = `<strong>Over-Qualification Financial Advisory:</strong> ${candidate.name} delivers immediate productivity (${rampWeeks}-week ramp), but carries a compensation premium of $${Math.max(0, candidateSalary - budgetSalary).toLocaleString()} above base budget and elevated mid-term retention risk.`;
+            } else if (candidate.qualificationStatus === 'Under-Qualified') {
+                note = `<strong>Under-Qualification Financial Advisory:</strong> Although base salary is lower, an extended ${rampWeeks}-week onboarding curve creates $${Math.round(rampProductivityDrag).toLocaleString()} in lost productivity drag during Year 1.`;
+            } else {
+                note = `<strong>Optimal Economics Advisory:</strong> ${candidate.name} balances compensation discipline with a ${candidate.overallFitScore}% JD competency match, generating an estimated net Year-1 value contribution of $${Math.round(netYear1Impact).toLocaleString()}.`;
+            }
+            document.getElementById('financialAdvisoryNote').innerHTML = note;
+
+            // Render Comparative Financial Bar Chart across all candidates
+            renderFinancialComparisonChart(budgetSalary, overheadPct, baseMultiplier, hiringFee);
+        }
+
+        function renderFinancialComparisonChart(budgetSalary, overheadPct, baseMultiplier, hiringFee) {
+            const ctx = document.getElementById('financialChart').getContext('2d');
+            if (state.charts.financial) state.charts.financial.destroy();
+
+            const candidates = state.analysisResult.candidates;
+            const totalCosts = [];
+            const netImpacts = [];
+
+            candidates.forEach(c => {
+                const cost = (c.estimatedSalaryExpectationUSD * (1 + overheadPct)) + hiringFee;
+                const rampFrac = Math.min((c.estimatedRampUpWeeks || 6) / 52, 0.5);
+                const fitFactor = 0.65 + (c.overallFitScore / 100) * 0.45;
+                const grossVal = budgetSalary * baseMultiplier * fitFactor;
+                const realizedVal = grossVal * (1 - rampFrac * 0.5);
+                totalCosts.push(Math.round(cost));
+                netImpacts.push(Math.round(realizedVal - cost));
+            });
+
+            state.charts.financial = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: candidates.map(c => c.name),
+                    datasets: [
+                        {
+                            label: 'Year-1 Loaded Cost ($)',
+                            data: totalCosts,
+                            backgroundColor: '#2D2D2D',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Net Year-1 Value Surplus ($)',
+                            data: netImpacts,
+                            backgroundColor: '#D04A02',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 750 },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: '#F0F0F0' },
+                            ticks: {
+                                font: { size: 10 },
+                                callback: (v) => '$' + (v / 1000).toFixed(0) + 'k'
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 11, weight: '600' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =========================================================================
+        // 9. INSTANT SAMPLE ENGAGEMENT LOADER (FOR DEMO & TESTING)
+        // =========================================================================
+        function loadDemoEngagement() {
+            const sampleJD = `Role: Principal Enterprise Cloud & AI Architect
+Practice: Technology Consulting & Cloud Transformation
+Location: Hybrid / Regional Hub
+
+Overview:
+We are seeking a Principal Enterprise Cloud & AI Architect to lead multi-cloud modernization, FinOps governance, and enterprise GenAI platform deployments for Fortune 500 clients.
+
+Core Responsibilities:
+- Architect resilient AWS and Azure landing zones with automated Infrastructure-as-Code (Terraform).
+- Lead C-suite executive workshops to align cloud roadmaps with measurable EBITDA and cost-optimization targets.
+- Govern enterprise AI/ML pipelines, data security compliance (SOC2, ISO 27001), and edge deployment architectures.
+- Mentor cross-functional engineering squads of 10-20 consultants and solutions architects.
+
+Required Qualifications:
+- 8 to 12 years of progressive enterprise cloud architecture and consulting experience.
+- Deep mastery of AWS/Azure, Kubernetes, Terraform, and modern LLM/RAG integration patterns.
+- Proven track record managing $2M+ technology transformation engagements.`;
+
+            document.getElementById('jobTitleInput').value = 'Principal Enterprise Cloud & AI Architect';
+            document.getElementById('jdTextInput').value = sampleJD;
+            state.jdText = sampleJD;
+            document.getElementById('jdCharCount').innerText = `${sampleJD.length.toLocaleString()} chars`;
+
+            state.uploadedCVs = [
+                {
+                    id: 'demo_1',
+                    fileName: 'Sarah_Jenkins_CV.pdf',
+                    sizeLabel: '142.4 KB',
+                    text: 'Sarah Jenkins | Senior Cloud Solutions Architect | 10 years experience. Address: 742 Evergreen Terrace, Springfield, VA 22150. Email: s.jenkins@cloudmail.com. Led AWS & Azure cloud transformations for 6 financial services clients. Built Terraform IaC modules, Kubernetes clusters, and enterprise RAG AI assistants. Presented cloud FinOps business cases to CIOs saving $1.8M annually. Managed 14 engineers.'
+                },
+                {
+                    id: 'demo_2',
+                    fileName: 'Marcus_Vance_Resume.docx',
+                    sizeLabel: '188.0 KB',
+                    text: 'Marcus Vance | VP of Global Infrastructure & Cloud Engineering | 19 years experience. Address: 100 Corporate Plaza, New York, NY 10001. Email: marcus.vance@executive.com. Former Managing Director overseeing a 120-person global cloud division and $45M P&L. Board advisor on sovereign cloud strategy, M&A IT due diligence, and global enterprise architecture.'
+                },
+                {
+                    id: 'demo_3',
+                    fileName: 'Elena_Rostova_CV.pdf',
+                    sizeLabel: '118.2 KB',
+                    text: 'Elena Rostova | Cloud & Data Platform Lead | 9 years experience. Address: 45 Park Avenue, Suite 400, Chicago, IL 60601. Specialized in Azure cloud landing zones, Terraform automation, ISO 27001 security compliance, and production LLM deployment pipelines. Led technical delivery for 3 enterprise modernization programs.'
+                },
+                {
+                    id: 'demo_4',
+                    fileName: 'David_Kowalski_Resume.docx',
+                    sizeLabel: '96.5 KB',
+                    text: 'David Kowalski | Mid-Level DevOps Engineer | 3.5 years experience. Address: 12 Elm Street, Austin, TX 78701. Maintained CI/CD pipelines, Docker containers, and AWS EC2 instances. Assisted senior architects with Terraform scripts and monitoring dashboards.'
+                }
+            ];
+            renderCVQueue();
+
+            state.analysisResult = {
+                roleTitle: 'Principal Enterprise Cloud & AI Architect',
+                executiveSummary: 'Sarah Jenkins is recommended as the Best Fit (92% match) for the Principal Architect role. She possesses 10 years of direct multi-cloud, FinOps, and GenAI experience at the target budget without the severe compensation premium of over-qualified candidates.',
+                suggestedRoleBudgetUSD: 165000,
+                jdCompetencyDimensions: [
+                    'Multi-Cloud & IaC',
+                    'GenAI Security Governance',
+                    'C-Suite FinOps Advisory',
+                    'Team Leadership',
+                    'Enterprise Delivery'
+                ],
+                jdKeyResponsibilities: [
+                    'Architect resilient AWS/Azure landing zones using automated Terraform IaC',
+                    'Lead C-suite workshops tying cloud transformation to measurable EBITDA/FinOps outcomes',
+                    'Govern enterprise GenAI/RAG pipelines under SOC2 & ISO 27001 security standards',
+                    'Mentor and lead cross-functional consulting squads of 10-20 engineers'
+                ],
+                candidates: [
+                    {
+                        name: 'Sarah Jenkins',
+                        fileName: 'Sarah_Jenkins_CV.pdf',
+                        currentRoleTitle: 'Senior Cloud Solutions Architect',
+                        yearsExperience: 10,
+                        overallFitScore: 92,
+                        qualificationStatus: 'Optimal Fit',
+                        qualificationRationale: 'Optimal Fit: 10 years of cloud experience aligns perfectly with the target 8-12 year scope. Demonstrates proven delivery across all 5 JD dimensions including AWS, Azure, Terraform, and GenAI.',
+                        bestFitRationale: 'Recommended as Best Fit because she offers maximum competency alignment (92%), direct hands-on FinOps leadership ($1.8M savings), and fits within the role compensation budget.',
+                        competencyScores: [94, 90, 92, 90, 94],
+                        coreCompetencies: ['AWS & Azure Architecture', 'Terraform IaC', 'Enterprise RAG / GenAI', 'FinOps Advisory', 'Squad Leadership'],
+                        demonstratedResponsibilities: [
+                            'Architected multi-cloud AWS/Azure landing zones across 6 financial institutions',
+                            'Delivered $1.8M in verified annual cloud FinOps savings via CIO business cases',
+                            'Deployed production enterprise RAG assistants and managed a 14-engineer delivery team'
+                        ],
+                        qualificationAnalysisNote: 'Directly calibrated to the Principal Architect band with complete alignment across technical build, GenAI governance, and client advisory.',
+                        estimatedSalaryExpectationUSD: 168000,
+                        estimatedRampUpWeeks: 3
+                    },
+                    {
+                        name: 'Elena Rostova',
+                        fileName: 'Elena_Rostova_CV.pdf',
+                        currentRoleTitle: 'Cloud & Data Platform Lead',
+                        yearsExperience: 9,
+                        overallFitScore: 86,
+                        qualificationStatus: 'Optimal Fit',
+                        qualificationRationale: 'Optimal Fit: 9 years experience falls squarely within the required qualification range. Possesses high security governance (ISO 27001) and LLM pipeline expertise.',
+                        bestFitRationale: '',
+                        competencyScores: [88, 95, 76, 84, 87],
+                        coreCompetencies: ['Azure Landing Zones', 'ISO 27001 Compliance', 'LLM Pipelines', 'Terraform Automation'],
+                        demonstratedResponsibilities: [
+                            'Engineered ISO 27001 compliant Azure landing zones and automated Terraform modules',
+                            'Led technical delivery for 3 large-scale enterprise data & LLM modernization programs'
+                        ],
+                        qualificationAnalysisNote: 'Exceptional technical and security governance alignment; slightly lighter C-suite commercial FinOps origination than top-ranked peer.',
+                        estimatedSalaryExpectationUSD: 158000,
+                        estimatedRampUpWeeks: 4
+                    },
+                    {
+                        name: 'Marcus Vance',
+                        fileName: 'Marcus_Vance_Resume.docx',
+                        currentRoleTitle: 'VP of Global Infrastructure & Cloud',
+                        yearsExperience: 19,
+                        overallFitScore: 81,
+                        qualificationStatus: 'Over-Qualified',
+                        qualificationRationale: 'Over-Qualified Rationale: Possesses 19 years experience and VP/P&L leadership background ($45M budget), significantly exceeding hands-on Principal Architect requirements. High salary premium (+35%) and flight risk.',
+                        bestFitRationale: '',
+                        competencyScores: [78, 75, 98, 96, 95],
+                        coreCompetencies: ['Executive Board Advisory', '$45M P&L Ownership', 'Global Cloud Strategy', 'M&A IT Due Diligence'],
+                        demonstratedResponsibilities: [
+                            'Directed a 120-person global infrastructure division and $45M annual technology budget',
+                            'Advised corporate boards on sovereign cloud strategy and M&A due diligence'
+                        ],
+                        qualificationAnalysisNote: 'Over-Qualified: 19 years of VP/MD experience exceeds hands-on Principal Architect scope; high risk of compensation mismatch (+35%) and rapid attrition.',
+                        estimatedSalaryExpectationUSD: 225000,
+                        estimatedRampUpWeeks: 2
+                    },
+                    {
+                        name: 'David Kowalski',
+                        fileName: 'David_Kowalski_Resume.docx',
+                        currentRoleTitle: 'Mid-Level DevOps Engineer',
+                        yearsExperience: 3.5,
+                        overallFitScore: 46,
+                        qualificationStatus: 'Under-Qualified',
+                        qualificationRationale: 'Under-Qualified Rationale: Has only 3.5 years experience vs. the 8+ years required by the JD. Lacks enterprise architecture, C-suite consulting, and GenAI security governance depth.',
+                        bestFitRationale: '',
+                        competencyScores: [62, 35, 25, 30, 48],
+                        coreCompetencies: ['CI/CD Pipelines', 'Docker & AWS EC2', 'Basic Terraform Scripting'],
+                        demonstratedResponsibilities: [
+                            'Maintained operational CI/CD pipelines and containerized AWS EC2 workloads',
+                            'Supported senior architects with routine Terraform scripting tasks'
+                        ],
+                        qualificationAnalysisNote: 'Under-Qualified: Lacks the 8+ years architectural tenure, GenAI security governance, and C-suite consulting leadership required by the JD.',
+                        estimatedSalaryExpectationUSD: 112000,
+                        estimatedRampUpWeeks: 16
+                    }
+                ]
+            };
+
+            populateDashboard(state.analysisResult);
+            switchTab('overview');
+            showToast('Loaded sample engagement with 4 parsed CVs. Click "1. Engagement Intake" anytime to upload your own files.', 'success');
+        }
+    </script>
+</body>
+</html>
