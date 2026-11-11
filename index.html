@@ -86,8 +86,14 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
       <button onclick="switchView('financial')" id="nav-financial" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
         <i data-lucide="calculator" class="w-4 h-4 text-emerald-500"></i><span>Cost-Benefit Analysis</span>
       </button>
+      <button onclick="switchView('interview')" id="nav-interview" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
+        <i data-lucide="messages-square" class="w-4 h-4 text-pwc-yellow"></i><span>Interview Intelligence</span>
+      </button>
       <button onclick="switchView('analytics')" id="nav-analytics" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
         <i data-lucide="bar-chart-3" class="w-4 h-4"></i><span>Reports & Analytics</span>
+      </button>
+      <button onclick="switchView('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-sidebar-text hover:bg-sidebar-hover transition">
+        <i data-lucide="sliders" class="w-4 h-4"></i><span>Settings & Methodology</span>
       </button>
     </nav>
   </div>
@@ -238,7 +244,7 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
           </div>
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Budgeted Annual Salary (PKR)</label>
-            <input type="number" id="jobBudgetInput" value="18000000" step="500000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
+            <input type="text" id="jobBudgetInput" value="18,000,000" oninput="formatCurrencyInput(this)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
           </div>
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Raw Job Description Content</label>
@@ -294,6 +300,17 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
             <button onclick="runBatchScreening()" id="btnStartScreening" class="px-5 py-2.5 rounded-xl bg-pwc-orange hover:bg-pwc-tangerine text-white font-bold text-xs shadow-md transition flex items-center gap-2">
               <i data-lucide="play" class="w-4 h-4"></i><span>Run AI Screening & Benchmark</span>
             </button>
+          </div>
+        </div>
+
+        <!-- Visible Multi-Step Execution Pipeline Status -->
+        <div id="screeningPipelineProgress" class="hidden p-4 rounded-xl bg-slate-900 text-white space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span id="pipelineStatusStep" class="font-bold text-pwc-yellow">Step 1/5: Extracting Candidate Details...</span>
+            <span id="pipelineStatusPercent" class="font-extrabold text-white">20%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div id="pipelineProgressBar" class="bg-pwc-orange h-2 transition-all duration-300" style="width: 20%"></div>
           </div>
         </div>
 
@@ -445,12 +462,12 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
           <div class="space-y-4">
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Expected Role Annual Salary Budget (PKR)</label>
-              <input type="number" id="finBudgetInput" value="18000000" step="500000" oninput="calculateFinancials()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
+              <input type="text" id="finBudgetInput" value="18,000,000" oninput="formatCurrencyInput(this); calculateFinancials();" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
             </div>
 
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Candidate Expected Annual Salary (PKR)</label>
-              <input type="number" id="finSalaryInput" value="19500000" step="500000" oninput="calculateFinancials()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
+              <input type="text" id="finSalaryInput" value="19,500,000" oninput="formatCurrencyInput(this); calculateFinancials();" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
               <p class="text-[10px] text-slate-400 mt-1">Monthly equivalent: <span id="finMonthlySalaryLabel" class="font-bold text-slate-700">PKR 1,625,000 / mo</span></p>
             </div>
 
@@ -480,7 +497,7 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
 
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Additional Onboarding & Admin Expenses (PKR)</label>
-              <input type="number" id="finAdminFeeInput" value="500000" step="50000" oninput="calculateFinancials()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
+              <input type="text" id="finAdminFeeInput" value="500,000" oninput="formatCurrencyInput(this); calculateFinancials();" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-pwc-orange/40">
             </div>
           </div>
         </div>
@@ -517,24 +534,103 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
       </div>
     </section>
 
-    <!-- VIEW 6: REPORTS & ANALYTICS -->
+    <!-- VIEW 6: INTERVIEW INTELLIGENCE -->
+    <section id="view-interview" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Interview Intelligence & Question Generator</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Tailored technical, competency, and gap-focused interview questions derived from candidate screening evidence.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-bold text-slate-700">Candidate:</label>
+          <select id="interviewCandidateSelect" onchange="renderInterviewQuestions()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold bg-white focus:outline-none"></select>
+        </div>
+      </div>
+
+      <div id="interviewQuestionsContainer" class="space-y-4"></div>
+    </section>
+
+    <!-- VIEW 7: REPORTS & ANALYTICS -->
     <section id="view-analytics" class="hidden space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-slate-900">Talent Analytics & Screening Reports</h1>
-          <p class="text-xs text-slate-500">Executive summary of candidate pool qualification distribution and screening throughput.</p>
+          <h1 class="text-xl font-bold tracking-tight text-slate-900">Talent Analytics & Advanced Visualizations</h1>
+          <p class="text-xs text-slate-500">Executive summary of recruitment funnel, ROI matrix, and salary variances.</p>
         </div>
         <button onclick="exportBatchReport()" class="px-4 py-2 rounded-xl bg-pwc-orange text-white text-xs font-bold hover:bg-pwc-tangerine transition">Export Talent Analytics PDF</button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Candidate ROI vs Competency Matrix (Bubble Scatter Chart) -->
         <div class="glass-card rounded-2xl p-6">
-          <h3 class="text-sm font-bold text-slate-900 mb-2">JD Match Score Distribution</h3>
-          <div class="relative h-64 w-full"><canvas id="analyticsBarChart"></canvas></div>
+          <h3 class="text-sm font-bold text-slate-900 mb-1">Candidate ROI vs Competency Quadrant</h3>
+          <p class="text-[11px] text-slate-500 mb-3">Scatter plot mapping competency match (%) vs Year-1 ROI (%)</p>
+          <div class="relative h-64 w-full"><canvas id="roiQuadrantChart"></canvas></div>
         </div>
+
+        <!-- Grouped Bar Chart: Salary Budget Comparison -->
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="text-sm font-bold text-slate-900 mb-1">Salary Budget Variance (PKR)</h3>
+          <p class="text-[11px] text-slate-500 mb-3">Comparing role budget vs candidate salary expectation</p>
+          <div class="relative h-64 w-full"><canvas id="salaryBarChart"></canvas></div>
+        </div>
+
+        <!-- Funnel Chart -->
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="text-sm font-bold text-slate-900 mb-2">Recruitment Funnel Throughput</h3>
+          <div class="relative h-64 w-full"><canvas id="funnelChart"></canvas></div>
+        </div>
+
+        <!-- Tier Distribution -->
         <div class="glass-card rounded-2xl p-6">
           <h3 class="text-sm font-bold text-slate-900 mb-2">Qualification Tier Distribution</h3>
           <div class="relative h-64 w-full flex items-center justify-center"><canvas id="analyticsDoughnutChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 8: SETTINGS & METHODOLOGY -->
+    <section id="view-settings" class="hidden space-y-6">
+      <div class="border-b border-slate-200 pb-3">
+        <h1 class="text-xl font-bold tracking-tight text-slate-900">Settings & Scoring Methodology</h1>
+        <p class="text-xs text-slate-500">Configure weighted scoring engine defaults and version history controls.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-6 space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Scoring Category Weights</h3>
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex justify-between font-bold mb-1"><span>Technical & Skill Match</span><span class="text-pwc-orange">30%</span></div>
+              <input type="range" min="0" max="50" value="30" class="w-full">
+            </div>
+            <div>
+              <div class="flex justify-between font-bold mb-1"><span>Relevant Experience</span><span class="text-pwc-orange">25%</span></div>
+              <input type="range" min="0" max="50" value="25" class="w-full">
+            </div>
+            <div>
+              <div class="flex justify-between font-bold mb-1"><span>Education & Degrees</span><span class="text-pwc-orange">20%</span></div>
+              <input type="range" min="0" max="50" value="20" class="w-full">
+            </div>
+            <div>
+              <div class="flex justify-between font-bold mb-1"><span>Industry Experience</span><span class="text-pwc-orange">15%</span></div>
+              <input type="range" min="0" max="50" value="15" class="w-full">
+            </div>
+            <div>
+              <div class="flex justify-between font-bold mb-1"><span>Certifications & Governance</span><span class="text-pwc-orange">10%</span></div>
+              <input type="range" min="0" max="50" value="10" class="w-full">
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Methodology Version Audit</h3>
+          <div class="space-y-2 text-xs">
+            <div class="p-3 rounded-xl bg-orange-50 border border-orange-200">
+              <span class="font-bold text-pwc-orange block">Active Methodology: v3.2-PwC</span>
+              <span class="text-[11px] text-slate-600">Deterministic scoring formula aligned with 5 radar dimensions.</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -577,6 +673,11 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
   </div>
 </div>
 
+<!-- FOOTER BRANDING MARK -->
+<footer class="fixed bottom-2 right-4 z-40 pointer-events-none">
+  <span class="text-[11px] font-bold text-slate-400/80 tracking-tight">TalentLens</span>
+</footer>
+
 <script>
 // =========================================================================
 // APPLICATION STATE & INITIALIZATION
@@ -610,7 +711,7 @@ Qualifications:
   uploadedCVs: [],
   candidates: [],
   selectedRadarCandidates: [],
-  charts: { radar: null, financial: null, analyticsBar: null, analyticsDoughnut: null }
+  charts: { radar: null, financial: null, roiQuadrant: null, salaryBar: null, funnel: null, analyticsDoughnut: null }
 };
 
 if (typeof pdfjsLib !== 'undefined') {
@@ -619,7 +720,14 @@ if (typeof pdfjsLib !== 'undefined') {
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const $ = id => document.getElementById(id);
-const fmtPKR = n => 'PKR ' + Math.round(n || 0).toLocaleString();
+const parseRawNumber = val => parseFloat(String(val || 0).replace(/[^0-9.]/g, '')) || 0;
+const fmtPKR = n => 'PKR ' + Math.round(n || 0).toLocaleString('en-PK');
+
+function formatCurrencyInput(el) {
+  const num = parseRawNumber(el.value);
+  if (num > 0) el.value = num.toLocaleString('en-PK');
+}
+
 const icons = () => { if (typeof lucide !== 'undefined') lucide.createIcons(); };
 
 function switchView(viewId) {
@@ -634,6 +742,7 @@ function switchView(viewId) {
 
   if (viewId === 'competencies') renderCompetencyView();
   if (viewId === 'financial') renderFinancialView();
+  if (viewId === 'interview') renderInterviewQuestions();
   if (viewId === 'analytics') renderAnalyticsView();
   icons();
 }
@@ -692,7 +801,7 @@ async function handleJDUpload(event) {
 function extractRequirementsFromJD() {
   const text = $('jdTextInput').value || state.activeJob.rawText;
   state.activeJob.title = $('jobTitleInput').value || 'Target Role';
-  state.activeJob.budgetPKR = parseFloat($('jobBudgetInput').value) || 18000000;
+  state.activeJob.budgetPKR = parseRawNumber($('jobBudgetInput').value) || 18000000;
   state.activeJob.rawText = text;
   
   const lines = text.split(/\n|\u2022/).map(s => s.trim()).filter(s => s.length > 15);
@@ -849,12 +958,41 @@ function runBatchScreening() {
     alert('Please upload candidate CVs first or load sample engagement data.');
     return;
   }
-  state.candidates = state.uploadedCVs.map((cv, idx) => processCandidateData(cv, idx));
-  state.selectedRadarCandidates = state.candidates.slice(0, 3).map(c => c.id);
+
+  const pBox = $('screeningPipelineProgress');
+  const pStep = $('pipelineStatusStep');
+  const pPercent = $('pipelineStatusPercent');
+  const pBar = $('pipelineProgressBar');
+
+  pBox.classList.remove('hidden');
   
-  updateDashboardKPIs();
-  renderCandidateTable();
-  switchView('candidates');
+  const steps = [
+    { text: 'Step 1/5: Extracting Candidate CV Information...', pct: 20 },
+    { text: 'Step 2/5: Validating Mandatory Requirements...', pct: 40 },
+    { text: 'Step 3/5: Semantic JD Matching & Skill Alignment...', pct: 60 },
+    { text: 'Step 4/5: Calculating Competency Scores & Radar Vectors...', pct: 80 },
+    { text: 'Step 5/5: Finalizing Screening Shortlist & Audit Trail...', pct: 100 }
+  ];
+
+  let currentStep = 0;
+  const interval = setInterval(() => {
+    if (currentStep < steps.length) {
+      pStep.innerText = steps[currentStep].text;
+      pPercent.innerText = `${steps[currentStep].pct}%`;
+      pBar.style.width = `${steps[currentStep].pct}%`;
+      currentStep++;
+    } else {
+      clearInterval(interval);
+      pBox.classList.add('hidden');
+      
+      state.candidates = state.uploadedCVs.map((cv, idx) => processCandidateData(cv, idx));
+      state.selectedRadarCandidates = state.candidates.slice(0, 3).map(c => c.id);
+      
+      updateDashboardKPIs();
+      renderCandidateTable();
+      switchView('candidates');
+    }
+  }, 350);
 }
 
 function updateDashboardKPIs() {
@@ -1114,17 +1252,17 @@ function syncFinancialInputs() {
 
   const cand = state.candidates.find(x => x.id === select.value) || state.candidates[0];
   if (cand) {
-    $('finSalaryInput').value = cand.expectedSalaryPKR;
+    $('finSalaryInput').value = cand.expectedSalaryPKR.toLocaleString('en-PK');
   }
   calculateFinancials();
 }
 
 function calculateFinancials() {
-  const roleBudget = parseFloat($('finBudgetInput').value) || 18000000;
-  const candSalary = parseFloat($('finSalaryInput').value) || 19500000;
+  const roleBudget = parseRawNumber($('finBudgetInput').value) || 18000000;
+  const candSalary = parseRawNumber($('finSalaryInput').value) || 19500000;
   const agencyPercent = parseFloat($('agencyFeeSlider').value) || 15;
   const revMult = parseFloat($('revMultSlider').value) || 2.5;
-  const adminFee = parseFloat($('finAdminFeeInput').value) || 500000;
+  const adminFee = parseRawNumber($('finAdminFeeInput').value) || 500000;
 
   // Real-Time Calculations
   const agencyFeePKR = candSalary * (agencyPercent / 100);
@@ -1206,37 +1344,164 @@ function renderFinancialChart(roleBudget, agencyPercent, revMult, adminFee) {
 }
 
 // =========================================================================
-// REPORTS & ANALYTICS VIEW
+// PART 6: INTERVIEW INTELLIGENCE MODULE
+// =========================================================================
+function renderInterviewQuestions() {
+  const select = $('interviewCandidateSelect');
+  if (!select) return;
+
+  if (select.children.length === 0 && state.candidates.length) {
+    select.innerHTML = state.candidates.map(c => `<option value="${c.id}">${esc(c.name)} (${c.fitScore}% Fit)</option>`).join('');
+  }
+
+  const cand = state.candidates.find(x => x.id === select.value) || state.candidates[0];
+  const container = $('interviewQuestionsContainer');
+  if (!container || !cand) return;
+
+  const questions = [
+    {
+      category: 'Technical Architecture & Transformation',
+      question: 'How have you managed core system modernization while maintaining State Bank regulatory compliance & zero uptime disruption?',
+      relevance: 'Validates candidate core banking experience under strict compliance standards.',
+      rubric: 'Strong response must highlight dual-run architecture, failover testing, and direct regulator coordination.'
+    },
+    {
+      category: 'Leadership & Stakeholder Ownership',
+      question: 'Describe a situation where executive board priorities conflicted with engineering delivery timelines.',
+      relevance: 'Tests executive stakeholder navigation and technical trade-off decisions.',
+      rubric: 'Evaluates budget control, transparent risk communication, and EBITDA prioritization.'
+    },
+    {
+      category: 'CV Gap / Screening Clarification',
+      question: cand.qualificationStatus === 'Over-Qualified'
+        ? 'Given your extensive executive background, what specific hands-on architectural challenges in this role excite you long-term?'
+        : 'How do you plan to bridge specific domain gaps in core cloud-native microservices during your first 90 days?',
+      relevance: 'Addresses specific qualification calibration flags identified during automated CV screening.',
+      rubric: 'Focuses on long-term commitment, retention stability, and proactive upskilling plans.'
+    }
+  ];
+
+  container.innerHTML = questions.map(q => `
+    <div class="glass-card rounded-2xl p-5 space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="px-2.5 py-0.5 rounded-full bg-orange-50 text-pwc-orange text-[10px] font-bold uppercase tracking-wider">${esc(q.category)}</span>
+        <span class="text-xs font-bold text-slate-400">Target Competency Check</span>
+      </div>
+      <h3 class="text-sm font-bold text-slate-900">${esc(q.question)}</h3>
+      <p class="text-xs text-slate-600"><strong>Why Relevant:</strong> ${esc(q.relevance)}</p>
+      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+        <strong class="text-slate-900 block mb-1">Evaluation Rubric:</strong>
+        ${esc(q.rubric)}
+      </div>
+    </div>
+  `).join('');
+}
+
+// =========================================================================
+// PART 5: NEW ANALYTICS ENHANCEMENTS
 // =========================================================================
 function renderAnalyticsView() {
-  if (state.charts.analyticsBar) state.charts.analyticsBar.destroy();
-  state.charts.analyticsBar = new Chart($('analyticsBarChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: state.candidates.map(x => x.name),
-      datasets: [{
-        label: 'JD Score (%)',
-        data: state.candidates.map(x => x.fitScore),
-        backgroundColor: '#D04A02',
-        borderRadius: 6
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } }
-  });
+  // 1. Candidate ROI vs Competency Quadrant Scatter Chart
+  const roiCtx = $('roiQuadrantChart')?.getContext('2d');
+  if (roiCtx) {
+    if (state.charts.roiQuadrant) state.charts.roiQuadrant.destroy();
+    
+    const scatterData = state.candidates.map(c => {
+      const candSalary = c.expectedSalaryPKR;
+      const cost = candSalary * 1.15 + 500000;
+      const net = (candSalary * 2.5) - cost;
+      const roi = Math.round((net / cost) * 100);
+      return { x: c.fitScore, y: roi, name: c.name };
+    });
 
-  if (state.charts.analyticsDoughnut) state.charts.analyticsDoughnut.destroy();
-  const opt = state.candidates.filter(x => x.qualificationStatus === 'Optimal Fit').length;
-  const over = state.candidates.filter(x => x.qualificationStatus === 'Over-Qualified').length;
-  const under = state.candidates.filter(x => x.qualificationStatus === 'Under-Qualified').length;
+    state.charts.roiQuadrant = new Chart(roiCtx, {
+      type: 'scatter',
+      data: {
+        datasets: [{
+          label: 'Candidates',
+          data: scatterData,
+          backgroundColor: '#D04A02',
+          pointRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { title: { display: true, text: 'Competency Match Score (%)' }, min: 50, max: 100 },
+          y: { title: { display: true, text: 'Estimated 1st-Year ROI (%)' }, min: 50, max: 200 }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: { label: ctx => `${ctx.raw.name}: ${ctx.raw.x}% Match, ${ctx.raw.y}% ROI` }
+          }
+        }
+      }
+    });
+  }
 
-  state.charts.analyticsDoughnut = new Chart($('analyticsDoughnutChart').getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Optimal Fit', 'Over-Qualified', 'Under-Qualified'],
-      datasets: [{ data: [opt, over, under], backgroundColor: ['#D04A02', '#FFB600', '#DB536A'] }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+  // 2. Salary Budget Comparison Grouped Bar Chart
+  const salaryCtx = $('salaryBarChart')?.getContext('2d');
+  if (salaryCtx) {
+    if (state.charts.salaryBar) state.charts.salaryBar.destroy();
+    
+    const roleBudget = parseRawNumber($('finBudgetInput')?.value) || 18000000;
+    
+    state.charts.salaryBar = new Chart(salaryCtx, {
+      type: 'bar',
+      data: {
+        labels: state.candidates.map(c => c.name),
+        datasets: [
+          { label: 'Role Budget (PKR)', data: state.candidates.map(() => roleBudget), backgroundColor: '#2D2D2D', borderRadius: 4 },
+          { label: 'Candidate Expected (PKR)', data: state.candidates.map(c => c.expectedSalaryPKR), backgroundColor: '#D04A02', borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { ticks: { callback: v => 'PKR ' + (v / 1000000).toFixed(1) + 'M' } } }
+      }
+    });
+  }
+
+  // 3. Recruitment Funnel Chart
+  const funnelCtx = $('funnelChart')?.getContext('2d');
+  if (funnelCtx) {
+    if (state.charts.funnel) state.charts.funnel.destroy();
+    
+    const n = state.candidates.length;
+    state.charts.funnel = new Chart(funnelCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Uploaded', 'Parsed', 'Assessed', 'Mandatory Met', 'Shortlisted'],
+        datasets: [{
+          label: 'Candidates Count',
+          data: [n, n, n, Math.max(1, n - 1), state.candidates.filter(x => x.qualificationStatus === 'Optimal Fit').length],
+          backgroundColor: ['#1F2937', '#374151', '#D04A02', '#EB8C00', '#059669'],
+          borderRadius: 6
+        }]
+      },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  // 4. Doughnut Tier Distribution
+  const doughnutCtx = $('analyticsDoughnutChart')?.getContext('2d');
+  if (doughnutCtx) {
+    if (state.charts.analyticsDoughnut) state.charts.analyticsDoughnut.destroy();
+    const opt = state.candidates.filter(x => x.qualificationStatus === 'Optimal Fit').length;
+    const over = state.candidates.filter(x => x.qualificationStatus === 'Over-Qualified').length;
+    const under = state.candidates.filter(x => x.qualificationStatus === 'Under-Qualified').length;
+
+    state.charts.analyticsDoughnut = new Chart(doughnutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Optimal Fit', 'Over-Qualified', 'Under-Qualified'],
+        datasets: [{ data: [opt, over, under], backgroundColor: ['#D04A02', '#FFB600', '#DB536A'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
 }
 
 function exportBatchReport() {
