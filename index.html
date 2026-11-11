@@ -1,1459 +1,1135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TalentScreen — PwC-style Recruitment Screening</title>
+<title>TalentLens | AI Recruitment & Advisory Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    fontFamily: { sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'] },
+    colors: { pwc: { orange:'#FD5108', tangerine:'#EB8C00', yellow:'#FFB600', rose:'#DB536A', burgundy:'#D04A02', charcoal:'#2D2D2D', slate:'#464646', grey:'#7D7D7D', light:'#F2F2F2', surface:'#FAFAFA' } },
+    animation: { 'fade-in':'fadeIn .45s cubic-bezier(.16,1,.3,1) forwards', 'slide-up':'slideUp .5s cubic-bezier(.16,1,.3,1) forwards' },
+    keyframes: { fadeIn:{'0%':{opacity:'0'},'100%':{opacity:'1'}}, slideUp:{'0%':{opacity:'0',transform:'translateY(16px)'},'100%':{opacity:'1',transform:'translateY(0)'}} }
+  } }
+}
+</script>
 <style>
-  :root {
-    --pwc-primary: #DB4E18;
-    --pwc-accent: #E88D14;
-    --pwc-warm: #F3BE26;
-    --pwc-rose: #E669A2;
-    --pwc-red: #AD1B02;
-    --bg: #FFFFFF;
-    --surface: #F6F5F4;
-    --border: #DEDBD8;
-    --text: #2B2B2B;
-    --muted: #5C5754;
-    --strong: #2E7D32;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body {
-    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-    color: var(--text);
-    background: var(--bg);
-    line-height: 1.5;
-    font-size: 14px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ---------- Header ---------- */
-  header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 32px;
-    border-bottom: 1px solid var(--border);
-    background: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .wordmark {
-    font-weight: 700;
-    font-size: 24px;
-    color: var(--pwc-primary);
-    letter-spacing: -0.5px;
-  }
-  .wordmark-sub {
-    color: var(--muted);
-    font-size: 13px;
-    padding-left: 16px;
-    border-left: 1px solid var(--border);
-  }
-  .header-actions {
-    margin-left: auto;
-    display: flex;
-    gap: 10px;
-  }
-
-  /* ---------- Tabs ---------- */
-  nav.tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    background: #fff;
-    padding: 0 32px;
-    gap: 4px;
-    overflow-x: auto;
-  }
-  nav.tabs button {
-    background: transparent;
-    border: none;
-    padding: 14px 20px;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: color .15s;
-  }
-  nav.tabs button:hover { color: var(--text); }
-  nav.tabs button.active {
-    color: var(--pwc-primary);
-    border-bottom-color: var(--pwc-primary);
-  }
-
-  /* ---------- Main / Tab Panels ---------- */
-  main { flex: 1; padding: 24px 32px; max-width: 1400px; width: 100%; margin: 0 auto; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  /* ---------- Cards ---------- */
-  .card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-  }
-  .card h2 {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    color: var(--text);
-  }
-  .card h3 {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: var(--text);
-  }
-  .card .help {
-    color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 16px;
-  }
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  @media (max-width: 860px) {
-    .two-col { grid-template-columns: 1fr; }
-    main { padding: 16px; }
-    header { padding: 12px 16px; }
-    nav.tabs { padding: 0 16px; }
-  }
-
-  /* ---------- Form Controls ---------- */
-  textarea, input[type=text] {
-    width: 100%;
-    font-family: inherit;
-    font-size: 14px;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: #fff;
-    color: var(--text);
-    resize: vertical;
-    transition: border .15s;
-  }
-  textarea:focus, input[type=text]:focus {
-    outline: none;
-    border-color: var(--pwc-primary);
-    box-shadow: 0 0 0 3px rgba(219,78,24,0.1);
-  }
-  textarea { min-height: 180px; }
-
-  .dropzone {
-    border: 2px dashed var(--border);
-    border-radius: 8px;
-    padding: 32px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all .15s;
-    background: var(--surface);
-  }
-  .dropzone:hover, .dropzone.dragover {
-    border-color: var(--pwc-primary);
-    background: rgba(219,78,24,0.04);
-  }
-  .dropzone .icon {
-    font-size: 28px;
-    color: var(--pwc-primary);
-    margin-bottom: 8px;
-  }
-  .dropzone p { color: var(--muted); font-size: 13px; }
-  .dropzone strong { color: var(--text); }
-
-  .file-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-  .file-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 13px;
-  }
-  .file-item .name { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .file-item .size { color: var(--muted); }
-  .file-item .status {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 600;
-  }
-  .status.pending { background: #f0f0f0; color: #666; }
-  .status.parsing { background: var(--pwc-warm); color: #333; }
-  .status.done { background: #e3f2e5; color: var(--strong); }
-  .status.error { background: #fde3e0; color: var(--pwc-red); }
-  .file-item button {
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
-  }
-  .file-item button:hover { color: var(--pwc-red); }
-
-  /* ---------- Buttons ---------- */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: none;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all .15s;
-  }
-  .btn-primary {
-    background: var(--pwc-primary);
-    color: #fff;
-  }
-  .btn-primary:hover { background: #b83d10; }
-  .btn-secondary {
-    background: #fff;
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-secondary:hover { background: var(--surface); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .action-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-  }
-  .action-bar .spacer { flex: 1; }
-
-  /* ---------- Progress ---------- */
-  .progress-wrap { margin-top: 16px; display: none; }
-  .progress-wrap.active { display: block; }
-  .progress-bar {
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--pwc-primary);
-    width: 0%;
-    transition: width .3s;
-  }
-  .progress-text {
-    margin-top: 8px;
-    font-size: 13px;
-    color: var(--muted);
-  }
-
-  /* ---------- Summary Cards ---------- */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  .summary-card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: var(--shadow);
-  }
-  .summary-card .label {
-    font-size: 12px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-  }
-  .summary-card .value {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--pwc-primary);
-    margin-top: 4px;
-  }
-  .summary-card .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-  /* ---------- Bar Chart ---------- */
-  .chart-wrap { margin-bottom: 20px; }
-  .chart-row {
-    display: grid;
-    grid-template-columns: 180px 1fr 60px;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .chart-row:last-child { border-bottom: none; }
-  .chart-row .name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chart-bar-track {
-    height: 20px;
-    background: var(--surface);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .chart-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width .6s ease-out;
-  }
-  .chart-row .score { text-align: right; font-weight: 700; font-size: 13px; }
-
-  /* ---------- Table ---------- */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  th {
-    text-align: left;
-    padding: 10px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    position: sticky;
-    top: 0;
-  }
-  td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  tr:hover td { background: rgba(219,78,24,0.03); }
-  .badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .badge.strong { background: #e3f2e5; color: var(--strong); }
-  .badge.partial { background: #fff3d4; color: #8a5c00; }
-  .badge.weak { background: #fde3e0; color: var(--pwc-red); }
-
-  /* ---------- Matrix ---------- */
-  .matrix-wrap { overflow-x: auto; }
-  .matrix-table th:first-child { min-width: 220px; }
-  .matrix-table th { text-align: center; }
-  .matrix-table td { text-align: center; }
-  .matrix-table td:first-child { text-align: left; font-weight: 600; }
-  .cell {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    line-height: 24px;
-    font-weight: 700;
-    font-size: 12px;
-    color: #fff;
-  }
-  .cell.strong { background: var(--strong); }
-  .cell.partial { background: var(--pwc-warm); color: #333; }
-  .cell.weak { background: var(--pwc-red); }
-
-  /* ---------- Modal ---------- */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    align-items: flex-start;
-    justify-content: center;
-    z-index: 1000;
-    padding: 40px 16px;
-    overflow-y: auto;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: #fff;
-    border-radius: 10px;
-    max-width: 800px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    position: relative;
-  }
-  .modal-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: transparent;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--muted);
-    line-height: 1;
-  }
-  .modal-close:hover { color: var(--pwc-red); }
-  .modal h2 { font-size: 20px; margin-bottom: 4px; }
-  .modal .cand-meta { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
-  .modal .section-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--muted);
-    margin: 20px 0 8px;
-  }
-  .role-item {
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 10px;
-    background: var(--surface);
-  }
-  .role-item .role-title { font-weight: 700; font-size: 14px; }
-  .role-item .role-meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
-  .role-item .role-resp { margin-top: 8px; font-size: 13px; }
-  .role-item .role-resp li { margin-left: 18px; margin-bottom: 3px; }
-  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tag {
-    background: rgba(219,78,24,0.08);
-    color: var(--pwc-primary);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 12px;
-  }
-  .rationale-box {
-    background: var(--surface);
-    border-left: 4px solid var(--pwc-primary);
-    padding: 12px 16px;
-    border-radius: 4px;
-    margin-top: 6px;
-    font-size: 13px;
-  }
-  .kv { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .kv:last-child { border-bottom: none; }
-  .kv .k { color: var(--muted); }
-  .kv .v { font-weight: 600; }
-
-  /* ---------- Misc ---------- */
-  .empty-state {
-    text-align: center;
-    padding: 48px 20px;
-    color: var(--muted);
-  }
-  .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
-
-  footer {
-    padding: 16px 32px;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 12px;
-    text-align: center;
-    background: #fff;
-  }
-
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: #2B2B2B;
-    color: #fff;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all .25s;
-    z-index: 2000;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.error { background: var(--pwc-red); }
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#F2F2F2}::-webkit-scrollbar-thumb{background:#CCC;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:#D04A02}
+.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+.brand-bar{background:linear-gradient(90deg,#D04A02 0%,#FD5108 45%,#EB8C00 80%,#FFB600 100%)}
+.glass-card{background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border:1px solid rgba(45,45,45,.08);transition:box-shadow .25s ease}
+.glass-card:hover{box-shadow:0 12px 28px -8px rgba(45,45,45,.09)}
+.tab-indicator{position:relative}
+.tab-indicator::after{content:'';position:absolute;bottom:-1px;left:0;width:100%;height:3px;background:#D04A02;transform:scaleX(0);transition:transform .3s cubic-bezier(.16,1,.3,1);transform-origin:left}
+.tab-indicator.active::after{transform:scaleX(1)}
+input[type=range]{-webkit-appearance:none;background:transparent}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:18px;width:18px;border-radius:50%;background:#D04A02;cursor:pointer;margin-top:-6px;box-shadow:0 2px 6px rgba(208,74,2,.4)}
+input[type=range]::-webkit-slider-runnable-track{width:100%;height:6px;cursor:pointer;background:#E5E7EB;border-radius:999px}
 </style>
 </head>
-<body>
+<body class="bg-pwc-surface text-pwc-charcoal font-sans antialiased selection:bg-pwc-orange selection:text-white min-h-screen flex flex-col">
 
-<header>
-  <span class="wordmark">PwC</span>
-  <span class="wordmark-sub">TalentScreen</span>
-  <div class="header-actions">
-    <button class="btn btn-secondary" onclick="loadDemoData()">Load Demo Data</button>
-    <button class="btn btn-secondary" onclick="resetApp()">Reset</button>
+<div class="h-1.5 w-full brand-bar fixed top-0 left-0 z-50"></div>
+
+<!-- HEADER -->
+<header class="bg-white border-b border-gray-200 sticky top-1.5 z-40 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center space-x-4">
+        <!-- PwC Logo matching provided image (Black text, Orange shapes) -->
+        <svg class="h-10 w-auto" viewBox="0 0 240 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PwC Logo">
+            <polygon points="145,30 180,30 165,55 130,55" fill="#FD5108"/>
+            <polygon points="190,30 235,30 220,55 175,55" fill="#FD5108"/>
+            <path d="M25 55 H35 V60 C38 55 44 53 50 53 C62 53 70 62 70 75 C70 88 61 97 49 97 C43 97 38 95 35 91 V105 H42 V112 H20 V105 H25 V55 Z M35 68 V84 C38 87 42 89 46 89 C53 89 57 83 57 75 C57 67 53 61 46 61 C41 61 37 63 35 68 Z" fill="#000000"/>
+            <path d="M80 55 H105 V62 H100 L109 85 L118 62 H113 V55 H132 V62 H127 L137 85 L146 62 H141 V55 H160 V62 H155 L140 98 H131 L122 75 L113 98 H104 L90 62 H80 V55 Z" fill="#000000"/>
+            <path d="M185 85 L192 89 C188 96 180 99 170 99 C155 99 145 89 145 75 C145 61 155 51 170 51 C180 51 187 56 187 63 C187 67 184 70 180 70 C176 70 173 67 173 63 C173 61 173 59 175 58 C173 57 171 56 168 56 C160 56 156 62 156 75 C156 88 160 94 170 94 C175 94 180 91 185 85 Z" fill="#000000"/>
+        </svg>
+        <div class="hidden sm:block h-7 w-px bg-gray-300"></div>
+        <span class="text-base font-bold text-pwc-charcoal tracking-tight">TalentLens</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <div class="hidden md:flex items-center px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-medium text-pwc-orange">
+          <span class="w-2 h-2 rounded-full bg-pwc-orange mr-2 animate-pulse"></span>
+          <span id="activeRoleLabel">Ready for Engagement</span>
+        </div>
+        <button onclick="exportRecruitmentReport()" id="exportReportBtn" class="hidden text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-lg border border-pwc-orange bg-orange-50 text-pwc-orange hover:bg-pwc-orange hover:text-white transition-colors items-center gap-1.5">
+          <i data-lucide="file-text" class="w-4 h-4"></i><span>Export PDF Report</span>
+        </button>
+        <button onclick="loadDemoEngagement()" class="text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg border border-gray-300 hover:border-pwc-orange hover:text-pwc-orange transition-colors flex items-center gap-1.5 bg-white">
+          <i data-lucide="sparkles" class="w-4 h-4 text-pwc-orange"></i><span>Load Sample</span>
+        </button>
+      </div>
+    </div>
+    <nav class="flex space-x-6 overflow-x-auto no-scrollbar pt-1" aria-label="Tabs">
+      <button onclick="switchTab('intake')" id="tab-intake" class="tab-indicator active py-3 px-1 text-sm font-semibold text-pwc-orange whitespace-nowrap flex items-center gap-2"><i data-lucide="file-up" class="w-4 h-4"></i><span>1. Engagement Intake</span></button>
+      <button onclick="switchTab('overview')" id="tab-overview" class="tab-indicator py-3 px-1 text-sm font-medium text-pwc-grey hover:text-pwc-charcoal whitespace-nowrap flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>2. Executive Overview</span><span id="candidateCountBadge" class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full bg-gray-100 text-pwc-charcoal">0</span></button>
+      <button onclick="switchTab('competencies')" id="tab-competencies" class="tab-indicator py-3 px-1 text-sm font-medium text-pwc-grey hover:text-pwc-charcoal whitespace-nowrap flex items-center gap-2"><i data-lucide="radar" class="w-4 h-4"></i><span>3. Competency & Fit Matrix</span></button>
+      <button onclick="switchTab('financial')" id="tab-financial" class="tab-indicator py-3 px-1 text-sm font-medium text-pwc-grey hover:text-pwc-charcoal whitespace-nowrap flex items-center gap-2"><i data-lucide="calculator" class="w-4 h-4"></i><span>4. Financial & ROI Impact</span></button>
+    </nav>
   </div>
 </header>
 
-<nav class="tabs">
-  <button class="active" data-tab="1">1 · Input &amp; Import</button>
-  <button data-tab="2">2 · Executive Overview</button>
-  <button data-tab="3">3 · Competency Matrix</button>
-  <button data-tab="4">4 · Export &amp; Settings</button>
-</nav>
+<div id="toastContainer" class="fixed bottom-5 right-5 z-[60] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
-<main>
+<main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-  <!-- ============ TAB 1 ============ -->
-  <section class="tab-panel active" id="tab-1">
-    <div class="two-col">
+<!-- TAB 1: INTAKE -->
+<section id="view-intake" class="animate-fade-in space-y-6">
+  <div class="bg-pwc-charcoal text-white rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-lg">
+    <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-pwc-orange/25 to-transparent pointer-events-none"></div>
+    <div class="relative z-10 max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-pwc-yellow text-xs font-semibold tracking-wide uppercase mb-3"><i data-lucide="cpu" class="w-3.5 h-3.5"></i>AI Talent Intelligence Engine</div>
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Streamline Talent Evaluation & Workforce Economics</h1>
+      <p class="text-gray-300 text-sm sm:text-base leading-relaxed">Upload the Job Description (PDF, Word or text) alongside candidate CVs (PDF or Word). The engine extracts core competencies, flags over- or under-qualified profiles, and quantifies hiring ROI.</p>
+    </div>
+  </div>
 
-      <!-- JD Input -->
-      <div class="card">
-        <h2>Job Description</h2>
-        <p class="help">Paste the JD text or upload a PDF. Both are accepted.</p>
-        <textarea id="jdText" placeholder="Paste job description here...&#10;&#10;Example: We are seeking a Senior Financial Analyst with 5+ years of experience in banking, strong knowledge of IFRS, financial modelling, and stakeholder reporting..."></textarea>
-        <div class="action-bar" style="margin-top:12px;">
-          <label class="btn btn-secondary" style="cursor:pointer;">
-            📄 Upload JD (PDF)
-            <input type="file" id="jdPdfInput" accept=".pdf,.txt,.docx" hidden>
-          </label>
-          <span id="jdFileStatus" style="font-size:12px;color:var(--muted);"></span>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-orange-100 text-pwc-orange flex items-center justify-center font-bold text-sm">01</div>
+            <div><h2 class="text-base font-bold">Job Description (JD)</h2><p class="text-xs text-pwc-grey">Upload a file or paste requirements</p></div>
+          </div>
+          <label for="jdFileInput" class="cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-pwc-light hover:bg-orange-100 hover:text-pwc-orange transition-colors"><i data-lucide="upload" class="w-3.5 h-3.5"></i><span>Import JD</span></label>
+          <input type="file" id="jdFileInput" accept=".pdf,.docx,.txt" class="hidden" onchange="handleJDUpload(event)">
+        </div>
+        <div id="jdFileBadge" class="hidden mb-3 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-800">
+          <div class="flex items-center gap-2 truncate"><i data-lucide="file-check" class="w-4 h-4 text-emerald-600 shrink-0"></i><span id="jdFileName" class="font-medium truncate">jd.pdf</span></div>
+          <button onclick="clearJD()" class="font-semibold ml-2">Clear</button>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-pwc-slate uppercase tracking-wider mb-1">Role Title & Engagement Name</label>
+            <input type="text" id="jobTitleInput" placeholder="e.g., Chief Technology Officer (CTO)" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-pwc-orange/30 focus:border-pwc-orange">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pwc-slate uppercase tracking-wider mb-1">Responsibilities & Requirements</label>
+            <textarea id="jdTextInput" rows="10" placeholder="Paste the full Job Description here or import a file above..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-pwc-orange/30 focus:border-pwc-orange leading-relaxed"></textarea>
+          </div>
         </div>
       </div>
+      <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-pwc-grey"><span>Client-side text extraction</span><span id="jdCharCount">0 chars</span></div>
+    </div>
 
-      <!-- CV Input -->
-      <div class="card">
-        <h2>Candidate CVs / Resumes</h2>
-        <p class="help">Upload PDF, DOCX, or TXT files. Multiple files supported.</p>
-        <div class="dropzone" id="cvDropzone">
-          <div class="icon">⬆</div>
-          <p><strong>Click to upload</strong> or drag &amp; drop files here</p>
-          <p style="margin-top:4px;">PDF · DOCX · TXT</p>
-          <input type="file" id="cvFileInput" accept=".pdf,.docx,.doc,.txt" multiple hidden>
+    <div class="lg:col-span-7 glass-card rounded-2xl p-6 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-orange-100 text-pwc-orange flex items-center justify-center font-bold text-sm">02</div>
+            <div><h2 class="text-base font-bold">Candidate CVs / Resumes</h2><p class="text-xs text-pwc-grey">Batch upload PDF or Word resumes</p></div>
+          </div>
+          <button onclick="clearAllCVs()" id="clearCVsBtn" class="hidden text-xs font-medium text-pwc-burgundy hover:underline">Remove All</button>
         </div>
-        <div class="file-list" id="cvFileList"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="action-bar">
-        <button class="btn btn-primary" id="runBtn" onclick="runScreening()">▶ Run Screening</button>
-        <span id="runHint" style="font-size:12px;color:var(--muted);">Add a JD and at least one CV to begin.</span>
-      </div>
-      <div class="progress-wrap" id="progressWrap">
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        <div class="progress-text" id="progressText">Initialising…</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TAB 2 ============ -->
-  <section class="tab-panel" id="tab-2">
-    <div id="tab2Empty" class="empty-state">
-      <div class="icon">📊</div>
-      <p>No screening results yet. Run a screening from Tab 1.</p>
-    </div>
-    <div id="tab2Content" style="display:none;">
-      <div class="summary-grid" id="summaryGrid"></div>
-      <div class="card">
-        <h3>Fit Score Distribution</h3>
-        <div class="chart-wrap" id="chartWrap"></div>
-      </div>
-      <div class="card">
-        <h3>Candidate Ranking</h3>
-        <div style="overflow-x:auto;">
-          <table id="rankingTable">
-            <thead>
-              <tr>
-                <th style="width:50px;">Rank</th>
-                <th>Candidate</th>
-                <th style="width:110px;">Fit Score</th>
-                <th>Top Strength</th>
-                <th>Key Gap</th>
-                <th style="width:140px;"></th>
-              </tr>
-            </thead>
-            <tbody id="rankingTbody"></tbody>
-          </table>
+        <div id="cvDropZone" onclick="document.getElementById('cvFileInput').click()" class="border-2 border-dashed border-gray-300 hover:border-pwc-orange rounded-2xl p-8 text-center cursor-pointer transition-all bg-gray-50/70 hover:bg-orange-50/40 group">
+          <input type="file" id="cvFileInput" multiple accept=".pdf,.docx,.txt" class="hidden" onchange="handleCVFiles(event.target.files)">
+          <div class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-gray-200 flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform"><i data-lucide="folder-up" class="w-6 h-6 text-pwc-orange"></i></div>
+          <p class="text-sm font-semibold">Click to upload candidate CVs or drag & drop</p>
+          <p class="text-xs text-pwc-grey mt-1">Multiple <span class="font-semibold text-pwc-slate">.PDF</span> and <span class="font-semibold text-pwc-slate">.DOCX</span> files supported</p>
+        </div>
+        <div class="mt-5">
+          <div class="flex items-center justify-between mb-2"><span class="text-xs font-semibold text-pwc-slate uppercase tracking-wider">Parsed Candidate Queue</span><span id="queuedCountText" class="text-xs font-medium text-pwc-grey">0 files ready</span></div>
+          <div id="cvQueueList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
         </div>
       </div>
+      <div class="mt-6 pt-5 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-xs text-pwc-slate"><i data-lucide="shield-check" class="w-4 h-4 text-pwc-orange shrink-0"></i><span>Competency benchmarking & qualification audit</span></div>
+        <button id="analyzeBtn" onclick="runRecruitmentAnalysis()" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-pwc-orange hover:bg-pwc-burgundy text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+          <i data-lucide="play" class="w-4 h-4"></i><span>Run AI Screening & Benchmark</span>
+        </button>
+      </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ============ TAB 3 ============ -->
-  <section class="tab-panel" id="tab-3">
-    <div id="tab3Empty" class="empty-state">
-      <div class="icon">🧩</div>
-      <p>Competency matrix will appear after screening is complete.</p>
+<!-- LOADER -->
+<div id="analysisLoader" class="hidden fixed inset-0 bg-pwc-charcoal/70 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full p-7 shadow-2xl text-center animate-slide-up">
+    <div class="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center mx-auto mb-4"><div class="w-7 h-7 border-[3px] border-pwc-orange border-t-transparent rounded-full animate-spin"></div></div>
+    <h3 class="text-xl font-bold tracking-tight mb-1">Evaluating Candidate Pool</h3>
+    <p id="loaderStatusText" class="text-sm text-pwc-grey mb-4">Mapping candidate responsibilities against JD competencies...</p>
+    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden"><div id="loaderProgressBar" class="bg-pwc-orange h-2 rounded-full transition-all duration-500" style="width:35%"></div></div>
+  </div>
+</div>
+
+<!-- TAB 2: OVERVIEW -->
+<section id="view-overview" class="hidden animate-fade-in space-y-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-l-pwc-orange">
+      <div class="flex items-center justify-between text-xs font-semibold text-pwc-grey uppercase tracking-wider mb-1"><span>Top Recommended Fit</span><i data-lucide="award" class="w-4 h-4 text-pwc-orange"></i></div>
+      <div id="kpiTopCandidate" class="text-xl font-bold truncate mt-1">—</div>
+      <div class="flex items-center gap-2 mt-2"><span id="kpiTopScore" class="px-2 py-0.5 rounded-md bg-orange-100 text-pwc-orange text-xs font-bold">0% Match</span><span class="text-xs text-pwc-grey">Best overall alignment</span></div>
     </div>
-    <div id="tab3Content" style="display:none;">
-      <div class="card">
-        <h2>Competency &amp; Fit Matrix</h2>
-        <p class="help">JD responsibilities mapped against CV evidence. Green = strong, Yellow = partial, Red = weak.</p>
-        <div class="matrix-wrap">
-          <table class="matrix-table" id="matrixTable">
-            <thead id="matrixThead"></thead>
-            <tbody id="matrixTbody"></tbody>
-          </table>
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-l-emerald-600">
+      <div class="flex items-center justify-between text-xs font-semibold text-pwc-grey uppercase tracking-wider mb-1"><span>Optimal Qualification</span><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i></div>
+      <div id="kpiOptimalCount" class="text-2xl font-bold mt-1">0 / 0</div><p class="text-xs text-pwc-grey mt-2">Calibrated to role level</p>
+    </div>
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-l-pwc-yellow">
+      <div class="flex items-center justify-between text-xs font-semibold text-pwc-grey uppercase tracking-wider mb-1"><span>Over-Qualified Risk</span><i data-lucide="trending-up" class="w-4 h-4 text-pwc-tangerine"></i></div>
+      <div id="kpiOverCount" class="text-2xl font-bold mt-1">0</div><p class="text-xs text-pwc-grey mt-2">Flight risk / salary premium</p>
+    </div>
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-l-pwc-rose">
+      <div class="flex items-center justify-between text-xs font-semibold text-pwc-grey uppercase tracking-wider mb-1"><span>Under-Qualified Gap</span><i data-lucide="alert-triangle" class="w-4 h-4 text-pwc-rose"></i></div>
+      <div id="kpiUnderCount" class="text-2xl font-bold mt-1">0</div><p class="text-xs text-pwc-grey mt-2">Needs upskilling investment</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="lg:col-span-7 glass-card rounded-2xl p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div><h3 class="text-base font-bold">Overall JD Fit & Competency Score</h3><p class="text-xs text-pwc-grey">Weighted match across technical, leadership and domain criteria</p></div>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:#D04A02"></span>Optimal</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pwc-yellow"></span>Over-Qual</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pwc-rose"></span>Under-Qual</span>
+        </div>
+      </div>
+      <div class="relative h-64 w-full"><canvas id="overviewBarChart"></canvas></div>
+    </div>
+    <div class="lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col justify-between">
+      <div>
+        <h3 class="text-base font-bold mb-1">Talent Pool Calibration</h3><p class="text-xs text-pwc-grey mb-4">Distribution by qualification tier</p>
+        <div class="relative h-44 w-full flex items-center justify-center"><canvas id="tierDoughnutChart"></canvas></div>
+      </div>
+      <div class="mt-4 p-3.5 rounded-xl bg-orange-50/70 border border-orange-200/80 text-xs leading-relaxed">
+        <strong class="text-pwc-orange block mb-1">Advisory Recommendation & Best Fit Rationale:</strong>
+        <span id="executiveSummaryText">Run an analysis to view synthesized advisory insights.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card rounded-2xl p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+      <div><h3 class="text-base font-bold">Final Candidate Ranking & Comparative Audit</h3><p class="text-xs text-pwc-grey">Optimal-fit candidates ranked by JD competency match and qualification calibration</p></div>
+    </div>
+    <ol id="rankingList" class="divide-y divide-gray-100"></ol>
+  </div>
+
+  <div>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div><h3 class="text-lg font-bold tracking-tight">Ranked Candidate Shortlist</h3><p class="text-xs text-pwc-grey">Click a candidate to inspect their profile or competency breakdown</p></div>
+      <div class="flex flex-wrap gap-1.5" id="qualificationFilters">
+        <button data-filter="ALL" onclick="filterCandidates('ALL')" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-pwc-charcoal text-white transition">All</button>
+        <button data-filter="Optimal Fit" onclick="filterCandidates('Optimal Fit')" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-pwc-slate hover:border-pwc-orange transition">Optimal Fit</button>
+        <button data-filter="Over-Qualified" onclick="filterCandidates('Over-Qualified')" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-pwc-slate hover:border-pwc-orange transition">Over-Qualified</button>
+        <button data-filter="Under-Qualified" onclick="filterCandidates('Under-Qualified')" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-pwc-slate hover:border-pwc-orange transition">Under-Qualified</button>
+      </div>
+    </div>
+    <div id="candidateCardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+  </div>
+</section>
+
+<!-- TAB 3: COMPETENCIES -->
+<section id="view-competencies" class="hidden animate-fade-in space-y-6">
+  <div class="glass-card rounded-2xl p-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-gray-200">
+      <div><h2 class="text-xl font-bold tracking-tight">JD vs. Candidate Competency Benchmark</h2><p class="text-xs text-pwc-grey mt-0.5">Side-by-side radar comparison and responsibility alignment against JD requirements</p></div>
+      <div class="flex flex-wrap items-center gap-3">
+        <div><label class="block text-[10px] font-bold uppercase text-pwc-grey">Primary Candidate</label><select id="compareSelectA" onchange="updateComparativeView()" class="mt-0.5 px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-semibold bg-white focus:border-pwc-orange focus:outline-none"></select></div>
+        <span class="text-xs font-bold text-pwc-grey pt-4">VS</span>
+        <div><label class="block text-[10px] font-bold uppercase text-pwc-grey">Benchmark Peer</label><select id="compareSelectB" onchange="updateComparativeView()" class="mt-0.5 px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-semibold bg-white focus:border-pwc-orange focus:outline-none"></select></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+      <div class="lg:col-span-6 bg-gray-50/70 rounded-2xl p-5 border border-gray-100 flex flex-col justify-center">
+        <h3 class="text-sm font-bold mb-1 text-center">Multi-Dimensional Competency Overlay</h3><p class="text-xs text-pwc-grey text-center mb-3">Scores per JD competency (100 = full match)</p>
+        <div class="relative h-72 w-full"><canvas id="competencyRadarChart"></canvas></div>
+      </div>
+      <div class="lg:col-span-6 space-y-4">
+        <div class="p-4 rounded-xl bg-orange-50/60 border border-orange-200/70">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-pwc-orange mb-2 flex items-center gap-1.5"><i data-lucide="target" class="w-4 h-4"></i>Extracted JD Core Competencies</h4>
+          <div id="jdCoreCompetenciesList" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="p-4 rounded-xl bg-white border border-gray-200">
+          <h4 class="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5"><i data-lucide="list-checks" class="w-4 h-4 text-pwc-orange"></i>Key JD Responsibilities Evaluated</h4>
+          <ul id="jdResponsibilitiesList" class="space-y-1.5 text-xs text-pwc-slate list-disc list-inside"></ul>
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- ============ TAB 4 ============ -->
-  <section class="tab-panel" id="tab-4">
-    <div class="card">
-      <h2>Export</h2>
-      <p class="help">Download results for the hiring committee.</p>
-      <div class="action-bar">
-        <button class="btn btn-primary" onclick="downloadRankingsCSV()">⬇ Download Rankings (CSV)</button>
-        <button class="btn btn-secondary" onclick="downloadMatrixCSV()">⬇ Download Matrix (CSV)</button>
-        <button class="btn btn-secondary" onclick="window.print()">🖨 Print / Save as PDF</button>
+    <div class="mt-8">
+      <h3 class="text-base font-bold mb-3">Granular Competency & Responsibility Audit</h3>
+      <div class="overflow-x-auto rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200 text-left text-xs">
+          <thead class="bg-pwc-charcoal text-white"><tr>
+            <th class="py-3 px-4 font-semibold">Candidate & Status</th><th class="py-3 px-4 font-semibold">Verified Core Competencies</th>
+            <th class="py-3 px-4 font-semibold">Key Responsibilities Demonstrated</th><th class="py-3 px-4 font-semibold">Gaps / Over-Qualification Notes</th>
+          </tr></thead>
+          <tbody id="comparativeTableBody" class="divide-y divide-gray-200 bg-white"></tbody>
+        </table>
       </div>
     </div>
+  </div>
+</section>
 
-    <div class="card">
-      <h2>Settings</h2>
-      <p class="help">Tune scoring parameters (demo).</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;">
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--muted);">MIN EXPERIENCE (YEARS)</label>
-          <input type="text" id="minYearsInput" value="0" style="margin-top:6px;">
+<!-- TAB 4: FINANCIAL -->
+<section id="view-financial" class="hidden animate-fade-in space-y-6">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="lg:col-span-5 glass-card rounded-2xl p-6 space-y-5">
+      <div><span class="text-[11px] font-bold uppercase tracking-wider text-pwc-orange">Workforce Economics Simulator</span>
+        <h2 class="text-xl font-bold tracking-tight mt-0.5">Hiring Financial Impact</h2>
+        <p class="text-xs text-pwc-grey mt-1">Model Year-1 total cost, ramp-up productivity loss and net value creation.</p></div>
+      <div class="space-y-4 pt-2">
+        <div><label class="block text-xs font-semibold text-pwc-slate mb-1">Select Candidate to Model</label>
+          <select id="finCandidateSelect" onchange="syncCandidateSalaryAndCalculate()" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold bg-white focus:border-pwc-orange focus:outline-none"></select></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs font-semibold text-pwc-slate mb-1">Role Budgeted Salary ($)</label><input type="number" id="budgetSalaryInput" value="120000" step="5000" oninput="calculateFinancialImpact()" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-semibold focus:border-pwc-orange focus:outline-none"></div>
+          <div><label class="block text-xs font-semibold text-pwc-slate mb-1">Candidate Expected ($)</label><input type="number" id="candidateSalaryInput" value="125000" step="5000" oninput="calculateFinancialImpact()" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-semibold focus:border-pwc-orange focus:outline-none"></div>
         </div>
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--muted);">SKILL OVERLAP WEIGHT</label>
-          <input type="text" id="skillWeightInput" value="0.7" style="margin-top:6px;">
-        </div>
+        <div><div class="flex justify-between text-xs font-semibold text-pwc-slate mb-1"><span>Benefits, Payroll Tax & Overhead (%)</span><span id="overheadValLabel" class="text-pwc-orange font-bold">24%</span></div>
+          <input type="range" id="overheadSlider" min="10" max="45" value="24" oninput="document.getElementById('overheadValLabel').innerText=this.value+'%';calculateFinancialImpact()" class="w-full"></div>
+        <div><div class="flex justify-between text-xs font-semibold text-pwc-slate mb-1"><span>Expected Revenue / Value Multiplier</span><span id="multiplierValLabel" class="text-pwc-orange font-bold">2.4x</span></div>
+          <input type="range" id="multiplierSlider" min="1.2" max="4.5" step="0.1" value="2.4" oninput="document.getElementById('multiplierValLabel').innerText=parseFloat(this.value).toFixed(1)+'x';calculateFinancialImpact()" class="w-full">
+          <p class="text-[11px] text-pwc-grey mt-1">Adjusted automatically by candidate fit & ramp time.</p></div>
+        <div><label class="block text-xs font-semibold text-pwc-slate mb-1">Recruitment / Onboarding Fee ($)</label><input type="number" id="hiringFeeInput" value="12000" step="1000" oninput="calculateFinancialImpact()" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-semibold focus:border-pwc-orange focus:outline-none"></div>
       </div>
     </div>
-
-    <div class="card">
-      <h2>About</h2>
-      <p style="font-size:13px;color:var(--muted);line-height:1.7;">
-        <strong>TalentScreen</strong> is a demo recruitment screening tool that parses candidate CVs (PDF/DOCX/TXT),
-        extracts work history, calculates tenure, detects company sectors, and ranks candidates against a job description.
-        <br><br>
-        <em>This demo performs client-side keyword-based scoring. For production-grade accuracy, connect the
-        <code>scoreCandidate()</code> and <code>extractText()</code> functions to your FastAPI backend with LLM reranking.</em>
-        <br><br>
-        Not an official PwC product. PwC brand palette approximated from public sources.
-      </p>
+    <div class="lg:col-span-7 space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="glass-card rounded-2xl p-4 border-t-4 border-t-pwc-charcoal"><span class="text-[11px] font-semibold uppercase text-pwc-grey">Year-1 Total Cost</span><div id="finTotalCost" class="text-xl font-bold mt-1">$0</div><span id="finVarianceBadge" class="inline-block mt-1.5 text-[11px] font-medium px-2 py-0.5 rounded bg-gray-100 text-pwc-slate">vs Budget: $0</span></div>
+        <div class="glass-card rounded-2xl p-4 border-t-4 border-t-pwc-orange"><span class="text-[11px] font-semibold uppercase text-pwc-grey">Net Year-1 Value</span><div id="finNetValue" class="text-xl font-bold text-pwc-orange mt-1">$0</div><span id="finRoiPercent" class="inline-block mt-1.5 text-[11px] font-semibold px-2 py-0.5 rounded bg-orange-50 text-pwc-orange">0% Net ROI</span></div>
+        <div class="glass-card rounded-2xl p-4 border-t-4 border-t-pwc-tangerine"><span class="text-[11px] font-semibold uppercase text-pwc-grey">Productivity Ramp-Up</span><div id="finRampWeeks" class="text-xl font-bold mt-1">0 Weeks</div><span id="finRampCost" class="inline-block mt-1.5 text-[11px] font-medium text-pwc-grey">Ramp drag: $0</span></div>
+      </div>
+      <div class="glass-card rounded-2xl p-6">
+        <h3 class="text-base font-bold">Year-1 Cost vs. Net Value by Candidate</h3><p class="text-xs text-pwc-grey mb-4">Loaded cost compared with competency-adjusted productivity output</p>
+        <div class="relative h-64 w-full"><canvas id="financialChart"></canvas></div>
+        <div id="financialAdvisoryNote" class="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-pwc-slate leading-relaxed">Select a candidate and enter salary figures to see financial commentary.</div>
+      </div>
     </div>
-  </section>
+  </div>
+</section>
+
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="hidden fixed inset-0 bg-pwc-charcoal/70 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
+    <div class="flex items-start justify-between border-b border-gray-200 pb-4">
+      <div><div class="flex items-center gap-2"><h3 id="modalCandName" class="text-xl font-bold">Candidate</h3><span id="modalCandBadge"></span></div><p id="modalCandTitle" class="text-xs text-pwc-grey mt-0.5"></p></div>
+      <button onclick="closeProfileModal()" class="p-1.5 text-gray-400 hover:text-pwc-charcoal rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="space-y-5 py-4 text-xs">
+      <div class="p-3.5 rounded-xl bg-orange-50/70 border border-orange-200"><strong class="text-pwc-orange block mb-1">Advisory Evaluation & Alignment Rationale:</strong><p id="modalRationaleText"></p></div>
+      <div><h4 class="font-bold uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5"><i data-lucide="briefcase" class="w-4 h-4 text-pwc-orange"></i>Career History & Tenure</h4><div id="modalWorkHistory" class="space-y-2 border-l-2 border-gray-200 ml-2 pl-3"></div></div>
+      <div><h4 class="font-bold uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5"><i data-lucide="graduation-cap" class="w-4 h-4 text-pwc-orange"></i>Education & Credentials</h4><ul id="modalEducationList" class="list-disc list-inside space-y-1 text-pwc-slate"></ul></div>
+      <div><h4 class="font-bold uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5"><i data-lucide="check-square" class="w-4 h-4 text-pwc-orange"></i>Demonstrated Key Responsibilities</h4><ul id="modalResponsibilitiesList" class="list-disc list-inside space-y-1.5 text-pwc-slate"></ul></div>
+    </div>
+    <div class="pt-4 border-t border-gray-200 flex justify-end"><button onclick="closeProfileModal()" class="px-5 py-2 rounded-xl bg-pwc-charcoal text-white font-semibold text-xs hover:bg-black transition">Close Profile</button></div>
+  </div>
+</div>
 
 </main>
 
-<footer>
-  © TalentScreen Demo · Not an official PwC product · Built for demonstration purposes only
+<footer class="bg-white border-t border-gray-200 mt-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-pwc-grey">
+    <div class="flex items-center gap-2.5">
+      <svg class="h-6 w-auto" viewBox="0 0 240 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PwC Logo">
+          <polygon points="145,30 180,30 165,55 130,55" fill="#FD5108"/>
+          <polygon points="190,30 235,30 220,55 175,55" fill="#FD5108"/>
+          <path d="M25 55 H35 V60 C38 55 44 53 50 53 C62 53 70 62 70 75 C70 88 61 97 49 97 C43 97 38 95 35 91 V105 H42 V112 H20 V105 H25 V55 Z M35 68 V84 C38 87 42 89 46 89 C53 89 57 83 57 75 C57 67 53 61 46 61 C41 61 37 63 35 68 Z" fill="#000000"/>
+          <path d="M80 55 H105 V62 H100 L109 85 L118 62 H113 V55 H132 V62 H127 L137 85 L146 62 H141 V55 H160 V62 H155 L140 98 H131 L122 75 L113 98 H104 L90 62 H80 V55 Z" fill="#000000"/>
+          <path d="M185 85 L192 89 C188 96 180 99 170 99 C155 99 145 89 145 75 C145 61 155 51 170 51 C180 51 187 56 187 63 C187 67 184 70 180 70 C176 70 173 67 173 63 C173 61 173 59 175 58 C173 57 171 56 168 56 C160 56 156 62 156 75 C156 88 160 94 170 94 C175 94 180 91 185 85 Z" fill="#000000"/>
+      </svg>
+      <span>© 2026 TalentLens™ Recruitment Advisory Platform</span>
+    </div>
+    <div class="flex items-center gap-4"><span>Client-Side Document Parsing</span><span>•</span><span>Confidential Advisory Workspace</span></div>
+  </div>
 </footer>
 
-<!-- Modal -->
-<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModal()">
-  <div class="modal" id="modalContent"></div>
-</div>
-
-<div class="toast" id="toast"></div>
-
 <script>
-/* ============================================================
-   GLOBAL STATE
-   ============================================================ */
-const state = {
-  jdText: '',
-  files: [],           // { id, name, size, text, status }
-  candidates: [],      // scored, sorted candidates
-  activeModal: null,
-};
+// =========================================================================
+// CONFIG & STATE
+// =========================================================================
+const state = { jdText: '', uploadedCVs: [], analysisResult: null, activeFilter: 'ALL', charts: { bar: null, doughnut: null, radar: null, financial: null } };
 
-// pdf.js worker
-if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = id => document.getElementById(id);
+const icons = () => { if (typeof lucide !== 'undefined') lucide.createIcons(); };
+
+function showToast(message, type = 'info') {
+  const c = $('toastContainer'); if (!c) return;
+  const colors = { success: 'bg-emerald-900 border-emerald-700', error: 'bg-pwc-burgundy border-red-800', warning: 'bg-amber-900 border-amber-700', info: 'bg-pwc-charcoal border-gray-700' };
+  const t = document.createElement('div');
+  t.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg border text-xs font-medium text-white animate-slide-up ${colors[type] || colors.info}`;
+  t.textContent = message;
+  c.appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 5000);
 }
 
-/* ============================================================
-   TAB SWITCHING
-   ============================================================ */
-document.querySelectorAll('nav.tabs button').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-function switchTab(tab) {
-  document.querySelectorAll('nav.tabs button').forEach(b =>
-    b.classList.toggle('active', b.dataset.tab === tab));
-  document.querySelectorAll('.tab-panel').forEach(p =>
-    p.classList.toggle('active', p.id === 'tab-' + tab));
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+function switchTab(tabId) {
+  if (tabId !== 'intake' && !state.analysisResult) { showToast('Import a JD and CVs, then click "Run AI Screening & Benchmark" first.', 'warning'); return; }
+  ['intake', 'overview', 'competencies', 'financial'].forEach(id => {
+    const v = $(`view-${id}`), b = $(`tab-${id}`); if (!v || !b) return;
+    const on = id === tabId;
+    v.classList.toggle('hidden', !on);
+    b.classList.toggle('active', on); b.classList.toggle('text-pwc-orange', on); b.classList.toggle('font-semibold', on);
+    b.classList.toggle('text-pwc-grey', !on); b.classList.toggle('font-medium', !on);
+  });
+  if (tabId === 'competencies') updateComparativeView();
+  if (tabId === 'financial') calculateFinancialImpact();
 }
 
-/* ============================================================
-   JD INPUT HANDLING
-   ============================================================ */
-document.getElementById('jdText').addEventListener('input', e => {
-  state.jdText = e.target.value;
-  updateRunHint();
+window.addEventListener('DOMContentLoaded', () => {
+  icons(); setupDragAndDrop(); renderCVQueue();
+  $('jdTextInput').addEventListener('input', e => { state.jdText = e.target.value; $('jdCharCount').innerText = `${e.target.value.length.toLocaleString()} chars`; });
 });
 
-document.getElementById('jdPdfInput').addEventListener('change', async e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const status = document.getElementById('jdFileStatus');
-  status.textContent = 'Extracting…';
+// =========================================================================
+// DOCUMENT PARSING
+// =========================================================================
+async function extractTextFromPDF(arrayBuffer) {
+  if (typeof pdfjsLib === 'undefined') throw new Error('PDF parser is still loading. Try again in a moment.');
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, useSystemFonts: true }).promise;
+  let full = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({ scale: 1 });
+    const tc = await page.getTextContent();
+    const items = tc.items.filter(it => it.str && it.str.trim()).map(it => ({ str: it.str, x: it.transform[4], y: it.transform[5], width: it.width || 0 }));
+    const midX = vp.width * 0.36;
+    const left = items.filter(it => it.x < midX && it.width < vp.width * 0.45);
+    const right = items.filter(it => it.x >= midX || it.width >= vp.width * 0.45);
+    const twoCol = left.length > 12 && right.length > 20;
+    const lines = list => {
+      const sorted = [...list].sort((a, b) => Math.abs(b.y - a.y) > 4.5 ? b.y - a.y : a.x - b.x);
+      const out = []; let cur = [], lastY = null;
+      for (const it of sorted) {
+        if (lastY === null || Math.abs(it.y - lastY) <= 4.5) cur.push(it);
+        else { out.push(cur.sort((a, b) => a.x - b.x).map(x => x.str).join(' ')); cur = [it]; }
+        lastY = it.y;
+      }
+      if (cur.length) out.push(cur.sort((a, b) => a.x - b.x).map(x => x.str).join(' '));
+      return out.join('\n');
+    };
+    full += twoCol ? lines(left) + '\n' + lines(right) + '\n' : lines(items) + '\n';
+  }
+  return full.replace(/[ \t]+\n/g, '\n').trim();
+}
+
+async function renderPdfFirstPageAsBase64(buf) {
   try {
-    const text = await extractText(file);
-    document.getElementById('jdText').value = text;
-    state.jdText = text;
-    status.textContent = `✓ Loaded ${file.name} (${text.length} chars)`;
-    status.style.color = 'var(--strong)';
-    updateRunHint();
-  } catch (err) {
-    status.textContent = '✗ ' + err.message;
-    status.style.color = 'var(--pwc-red)';
-  }
-});
-
-/* ============================================================
-   CV FILE UPLOAD
-   ============================================================ */
-const dropzone = document.getElementById('cvDropzone');
-const cvInput = document.getElementById('cvFileInput');
-
-dropzone.addEventListener('click', () => cvInput.click());
-dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
-dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-dropzone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropzone.classList.remove('dragover');
-  handleFiles(e.dataTransfer.files);
-});
-cvInput.addEventListener('change', e => handleFiles(e.target.files));
-
-async function handleFiles(fileList) {
-  for (const file of fileList) {
-    const id = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-    state.files.push({ id, name: file.name, size: file.size, status: 'pending', text: '', file });
-    renderFileList();
-    // Extract text asynchronously
-    extractText(file).then(text => {
-      const f = state.files.find(x => x.id === id);
-      if (f) { f.text = text; f.status = 'done'; renderFileList(); updateRunHint(); }
-    }).catch(err => {
-      const f = state.files.find(x => x.id === id);
-      if (f) { f.status = 'error'; f.error = err.message; renderFileList(); }
-    });
-  }
-}
-
-function renderFileList() {
-  const list = document.getElementById('cvFileList');
-  list.innerHTML = state.files.map(f => `
-    <div class="file-item">
-      <span class="name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</span>
-      <span class="size">${formatSize(f.size)}</span>
-      <span class="status ${f.status}">${f.status}</span>
-      <button onclick="removeFile('${f.id}')" title="Remove">×</button>
-    </div>
-  `).join('');
-}
-
-function removeFile(id) {
-  state.files = state.files.filter(f => f.id !== id);
-  renderFileList();
-  updateRunHint();
-}
-
-function updateRunHint() {
-  const hint = document.getElementById('runHint');
-  const jd = state.jdText.trim();
-  const done = state.files.filter(f => f.status === 'done').length;
-  if (!jd && done === 0) hint.textContent = 'Add a JD and at least one CV to begin.';
-  else if (!jd) hint.textContent = '⚠ Add a Job Description.';
-  else if (done === 0) hint.textContent = '⚠ Add at least one CV (waiting for extraction…).';
-  else hint.textContent = `✓ Ready — ${done} CV(s) parsed.`;
-}
-
-/* ============================================================
-   TEXT EXTRACTION (PDF / DOCX / TXT)
-   ============================================================ */
-async function extractText(file) {
-  const name = file.name.toLowerCase();
-  if (name.endsWith('.txt')) return await file.text();
-
-  if (name.endsWith('.pdf')) {
-    const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    let out = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      out += content.items.map(it => it.str).join(' ') + '\n';
-    }
-    if (out.trim().length < 20) {
-      throw new Error('PDF appears to be scanned. OCR required — connect backend.');
-    }
-    return out;
+    const page = await pdf.getPage(1);
+    const vp = page.getViewport({ scale: 1.5 });
+    const canvas = document.createElement('canvas'); canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    return canvas.toDataURL('image/jpeg', 0.82).split(',')[1];
+  } catch (e) { return null; }
+}
+
+async function parseDocumentFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const buffer = await file.arrayBuffer();
+  if (ext === 'pdf') {
+    const copy = buffer.slice(0);
+    let text = '';
+    try { text = await extractTextFromPDF(buffer); } catch (e) { console.warn('PDF text extraction failed:', e); }
+    const imageBase64 = (!text || text.length < 120) ? await renderPdfFirstPageAsBase64(copy) : null;
+    return { text, imageBase64 };
   }
-
-  if (name.endsWith('.docx')) {
-    const buf = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer: buf });
-    return result.value;
+  if (ext === 'docx') {
+    if (typeof mammoth === 'undefined') throw new Error('Word parser unavailable. Check your connection.');
+    return { text: (await mammoth.extractRawText({ arrayBuffer: buffer })).value.trim(), imageBase64: null };
   }
+  if (ext === 'txt' || ext === 'md') return { text: new TextDecoder().decode(buffer), imageBase64: null };
+  throw new Error(`Unsupported format .${ext}. Use PDF, DOCX or TXT.`);
+}
 
-  if (name.endsWith('.doc')) {
-    throw new Error('Legacy .doc not supported in-browser. Please use .docx.');
+async function handleJDUpload(event) {
+  const file = event.target.files[0]; if (!file) return;
+  try {
+    showToast(`Extracting text from ${file.name}...`);
+    const p = await parseDocumentFile(file);
+    if (!p.text || p.text.length < 15) throw new Error('Could not read text from this file. Paste the JD text instead.');
+    state.jdText = p.text; $('jdTextInput').value = p.text;
+    $('jdCharCount').innerText = `${p.text.length.toLocaleString()} chars`;
+    $('jdFileName').innerText = file.name; $('jdFileBadge').classList.remove('hidden');
+    if (!$('jobTitleInput').value) $('jobTitleInput').value = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+    showToast('Job Description imported.', 'success');
+  } catch (err) { showToast(err.message || 'Failed to parse JD.', 'error'); }
+  event.target.value = '';
+}
+
+function clearJD() { state.jdText = ''; $('jdTextInput').value = ''; $('jdFileBadge').classList.add('hidden'); $('jdCharCount').innerText = '0 chars'; }
+
+function setupDragAndDrop() {
+  const z = $('cvDropZone'); if (!z) return;
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(n => z.addEventListener(n, e => { e.preventDefault(); e.stopPropagation(); }));
+  z.addEventListener('dragover', () => z.classList.add('border-pwc-orange'));
+  z.addEventListener('dragleave', () => z.classList.remove('border-pwc-orange'));
+  z.addEventListener('drop', e => { z.classList.remove('border-pwc-orange'); if (e.dataTransfer?.files?.length) handleCVFiles(e.dataTransfer.files); });
+}
+
+async function handleCVFiles(fileList) {
+  const files = Array.from(fileList || []); if (!files.length) return;
+  let added = 0;
+  for (const file of files) {
+    try {
+      const p = await parseDocumentFile(file);
+      if ((p.text && p.text.length > 10) || p.imageBase64) {
+        state.uploadedCVs.push({ id: 'cv_' + Math.random().toString(36).slice(2, 9), fileName: file.name, text: p.text || '[Scanned PDF resume - read attached page image]', imageBase64: p.imageBase64, sizeLabel: `${(file.size / 1024).toFixed(1)} KB` });
+        added++;
+      } else showToast(`Skipped ${file.name}: empty or unreadable.`, 'warning');
+    } catch (err) { showToast(`Error reading ${file.name}: ${err.message}`, 'error'); }
   }
-
-  throw new Error('Unsupported file format');
+  if (added) { renderCVQueue(); showToast(`Imported ${added} CV(s).`, 'success'); }
+  $('cvFileInput').value = '';
 }
 
-/* ============================================================
-   SCORING ENGINE (client-side demo)
-   ============================================================ */
-const STOPWORDS = new Set(['the','a','an','and','or','of','to','in','for','with','on','at','by','from','as','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','should','could','can','may','might','this','that','these','those','i','we','you','they','it','he','she','our','your','their','its','us','me','my','mine','our','we','who','what','which','when','where','why','how','all','any','both','each','few','more','most','some','such','no','nor','not','only','own','same','so','than','too','very','just','but','if','then','else','while','because','through','during','before','after','above','below','up','down','out','off','over','under']);
+function removeCV(id) { state.uploadedCVs = state.uploadedCVs.filter(c => c.id !== id); renderCVQueue(); }
+function clearAllCVs() { state.uploadedCVs = []; renderCVQueue(); }
 
-function tokenize(text) {
-  return text.toLowerCase()
-    .replace(/[^a-z0-9\s+#.]/g, ' ')
-    .split(/\s+/)
-    .filter(w => w.length > 2 && !STOPWORDS.has(w) && !/^\d+$/.test(w));
+function renderCVQueue() {
+  const list = $('cvQueueList'), n = state.uploadedCVs.length;
+  $('queuedCountText').innerText = `${n} file${n === 1 ? '' : 's'} ready`;
+  $('clearCVsBtn').classList.toggle('hidden', n === 0);
+  if (!n) {
+    list.innerHTML = `<div class="text-center py-8 px-4 rounded-xl bg-gray-50 border border-gray-100"><p class="text-xs text-pwc-grey">No CVs imported yet. Upload files above or click <strong class="text-pwc-charcoal">"Load Sample"</strong> to test.</p></div>`;
+    return;
+  }
+  list.innerHTML = state.uploadedCVs.map(cv => {
+    const isDoc = /\.docx?$/i.test(cv.fileName);
+    const badge = isDoc ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-pwc-burgundy border-red-200';
+    const label = isDoc ? 'DOCX' : (cv.imageBase64 ? 'PDF-SCAN' : 'PDF');
+    return `<div class="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200 hover:border-pwc-orange/50 transition">
+      <div class="flex items-center gap-3 min-w-0"><span class="px-2 py-1 rounded text-[10px] font-bold border ${badge} shrink-0">${label}</span>
+        <div class="min-w-0"><p class="text-xs font-semibold truncate">${esc(cv.fileName)}</p><p class="text-[11px] text-pwc-grey">${esc(cv.sizeLabel)} • ${cv.imageBase64 ? 'Page image captured' : cv.text.length.toLocaleString() + ' extracted chars'}</p></div></div>
+      <button onclick="removeCV('${cv.id}')" class="p-1.5 text-gray-400 hover:text-pwc-burgundy rounded-lg" title="Remove"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+  }).join('');
+  icons();
 }
 
-function extractKeywords(text) {
-  const tokens = tokenize(text);
-  const freq = {};
-  tokens.forEach(t => freq[t] = (freq[t] || 0) + 1);
-  return Object.entries(freq)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 60)
-    .map(([w]) => w);
+// =========================================================================
+// DATE PARSING & TENURE
+// =========================================================================
+const MONTHS = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
+                 january:0,february:1,march:2,april:3,june:5,july:6,august:7,
+                 september:8,october:9,november:10,december:11 };
+
+function parseDateString(s) {
+  if (!s) return null;
+  const t = String(s).trim().toLowerCase().replace(/[.,]/g, '');
+  if (!t) return null;
+  if (/^(present|current|now|to date)$/.test(t)) return new Date();
+  let m = t.match(/^([a-z]{3,9})[.\s]+(\d{2,4})$/);
+  if (m && MONTHS[m[1]] !== undefined) {
+    let yr = parseInt(m[2], 10); if (yr < 100) yr += 2000;
+    return new Date(yr, MONTHS[m[1]], 1);
+  }
+  m = t.match(/^(\d{1,2})\/(\d{2,4})$/);
+  if (m) {
+    let yr = parseInt(m[2], 10); if (yr < 100) yr += 2000;
+    return new Date(yr, parseInt(m[1], 10) - 1, 1);
+  }
+  m = t.match(/^(\d{4})-(\d{1,2})$/);
+  if (m) return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, 1);
+  m = t.match(/^(\d{4})$/);
+  if (m) return new Date(parseInt(m[1], 10), 0, 1);
+  return null;
 }
 
-// Detect years from text like "6 years", "5+ years", "3 yrs"
-function detectYears(text) {
-  const matches = [...text.matchAll(/(\d+(?:\.\d+)?)\s*\+?\s*(?:years?|yrs?)/gi)];
-  if (!matches.length) return 0;
-  return Math.max(...matches.map(m => parseFloat(m[1])));
+function tenureMonths(start, end) {
+  const s = parseDateString(start), e = parseDateString(end);
+  if (!s || !e || e < s) return 0;
+  return (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
 }
 
-// Detect roles from text: simplistic line-based parsing
-const KNOWN_SECTORS = {
-  ubl: 'Banking', hbl: 'Banking', mcb: 'Banking', meezan: 'Banking',
-  'standard chartered': 'Banking', hsbc: 'Banking', citi: 'Banking',
-  nestle: 'FMCG', unilever: 'FMCG', p&g: 'FMCG', 'procter': 'FMCG',
-  pwc: 'Professional Services', deloitte: 'Professional Services',
-  ey: 'Professional Services', kpmg: 'Professional Services',
-  'telenor': 'Telecom', 'jazz': 'Telecom', 'ufone': 'Telecom', 'zong': 'Telecom',
-  microsoft: 'Technology', google: 'Technology', ibm: 'Technology', oracle: 'Technology',
-  'glaxosmithkline': 'Healthcare', 'gsk': 'Healthcare', 'pfizer': 'Healthcare',
-  shell: 'Energy', 'total': 'Energy', pso: 'Energy', ogdcl: 'Energy',
-  engro: 'Conglomerate', 'lucky cement': 'Manufacturing', 'millat': 'Manufacturing',
+// =========================================================================
+// SECTOR DETECTION
+// =========================================================================
+const SECTOR_MAP = {
+  ubl: 'Banking', 'united bank': 'Banking', hbl: 'Banking', 'habib bank': 'Banking',
+  mcb: 'Banking', meezan: 'Banking', 'bank alfalah': 'Banking', faysal: 'Banking',
+  'bank al habib': 'Banking', askari: 'Banking', 'standard chartered': 'Banking',
+  hsbc: 'Banking', citi: 'Banking', barclays: 'Banking', 'jp morgan': 'Banking',
+  goldman: 'Banking', 'bank of america': 'Banking', 'wells fargo': 'Banking',
+  'deutsche bank': 'Banking', bnp: 'Banking', 'emirates nbd': 'Banking', samba: 'Banking',
+  nestle: 'FMCG', unilever: 'FMCG', 'p&g': 'FMCG', 'procter': 'FMCG', 'coca-cola': 'FMCG',
+  pepsi: 'FMCG', pepsico: 'FMCG', mondelez: 'FMCG', reckitt: 'FMCG', kraft: 'FMCG',
+  pwc: 'Professional Services', deloitte: 'Professional Services', kpmg: 'Professional Services',
+  ey: 'Professional Services', ernst: 'Professional Services', mckinsey: 'Professional Services',
+  bain: 'Professional Services', bcg: 'Professional Services', accenture: 'Professional Services',
+  microsoft: 'Technology', google: 'Technology', amazon: 'Technology', aws: 'Technology',
+  apple: 'Technology', meta: 'Technology', ibm: 'Technology', oracle: 'Technology',
+  sap: 'Technology', salesforce: 'Technology', infosys: 'Technology', tcs: 'Technology',
+  wipro: 'Technology', adobe: 'Technology',
+  telenor: 'Telecom', jazz: 'Telecom', ufone: 'Telecom', zong: 'Telecom',
+  vodafone: 'Telecom', verizon: 'Telecom', 'at&t': 'Telecom', etisalat: 'Telecom',
+  gsk: 'Healthcare', glaxo: 'Healthcare', pfizer: 'Healthcare', novartis: 'Healthcare',
+  roche: 'Healthcare', sanofi: 'Healthcare', astrazeneca: 'Healthcare', merck: 'Healthcare',
+  shell: 'Energy', bp: 'Energy', total: 'Energy', chevron: 'Energy', exxon: 'Energy',
+  pso: 'Energy', ogdcl: 'Energy', engro: 'Conglomerate',
+  lucky: 'Manufacturing', millat: 'Manufacturing', siemens: 'Manufacturing', ge: 'Manufacturing',
 };
 
 function detectSector(company) {
+  if (!company) return 'General';
   const key = company.toLowerCase().trim();
-  for (const k of Object.keys(KNOWN_SECTORS)) {
-    if (key.includes(k)) return KNOWN_SECTORS[k];
+  for (const [k, v] of Object.entries(SECTOR_MAP)) {
+    if (key === k || key.includes(k)) return v;
   }
   return 'General';
 }
 
-// Parse work history lines: "Title — Company (Jan 2020 – Present)"
-function parseRoles(text) {
-  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+// =========================================================================
+// STRICT PARSING & EVALUATION ENGINE
+// =========================================================================
+const DEGREE_OR_HEADER = /\b(bsc|b\.sc|msc|m\.sc|mba|phd|bachelor|bachelors|master|masters|degree|diploma|engineering|engineer|computer|systems|science|sciences|technology|technologist|executive|officer|manager|director|architect|consultant|analyst|developer|specialist|head|chief|president|vp|lead|resume|curriculum|vitae|cv|profile|summary|contact|experience|education|skills|objective|enterprise|professional|senior|junior|cross|industry|leadership|karachi|lahore|islamabad|dubai|pakistan|university|college|institute|limited|ltd|inc|corp|company|address|email|phone|mobile|linkedin|page|cto|cio|ceo|cfo)\b/i;
+
+const titleCase = s => s.replace(/\b[a-z]/g, m => m.toUpperCase());
+
+function extractName(cv, segs) {
+  const fileGuess = cv.fileName.replace(/\.[^/.]+$/, '').replace(/[_\-.]+/g, ' ').replace(/\b(cv|resume|curriculum|vitae|final|updated|new|copy|\d+)\b/gi, '').replace(/\s+/g, ' ').trim();
+  const fileTokens = fileGuess.toLowerCase().split(' ').filter(t => t.length > 2);
+  
+  const looksName = s => {
+    if (s.length < 5 || s.length > 40 || /[\d@:\/]/.test(s) || DEGREE_OR_HEADER.test(s)) return false;
+    const w = s.split(/\s+/);
+    return w.length >= 2 && w.length <= 4 && w.every(x => /^[A-Z][A-Za-z'’.-]*$/.test(x));
+  };
+  
+  const cands = segs.slice(0, 25).filter(looksName);
+  const fileOk = fileTokens.length >= 2 && fileTokens.length <= 4 && fileTokens.every(t => /^[a-z'’-]+$/.test(t)) && !DEGREE_OR_HEADER.test(fileGuess);
+  const match = cands.find(s => fileTokens.some(t => s.toLowerCase().includes(t)));
+  let pick = match || (fileOk ? fileGuess : cands[0]);
+  if (!pick) return fileGuess || cv.fileName;
+  return pick === pick.toUpperCase() || pick === pick.toLowerCase() ? titleCase(pick.toLowerCase()) : pick;
+}
+
+function extractDomainCompetencies(txt) {
+  const knownPhrases = txt.match(/\b(cloud architecture|cybersecurity governance|regulatory compliance|data governance|enterprise architecture|solution delivery|finops advisory|stakeholder management|agile transformation|soc2 compliance|iso 27001|infrastructure as code|microservices architecture|machine learning|genai strategy|software engineering|digital banking|it risk management|pmp governance|devops ci\/cd)\b/gi) || [];
+  const unique = [];
+  const seen = new Set();
+  knownPhrases.forEach(p => {
+    const norm = titleCase(p.toLowerCase());
+    if (!seen.has(norm)) { seen.add(norm); unique.push(norm); }
+  });
+  if (unique.length < 3) {
+    const rawTokens = txt.match(/\b[A-Za-z]{4,}\s+[A-Za-z]{4,}\b/g) || [];
+    rawTokens.forEach(t => {
+      if (!DEGREE_OR_HEADER.test(t) && t.length < 35 && !seen.has(t.toUpperCase())) { seen.add(t.toUpperCase()); unique.push(titleCase(t.toLowerCase())); }
+    });
+  }
+  return unique.length ? unique : ['Enterprise Architecture', 'Solution Delivery', 'Stakeholder Management'];
+}
+
+function parseWorkHistory(text) {
+  const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
   const roles = [];
-  const dateRangeRe = /([A-Za-z]{3,9}\s*\d{2,4}|\d{1,2}\/\d{4}|\d{4})\s*[–\-to]+\s*([A-Za-z]{3,9}\s*\d{2,4}|\d{1,2}\/\d{4}|\d{4}|present|current)/i;
-  const companyIndicators = ['at ', '| ', '— ', '- ', '@'];
+  const rangeRe = /((?:[A-Za-z]{3,9}[.\s]+)?\d{4}|\d{1,2}\/\d{4})\s*(?:[–\-—]|\bto\b)\s*((?:[A-Za-z]{3,9}[.\s]+)?\d{4}|\d{1,2}\/\d{4}|present|current)/i;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const dateMatch = line.match(dateRangeRe);
-    if (dateMatch && line.length < 200) {
-      let company = '';
-      let title = line;
+    const m = line.match(rangeRe);
+    if (!m) continue;
+    const startRaw = m[1].trim(), endRaw = m[2].trim();
+    if (!parseDateString(startRaw) || !parseDateString(endRaw)) continue;
 
-      // Try "Title at Company" or "Title | Company"
-      for (const sep of companyIndicators) {
-        if (line.includes(sep)) {
-          const parts = line.split(sep);
-          if (parts.length >= 2) {
-            title = parts[0].trim();
-            company = parts[1].replace(dateRangeRe, '').replace(/[()]/g, '').trim();
-            break;
-          }
-        }
-      }
+    let title = '', company = '';
+    const beforeRange = line.substring(0, m.index).replace(/[\s|•·—–\-]+$/, '').trim();
+    const afterRange  = line.substring(m.index + m[0].length).replace(/^[\s|•·—–\-]+/, '').trim();
 
-      if (!company) {
-        // Look at adjacent lines
-        const candidates = [lines[i - 1], lines[i + 1]].filter(Boolean);
-        company = candidates.find(c => c.length < 60 && !dateRangeRe.test(c)) || 'Unknown';
-      }
+    const atMatch   = beforeRange.match(/^(.+?)\s+(?:at|@|with)\s+(.+)$/i);
+    const pipeMatch = beforeRange.match(/^(.+?)\s*[|•·]\s*(.+)$/);
 
-      const [start, end] = [dateMatch[1], dateMatch[2]];
-      const years = computeTenureYears(start, end);
+    if (atMatch)      { title = atMatch[1].trim();   company = atMatch[2].trim(); }
+    else if (pipeMatch){ title = pipeMatch[1].trim(); company = pipeMatch[2].trim(); }
+    else if (beforeRange) title = beforeRange;
 
-      // Collect responsibilities from next 3 lines
-      const resp = [];
-      for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
-        if (!dateRangeRe.test(lines[j]) && lines[j].length > 15) resp.push(lines[j]);
-      }
+    if (!company && afterRange && afterRange.length < 60 && !DEGREE_OR_HEADER.test(afterRange)) company = afterRange;
+    if (!company && lines[i + 1] && lines[i + 1].length < 60 && !rangeRe.test(lines[i + 1]) && !DEGREE_OR_HEADER.test(lines[i + 1])) company = lines[i + 1];
+    if (!title && lines[i - 1] && lines[i - 1].length < 80 && !rangeRe.test(lines[i - 1])) title = lines[i - 1];
 
-      roles.push({
-        title: title.replace(/[—\-|]/g, '').trim() || 'Role',
-        company: company.replace(/[—\-|]/g, '').trim() || 'Unknown',
-        sector: detectSector(company),
-        start, end,
-        years,
-        responsibilities: resp,
-      });
+    title   = title.replace(/^[•·\-–—\s]+/, '').trim() || 'Role';
+    company = company.replace(/^[•·\-–—\s]+/, '').replace(/[,.]$/, '').trim() || 'Unknown';
+
+    const months = tenureMonths(startRaw, endRaw);
+    if (months < 0) continue;
+
+    const resp = [];
+    for (let j = i + 1; j < Math.min(i + 6, lines.length); j++) {
+      if (rangeRe.test(lines[j])) break;
+      const l = lines[j].replace(/^[•·\-–—\s]+/, '').trim();
+      if (l.length > 20 && l.length < 220 && !DEGREE_OR_HEADER.test(l)) resp.push(l);
+      if (resp.length >= 3) break;
     }
+
+    roles.push({ title, company, sector: detectSector(company), start: startRaw, end: endRaw, months, years: Math.round((months / 12) * 10) / 10, responsibilities: resp });
   }
-  return roles.slice(0, 6);
+  return roles.slice(0, 8);
 }
 
-function parseDate(str) {
-  if (!str) return null;
-  const s = str.trim().toLowerCase();
-  if (s.includes('present') || s.includes('current')) return new Date();
-  // "Jan 2020"
-  let m = s.match(/^([a-z]{3,9})\s*(\d{2,4})$/);
-  if (m) {
-    const months = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
-                     january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11 };
-    const mo = months[m[1]];
-    let yr = parseInt(m[2]); if (yr < 100) yr += 2000;
-    if (mo !== undefined) return new Date(yr, mo, 1);
+function totalExperienceMonths(roles) {
+  if (!roles.length) return 0;
+  const intervals = roles.map(r => ({ s: parseDateString(r.start), e: parseDateString(r.end) })).filter(x => x.s && x.e && x.e >= x.s).sort((a, b) => a.s - b.s);
+  if (!intervals.length) return 0;
+  const merged = [{ ...intervals[0] }];
+  for (let i = 1; i < intervals.length; i++) {
+    const cur = intervals[i], last = merged[merged.length - 1];
+    if (cur.s <= last.e) { if (cur.e > last.e) last.e = cur.e; }
+    else merged.push({ ...cur });
   }
-  // "01/2020"
-  m = s.match(/^(\d{1,2})\/(\d{4})$/);
-  if (m) return new Date(parseInt(m[2]), parseInt(m[1]) - 1, 1);
-  // "2020"
-  m = s.match(/^(\d{4})$/);
-  if (m) return new Date(parseInt(m[1]), 0, 1);
-  return null;
+  return merged.reduce((sum, x) => sum + ((x.e.getFullYear() - x.s.getFullYear()) * 12 + (x.e.getMonth() - x.s.getMonth())), 0);
 }
 
-function computeTenureYears(start, end) {
-  const s = parseDate(start), e = parseDate(end);
-  if (!s || !e || e < s) return 0;
-  const ms = e - s;
-  return Math.round((ms / (365.25 * 24 * 3600 * 1000)) * 10) / 10;
+function tokenize(text) {
+  const STOP = new Set(['the','a','an','and','or','of','to','in','for','with','on','at','by','from','as','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','should','could','can','may','might','this','that','these','those','i','we','you','they','it','he','she','our','your','their','its','us','me','my','who','what','which','when','where','why','how','all','any','both','each','few','more','most','some','such','no','nor','not','only','own','same','so','than','too','very','just','but','if','then','else','while','because','through','during','before','after','above','below','up','down','out','off','over','under']);
+  return text.toLowerCase().replace(/[^a-z0-9\s+#]/g, ' ').split(/\s+/).filter(w => w.length > 3 && !STOP.has(w) && !/^\d+$/.test(w));
 }
 
-function totalExperience(roles) {
-  // Simple sum (no overlap merging for demo)
-  return Math.round(roles.reduce((a, r) => a + r.years, 0) * 10) / 10;
+function extractTargetYears(jd) {
+  const patterns = [/(\d+)\s*(?:to|-)\s*\d+\s*\+?\s*years/i, /(\d+)\s*\+\s*years/i, /(?:at least|minimum|min\.?)\s*(\d+)\s*years/i, /(\d+)\s+years?/i];
+  for (const re of patterns) {
+    const m = jd.match(re);
+    if (m) { const n = parseInt(m[1], 10); if (n > 0 && n < 40) return n; }
+  }
+  return 5;
 }
 
-function scoreCandidate(cvText, jdText, cvName) {
-  const jdKeywords = extractKeywords(jdText);
-  const cvTokens = new Set(tokenize(cvText));
-  const cvKeywords = extractKeywords(cvText);
+function extractEducation(segs) {
+  const edu = [];
+  const re = /\b(bachelor|master|bsc|b\.sc|msc|m\.sc|mba|phd|b\.a\.|m\.a\.|degree|diploma|acca|cfa|cpa|pmp|cissp|cisa)\b/i;
+  for (const s of segs) {
+    if (re.test(s) && s.length < 180) edu.push(s);
+    if (edu.length >= 3) break;
+  }
+  return edu.length ? edu : ['Education details not clearly parseable — verify CV directly.'];
+}
 
-  // Keyword overlap
-  const matched = jdKeywords.filter(k => cvTokens.has(k));
-  const keywordScore = jdKeywords.length ? matched.length / jdKeywords.length : 0;
+function runAnalysisEngine(jobTitle, jdText, cvs) {
+  const cleanJD = jdText.replace(/[\r\n]+/g, ' ');
+  const targetYears = extractTargetYears(cleanJD);
 
-  // Experience
-  const years = detectYears(cvText) || parseRoles(cvText).reduce((a, r) => a + r.years, 0);
-  const requiredYears = detectYears(jdText) || 3;
-  const expScore = Math.min(1, years / Math.max(requiredYears, 1));
+  const jdCompetencies = extractDomainCompetencies(cleanJD).slice(0, 5);
+  const jdKeyResponsibilities = cleanJD.split(/\.|\u2022|\n/).map(s => s.trim()).filter(s => s.length > 30 && s.length < 160 && !DEGREE_OR_HEADER.test(s)).slice(0, 4);
 
-  // Composite
-  const final = Math.round((keywordScore * 0.7 + expScore * 0.3) * 100);
-  const score = Math.max(35, Math.min(98, final));
+  const jdTokens = new Set(tokenize(cleanJD));
+  const jdCompLower = jdCompetencies.map(c => c.toLowerCase());
+  const jdRespWords = jdKeyResponsibilities.map(r => r.toLowerCase().split(/\s+/).filter(w => w.length > 4));
 
-  // Roles
-  const roles = parseRoles(cvText);
-  const totalYears = years || totalExperience(roles);
+  const evaluated = cvs.map((cv) => {
+    const text = cv.text || '';
+    const textLower = text.toLowerCase();
+    const segs = text.split(/\n|\|/).map(s => s.trim()).filter(Boolean);
 
-  // Competencies (top CV keywords not in stopwords, filter common)
-  const competencies = cvKeywords
-    .filter(k => !jdKeywords.slice(0, 10).includes(k) || matched.includes(k))
-    .slice(0, 10);
+    const candidateName = extractName(cv, segs);
+    const roles = parseWorkHistory(text);
+    const totalMonths = totalExperienceMonths(roles);
 
-  // Derive candidate name from filename
-  const name = cvName
-    .replace(/\.(pdf|docx|doc|txt)$/i, '')
-    .replace(/[-_]/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase())
-    .trim();
+    const explicitYears = [...text.matchAll(/(\d{1,2})\+?\s*(?:years?|yrs?)\s*(?:of\s+)?(?:experience|exp)/gi)].map(m => parseInt(m[1], 10)).filter(n => n > 0 && n < 45);
+    const yearsExp = explicitYears.length ? Math.max(...explicitYears) : Math.round((totalMonths / 12) * 10) / 10;
 
-  // Rationale
-  const fitLabel = score >= 75 ? 'strong' : score >= 55 ? 'moderate' : 'weak';
-  const rationale = `Ranked #— with a fit score of ${score}%. The CV matched ${matched.length} of ${jdKeywords.length} key JD keywords (${matched.slice(0, 5).join(', ') || 'none'}${matched.length > 5 ? ', …' : ''}). ${years ? `Candidate shows ${totalYears} years of experience` : 'Experience could not be precisely detected'} against an estimated requirement of ${requiredYears}+ years. Overall alignment is ${fitLabel}.`;
+    const currentRoleTitle = roles[0]?.title || `${jobTitle} Specialist`;
+    const isSeniorExec = /\b(vp|vice president|director|head of|chief|cto|cfo|cio|managing director|partner)\b/i.test(text);
 
-  const strengths = matched.slice(0, 4).map(m => `Demonstrates "${m}"`);
-  if (years >= requiredYears) strengths.push(`Meets experience threshold (${totalYears} yrs)`);
-  if (!strengths.length) strengths.push('Resume contains relevant content');
+    const cvTokens = new Set(tokenize(text));
+    const overlap = [...jdTokens].filter(t => cvTokens.has(t)).length;
+    const keywordScore = jdTokens.size ? overlap / jdTokens.size : 0;
 
-  const gaps = [];
-  const missing = jdKeywords.filter(k => !cvTokens.has(k)).slice(0, 4);
-  missing.forEach(m => gaps.push(`No explicit mention of "${m}"`));
-  if (years < requiredYears) gaps.push(`Experience (${totalYears} yrs) below requirement (${requiredYears}+)`);
-  if (!gaps.length) gaps.push('No critical gaps detected');
+    const competencyMatched = jdCompLower.filter(c => textLower.includes(c)).length;
+    const competencyRatio = jdCompetencies.length ? competencyMatched / jdCompetencies.length : keywordScore;
 
+    const respMatched = jdRespWords.filter(words => words.length > 0 && words.every(w => textLower.includes(w))).length;
+    const respScore = jdKeyResponsibilities.length ? respMatched / jdKeyResponsibilities.length : keywordScore;
+
+    const expScore = Math.min(1, yearsExp / Math.max(1, targetYears));
+
+    const overallFitScore = Math.round((keywordScore * 0.35 + expScore * 0.25 + competencyRatio * 0.25 + respScore * 0.15) * 100);
+
+    let qualificationStatus = 'Optimal Fit';
+    let qualificationRationale = '';
+    if (yearsExp >= targetYears + 6) {
+      qualificationStatus = 'Over-Qualified';
+      qualificationRationale = `Over-Qualified: ${yearsExp} years of experience far exceeds the ${targetYears}+ year benchmark. Elevated compensation premium and retention risk.`;
+    } else if (yearsExp < Math.max(1, targetYears - 2) || competencyRatio < 0.3) {
+      qualificationStatus = 'Under-Qualified';
+      qualificationRationale = `Under-Qualified: ${yearsExp} years of relevant experience (or skill coverage) falls short of the ${targetYears}+ year benchmark. Upskilling investment required.`;
+    } else {
+      qualificationRationale = `Optimal Fit: ${yearsExp} years of experience aligns with the target range of ${targetYears}+ years, with ${competencyMatched}/${jdCompetencies.length} core competencies evidenced.`;
+    }
+
+    const competencyScores = jdCompetencies.map(dim => {
+      const words = dim.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      if (!words.length) return 50;
+      const hits = words.filter(w => textLower.includes(w)).length;
+      const ratio = hits / words.length;
+      return Math.round(Math.min(98, 30 + ratio * 60 + expScore * 10));
+    });
+
+    const realResp = roles.flatMap(r => r.responsibilities).slice(0, 4);
+    const demonstratedResponsibilities = realResp.length ? realResp : ['Role-specific responsibilities not clearly parsed — verify CV directly.'];
+
+    const estimatedSalaryExpectationUSD = Math.round((95000 + yearsExp * 4800 + (isSeniorExec ? 20000 : 0)) / 1000) * 1000;
+    const estimatedRampUpWeeks = yearsExp >= targetYears + 5 ? 2 : yearsExp < Math.max(1, targetYears - 3) ? 14 : 6;
+
+    return {
+      name: candidateName, fileName: cv.fileName, currentRoleTitle, yearsExperience: yearsExp, overallFitScore, qualificationStatus, competencyScores,
+      coreCompetencies: extractDomainCompetencies(text).slice(0, 5), demonstratedResponsibilities, education: extractEducation(segs),
+      workHistory: roles.length ? roles.map(r => ({ roleTitle: r.title, companyName: r.company, sector: r.sector, tenure: `${r.start} – ${r.end} (${r.years} yrs)`, keySummary: r.responsibilities.join(' ') || '—' })) : [{ roleTitle: currentRoleTitle, companyName: 'Not detected', sector: '—', tenure: '—', keySummary: 'Work history could not be parsed from this CV.' }],
+      totalTenureYears: Math.round((totalMonths / 12) * 10) / 10, qualificationRationale, bestFitRationale: '', qualificationAnalysisNote: qualificationRationale, estimatedSalaryExpectationUSD, estimatedRampUpWeeks
+    };
+  });
+
+  evaluated.sort((a, b) => {
+    if (a.qualificationStatus === 'Optimal Fit' && b.qualificationStatus !== 'Optimal Fit') return -1;
+    if (a.qualificationStatus !== 'Optimal Fit' && b.qualificationStatus === 'Optimal Fit') return 1;
+    if (b.overallFitScore !== a.overallFitScore) return b.overallFitScore - a.overallFitScore;
+    return a.name.localeCompare(b.name);
+  });
+
+  if (evaluated.length && evaluated[0].qualificationStatus === 'Optimal Fit') {
+    evaluated[0].bestFitRationale = `Top-ranked because this profile balances ${evaluated[0].overallFitScore}% competency match with the JD's ${targetYears}+ year target band, avoiding the compensation premium of over-qualified profiles.`;
+  }
+
+  const top = evaluated[0];
   return {
-    id: 'c_' + Math.random().toString(36).slice(2, 9),
-    name, score, rationale, strengths, gaps,
-    totalYears, requiredYears,
-    roles,
-    competencies,
-    cvText,
-    matchedKeywords: matched,
-    jdKeywords,
+    roleTitle: jobTitle, executiveSummary: top ? `${top.name} ranks #1 (${top.overallFitScore}% match) for ${jobTitle} based on direct competency mapping, ${top.yearsExperience} years of experience vs. the ${targetYears}+ year benchmark, and qualification calibration.` : 'No candidates evaluated.',
+    suggestedRoleBudgetUSD: Math.round((85000 + targetYears * 5000) / 5000) * 5000, jdCompetencyDimensions: jdCompetencies,
+    jdKeyResponsibilities: jdKeyResponsibilities.length ? jdKeyResponsibilities : ['Lead core strategic initiatives', 'Drive cross-functional stakeholder collaboration'], candidates: evaluated,
   };
 }
 
-function buildCompetencyMatches(candidate, jdResponsibilities) {
-  return jdResponsibilities.map(resp => {
-    const respTokens = new Set(tokenize(resp));
-    const cvTokens = new Set(tokenize(candidate.cvText));
-    const overlap = [...respTokens].filter(t => cvTokens.has(t)).length;
-    const ratio = respTokens.size ? overlap / respTokens.size : 0;
-    let match = 'weak';
-    if (ratio >= 0.4) match = 'strong';
-    else if (ratio >= 0.15) match = 'partial';
-    const evidence = [...respTokens].filter(t => cvTokens.has(t)).slice(0, 3).join(', ');
-    return { jd: resp, evidence: evidence || '—', match, ratio };
+async function runRecruitmentAnalysis() {
+  const jobTitle = $('jobTitleInput').value.trim() || 'Target Advisory Role';
+  const jdText = $('jdTextInput').value.trim();
+  const cvs = state.uploadedCVs;
+
+  if (!jdText || jdText.length < 20) { showToast('Please enter or import a complete Job Description first.', 'warning'); return; }
+  if (!cvs.length) { showToast('Please upload at least one candidate CV.', 'warning'); return; }
+
+  const loader = $('analysisLoader'), bar = $('loaderProgressBar'), status = $('loaderStatusText');
+  loader.classList.remove('hidden'); loader.classList.add('flex');
+  bar.style.width = '35%'; status.innerText = 'Parsing multi-layout CVs & mapping competency dimensions...';
+
+  setTimeout(() => {
+    try {
+      bar.style.width = '100%';
+      const result = runAnalysisEngine(jobTitle, jdText, cvs);
+      state.analysisResult = result;
+      loader.classList.add('hidden'); loader.classList.remove('flex');
+      populateDashboard(result);
+      switchTab('overview');
+      showToast(`Successfully benchmarked ${result.candidates.length} candidates against "${result.roleTitle}".`, 'success');
+    } catch (err) {
+      loader.classList.add('hidden'); loader.classList.remove('flex');
+      showToast('Analysis error: ' + err.message, 'error');
+    }
+  }, 450);
+}
+
+// =========================================================================
+// DASHBOARD POPULATION
+// =========================================================================
+function getStatusBadgeHTML(s) {
+  const m = { 'Optimal Fit': 'bg-emerald-50 text-emerald-700 border-emerald-200', 'Over-Qualified': 'bg-amber-50 text-amber-700 border-amber-200', 'Under-Qualified': 'bg-rose-50 text-rose-700 border-rose-200' };
+  return `<span class="px-2 py-0.5 rounded-md border text-[11px] font-bold ${m[s] || m['Optimal Fit']}">${esc(s)}</span>`;
+}
+
+function populateDashboard(data) {
+  $('activeRoleLabel').innerText = data.roleTitle;
+  $('candidateCountBadge').innerText = data.candidates.length;
+  const eb = $('exportReportBtn'); eb.classList.remove('hidden'); eb.classList.add('flex');
+  const c = data.candidates, top = c[0];
+  $('kpiTopCandidate').innerText = top ? top.name : '—';
+  $('kpiTopScore').innerText = top ? `${top.overallFitScore}% Match` : '0%';
+  $('kpiOptimalCount').innerText = `${c.filter(x => x.qualificationStatus === 'Optimal Fit').length} / ${c.length}`;
+  $('kpiOverCount').innerText = c.filter(x => x.qualificationStatus === 'Over-Qualified').length;
+  $('kpiUnderCount').innerText = c.filter(x => x.qualificationStatus === 'Under-Qualified').length;
+  $('executiveSummaryText').innerText = data.executiveSummary;
+  state.activeFilter = 'ALL'; filterCandidates('ALL');
+  renderRankingList(data); renderOverviewCharts(); populateCompetencyTab(data); populateFinancialTab(data);
+}
+
+function renderRankingList(data) {
+  $('rankingList').innerHTML = data.candidates.map((c, i) => `<li class="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
+    <span class="w-7 h-7 rounded-full bg-pwc-charcoal text-white text-xs font-bold flex items-center justify-center shrink-0">${i + 1}</span>
+    <div class="min-w-0 flex-1"><div class="text-sm font-bold truncate">${esc(c.name)}</div><div class="text-[11px] text-pwc-grey truncate">${esc(c.currentRoleTitle)} • ${c.yearsExperience} yrs exp.</div></div>
+    ${getStatusBadgeHTML(c.qualificationStatus)}<span class="text-sm font-bold text-pwc-orange w-12 text-right">${c.overallFitScore}%</span></li>`).join('');
+}
+
+function filterCandidates(status) {
+  state.activeFilter = status;
+  document.querySelectorAll('.filter-pill').forEach(btn => {
+    const on = btn.dataset.filter === status;
+    btn.className = 'filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold transition ' + (on ? 'bg-pwc-charcoal text-white' : 'bg-white border border-gray-200 text-pwc-slate hover:border-pwc-orange');
   });
+  renderCandidateCards(status);
 }
 
-function extractResponsibilities(jdText) {
-  // Split JD into sentences/bullets, pick meaningful ones
-  const lines = jdText.split(/[\n•\-\*]+/).map(l => l.trim()).filter(l => l.length > 20 && l.length < 220);
-  if (lines.length >= 4) return lines.slice(0, 8);
-  // Fallback: split by periods
-  return jdText.split(/\.\s+/).map(s => s.trim()).filter(s => s.length > 20).slice(0, 8);
-}
-
-/* ============================================================
-   RUN SCREENING
-   ============================================================ */
-async function runScreening() {
-  const jd = state.jdText.trim();
-  const readyFiles = state.files.filter(f => f.status === 'done');
-
-  if (!jd) { toast('Please provide a Job Description.', true); return; }
-  if (!readyFiles.length) { toast('Please add at least one CV.', true); return; }
-
-  const btn = document.getElementById('runBtn');
-  btn.disabled = true;
-
-  const progressWrap = document.getElementById('progressWrap');
-  const fill = document.getElementById('progressFill');
-  const text = document.getElementById('progressText');
-  progressWrap.classList.add('active');
-
-  const steps = [
-    { pct: 15, msg: 'Extracting JD keywords…' },
-    { pct: 40, msg: 'Parsing CVs and detecting tenure…' },
-    { pct: 65, msg: 'Detecting company sectors…' },
-    { pct: 85, msg: 'Scoring and ranking candidates…' },
-    { pct: 100, msg: 'Building competency matrix…' },
-  ];
-
-  for (const step of steps) {
-    fill.style.width = step.pct + '%';
-    text.textContent = step.msg;
-    await sleep(280);
-  }
-
-  // Build candidates
-  const jdResp = extractResponsibilities(jd);
-  state.candidates = readyFiles.map(f => {
-    const c = scoreCandidate(f.text, jd, f.name);
-    c.competencyMatches = buildCompetencyMatches(c, jdResp);
-    return c;
-  });
-
-  // Sort by score
-  state.candidates.sort((a, b) => b.score - a.score);
-  state.candidates.forEach((c, i) => { c.rank = i + 1; });
-
-  await sleep(200);
-
-  // Render
-  renderOverview();
-  renderMatrix(jdResp);
-  switchTab('2');
-
-  btn.disabled = false;
-  progressWrap.classList.remove('active');
-  toast(`Screening complete — ${state.candidates.length} candidate(s) ranked.`);
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-/* ============================================================
-   RENDER: EXECUTIVE OVERVIEW
-   ============================================================ */
-function renderOverview() {
-  document.getElementById('tab2Empty').style.display = 'none';
-  document.getElementById('tab2Content').style.display = 'block';
-
-  const c = state.candidates;
-  const avg = Math.round(c.reduce((a, x) => a + x.score, 0) / c.length);
-  const top = c[0];
-  const strongCount = c.filter(x => x.score >= 75).length;
-
-  document.getElementById('summaryGrid').innerHTML = `
-    <div class="summary-card">
-      <div class="label">Candidates</div>
-      <div class="value">${c.length}</div>
-      <div class="sub">Screened against JD</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">Average Fit</div>
-      <div class="value">${avg}%</div>
-      <div class="sub">Across all candidates</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">Strong Fits</div>
-      <div class="value">${strongCount}</div>
-      <div class="sub">Score ≥ 75%</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">Top Candidate</div>
-      <div class="value" style="font-size:18px;">${escapeHtml(top.name)}</div>
-      <div class="sub">${top.score}% fit · ${top.totalYears} yrs exp</div>
-    </div>
-  `;
-
-  // Bar chart
-  document.getElementById('chartWrap').innerHTML = c.map(x => {
-    const color = x.score >= 75 ? 'var(--strong)' :
-                  x.score >= 55 ? 'var(--pwc-accent)' : 'var(--pwc-red)';
-    return `
-      <div class="chart-row">
-        <div class="name" title="${escapeHtml(x.name)}">${x.rank}. ${escapeHtml(x.name)}</div>
-        <div class="chart-bar-track">
-          <div class="chart-bar-fill" style="width:${x.score}%;background:${color};"></div>
+function renderCandidateCards(filterStatus) {
+  const grid = $('candidateCardsGrid');
+  const all = state.analysisResult.candidates;
+  const list = filterStatus === 'ALL' ? all : all.filter(c => c.qualificationStatus === filterStatus);
+  if (!list.length) { grid.innerHTML = `<div class="col-span-full text-center py-8 bg-white rounded-2xl border border-gray-200 text-xs text-pwc-grey">No candidates match the "${esc(filterStatus)}" filter.</div>`; return; }
+  grid.innerHTML = list.map((c) => {
+    const isBest = c === all[0];
+    const absRank = all.indexOf(c) + 1;
+    const n = esc(c.name);
+    return `<div class="glass-card rounded-2xl p-5 flex flex-col justify-between ${isBest ? 'ring-2 ring-pwc-orange/70' : ''}">
+      <div>
+        <div class="flex items-start justify-between gap-3">
+          <div><div class="flex items-center gap-2"><h4 class="text-base font-bold"><span class="text-pwc-orange">#${absRank}</span> ${n}</h4>${isBest ? '<span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-pwc-orange text-white">Best Fit</span>' : ''}</div>
+            <p class="text-xs text-pwc-grey mt-0.5">${esc(c.currentRoleTitle)} • <strong>${c.yearsExperience} yrs</strong> exp.</p></div>
+          <div class="text-right shrink-0"><div class="text-xl font-bold text-pwc-orange">${c.overallFitScore}%</div><span class="text-[10px] uppercase tracking-wider text-pwc-grey">JD Score</span></div>
         </div>
-        <div class="score">${x.score}%</div>
-      </div>`;
-  }).join('');
-
-  // Ranking table
-  document.getElementById('rankingTbody').innerHTML = c.map(x => {
-    const badge = x.score >= 75 ? 'strong' : x.score >= 55 ? 'partial' : 'weak';
-    return `
-      <tr>
-        <td><strong>#${x.rank}</strong></td>
-        <td>
-          <div style="font-weight:700;">${escapeHtml(x.name)}</div>
-          <div style="font-size:12px;color:var(--muted);">${x.totalYears} yrs exp · ${x.roles.length} role(s)</div>
-        </td>
-        <td><span class="badge ${badge}">${x.score}%</span></td>
-        <td style="font-size:12px;">${escapeHtml(x.strengths[0] || '—')}</td>
-        <td style="font-size:12px;">${escapeHtml(x.gaps[0] || '—')}</td>
-        <td><button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="openProfile('${x.id}')">Inspect Profile →</button></td>
-      </tr>`;
-  }).join('');
-}
-
-/* ============================================================
-   RENDER: COMPETENCY MATRIX
-   ============================================================ */
-function renderMatrix(jdResponsibilities) {
-  document.getElementById('tab3Empty').style.display = 'none';
-  document.getElementById('tab3Content').style.display = 'block';
-
-  const thead = document.getElementById('matrixThead');
-  const tbody = document.getElementById('matrixTbody');
-  const cands = state.candidates;
-
-  thead.innerHTML = `
-    <tr>
-      <th>JD Responsibility / Competency</th>
-      ${cands.map(c => `<th title="${escapeHtml(c.name)}">${escapeHtml(c.name.split(' ')[0])} #${c.rank}</th>`).join('')}
-    </tr>`;
-
-  tbody.innerHTML = jdResponsibilities.map(resp => {
-    return `
-      <tr>
-        <td>${escapeHtml(resp.length > 100 ? resp.slice(0, 100) + '…' : resp)}</td>
-        ${cands.map(c => {
-          const m = c.competencyMatches.find(x => x.jd === resp);
-          const match = m ? m.match : 'weak';
-          const sym = match === 'strong' ? '✓' : match === 'partial' ? '~' : '✗';
-          const title = m ? `${match.toUpperCase()} — Evidence: ${m.evidence}` : 'No match';
-          return `<td><span class="cell ${match}" title="${escapeHtml(title)}">${sym}</span></td>`;
-        }).join('')}
-      </tr>`;
-  }).join('');
-}
-
-/* ============================================================
-   CANDIDATE PROFILE MODAL
-   ============================================================ */
-function openProfile(id) {
-  const c = state.candidates.find(x => x.id === id);
-  if (!c) return;
-  const modal = document.getElementById('modalContent');
-  const badge = c.score >= 75 ? 'strong' : c.score >= 55 ? 'partial' : 'weak';
-
-  modal.innerHTML = `
-    <button class="modal-close" onclick="closeModal()">×</button>
-    <h2>${escapeHtml(c.name)}</h2>
-    <div class="cand-meta">
-      Rank #${c.rank} of ${state.candidates.length} · Fit score
-      <span class="badge ${badge}" style="margin-left:4px;">${c.score}%</span>
-    </div>
-
-    <div class="section-label">Summary</div>
-    <div class="kv"><span class="k">Total experience</span><span class="v">${c.totalYears} years</span></div>
-    <div class="kv"><span class="k">JD requirement (est.)</span><span class="v">${c.requiredYears}+ years</span></div>
-    <div class="kv"><span class="k">Roles detected</span><span class="v">${c.roles.length}</span></div>
-    <div class="kv"><span class="k">Keywords matched</span><span class="v">${c.matchedKeywords.length} / ${c.jdKeywords.length}</span></div>
-
-    <div class="section-label">Ranking Rationale</div>
-    <div class="rationale-box">${escapeHtml(c.rationale)}</div>
-
-    <div class="section-label">Strengths</div>
-    <ul style="font-size:13px;margin-left:18px;">${c.strengths.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
-
-    <div class="section-label">Gaps</div>
-    <ul style="font-size:13px;margin-left:18px;">${c.gaps.map(g => `<li>${escapeHtml(g)}</li>`).join('')}</ul>
-
-    <div class="section-label">Past Experience &amp; Tenure</div>
-    ${c.roles.length ? c.roles.map(r => `
-      <div class="role-item">
-        <div class="role-title">${escapeHtml(r.title)}</div>
-        <div class="role-meta">${escapeHtml(r.company)} · <em>${escapeHtml(r.sector)}</em> · ${escapeHtml(r.start)} – ${escapeHtml(r.end)} · <strong>${r.years} yrs</strong></div>
-        ${r.responsibilities.length ? `<ul class="role-resp">${r.responsibilities.slice(0, 3).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : ''}
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-2">${getStatusBadgeHTML(c.qualificationStatus)}<span class="text-xs text-pwc-slate font-medium">Est. Comp: <strong>$${c.estimatedSalaryExpectationUSD.toLocaleString()}</strong></span></div>
+        <div class="mt-3 flex flex-wrap gap-1.5">${c.coreCompetencies.map(x => `<span class="px-2 py-0.5 rounded-md bg-gray-100 text-[11px] font-medium">${esc(x)}</span>`).join('')}</div>
+        <div class="mt-3.5 p-3 rounded-xl bg-gray-50 border border-gray-100 text-xs text-pwc-slate space-y-2">
+          <div><strong class="text-pwc-charcoal block mb-0.5">Qualification Rationale:</strong><span>${esc(c.qualificationRationale)}</span></div>
+          ${c.bestFitRationale ? `<div class="pt-2 border-t border-gray-200/60 text-pwc-orange"><strong class="block mb-0.5 font-bold">Why Best Fit:</strong><span>${esc(c.bestFitRationale)}</span></div>` : ''}
+        </div>
       </div>
-    `).join('') : '<p style="color:var(--muted);font-size:13px;">No work history could be automatically parsed. See raw CV text below.</p>'}
+      <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+        <button data-name="${n}" onclick="inspectFullProfile(this.dataset.name)" class="text-xs font-semibold hover:text-pwc-orange flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5 text-pwc-orange"></i>Inspect Full Profile</button>
+        <button data-name="${n}" onclick="inspectCandidateCompetency(this.dataset.name)" class="text-xs font-semibold text-pwc-orange hover:text-pwc-burgundy flex items-center gap-1"><i data-lucide="radar" class="w-3.5 h-3.5"></i>Competency Matrix</button>
+      </div></div>`;
+  }).join('');
+  icons();
+}
 
-    <div class="section-label">Core Competencies</div>
-    <div class="tag-list">
-      ${c.competencies.map(k => `<span class="tag">${escapeHtml(k)}</span>`).join('') || '<span style="color:var(--muted);font-size:13px;">—</span>'}
+function inspectFullProfile(name) {
+  const c = state.analysisResult.candidates.find(x => x.name === name); if (!c) return;
+  $('modalCandName').innerText = c.name;
+  $('modalCandBadge').innerHTML = getStatusBadgeHTML(c.qualificationStatus);
+  $('modalCandTitle').innerText = `${c.currentRoleTitle} • ${c.yearsExperience} Years Total Experience`;
+  $('modalRationaleText').innerText = c.qualificationRationale;
+  
+  $('modalWorkHistory').innerHTML = c.workHistory.length
+    ? c.workHistory.map(w => `<div class="relative pl-2"><div class="font-bold">${esc(w.roleTitle)}</div><div class="text-[11px] text-pwc-orange font-medium">${esc(w.companyName)}${w.sector && w.sector !== '—' ? ` · <span class="italic">${esc(w.sector)}</span>` : ''} · ${esc(w.tenure)}</div><p class="text-pwc-slate text-[11px] mt-0.5">${esc(w.keySummary)}</p></div>`).join('')
+    : '<div class="text-[11px] text-pwc-grey pl-2">No work history parsed.</div>';
+    
+  $('modalEducationList').innerHTML = c.education.map(e => `<li>${esc(e)}</li>`).join('');
+  $('modalResponsibilitiesList').innerHTML = c.demonstratedResponsibilities.map(r => `<li>${esc(r)}</li>`).join('');
+  const m = $('profileModal'); m.classList.remove('hidden'); m.classList.add('flex'); icons();
+}
+function closeProfileModal() { const m = $('profileModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+function inspectCandidateCompetency(name) { $('compareSelectA').value = name; switchTab('competencies'); }
+
+// =========================================================================
+// PDF REPORT EXPORT
+// =========================================================================
+function exportRecruitmentReport() {
+  if (!state.analysisResult) return;
+  const r = state.analysisResult;
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Please allow popups to export the PDF report.', 'warning'); return; }
+  
+  const cls = s => s === 'Optimal Fit' ? 'optimal' : s === 'Over-Qualified' ? 'over' : 'under';
+  
+  w.document.write(`<!DOCTYPE html><html><head><title>TalentLens Report - ${esc(r.roleTitle)}</title><style>
+body{font-family:'Helvetica Neue',Arial,sans-serif;color:#2D2D2D;padding:40px;line-height:1.6;max-width:900px;margin:0 auto}
+.header{border-bottom:3px solid #FD5108;padding-bottom:15px;margin-bottom:30px;display:flex;justify-content:space-between;align-items:flex-end}
+.title{font-size:24px;font-weight:bold;margin:0;color:#2D2D2D}.subtitle{font-size:14px;color:#7D7D7D;margin-top:5px}
+.section{margin-bottom:30px;page-break-inside:avoid}.section-title{font-size:16px;font-weight:bold;color:#D04A02;border-bottom:1px solid #E5E7EB;padding-bottom:5px;margin-bottom:15px;text-transform:uppercase;letter-spacing:0.5px}
+.card{background:#FAFAFA;border:1px solid #E5E7EB;border-radius:8px;padding:20px;margin-bottom:15px}
+.cand-header{display:flex;justify-content:space-between;font-weight:bold;font-size:16px;align-items:center;margin-bottom:10px}
+.badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px}.optimal{background:#ECFDF5;color:#047857;border:1px solid #A7F3D0}.over{background:#FFFBEB;color:#B45309;border:1px solid #FDE68A}.under{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA}
+.score-box{background:#fff;border:1px solid #E5E7EB;padding:15px;border-radius:8px;margin-bottom:15px}
+.metric{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;border-bottom:1px dashed #E5E7EB;padding-bottom:8px}
+.metric:last-child{border:none;margin-bottom:0;padding-bottom:0}
+ul{margin:8px 0 0 20px;padding:0;font-size:13px;color:#464646}li{margin-bottom:4px}
+.footer{margin-top:50px;padding-top:20px;border-top:1px solid #CCC;font-size:11px;color:#7D7D7D;text-align:center}
+@media print { body { padding: 0; } .card { break-inside: avoid; } }
+</style></head><body>
+<div class="header"><div><div class="title">TalentLens™ Recruitment Advisory Report</div><div class="subtitle">Role: <strong>${esc(r.roleTitle)}</strong> | Generated: ${new Date().toLocaleDateString()}</div></div></div>
+<div class="section"><div class="section-title">Executive Overview & Recommendation</div><div class="card"><p style="margin:0;font-size:14px;font-weight:500;">${esc(r.executiveSummary)}</p></div></div>
+<div class="section"><div class="section-title">Candidate Shortlist & Qualification Audit</div>
+${r.candidates.map((c, i) => `
+<div class="card">
+  <div class="cand-header">
+    <span>#${i+1} &nbsp; ${esc(c.name)}</span>
+    <div style="text-align:right;">
+      <span class="badge ${cls(c.qualificationStatus)}">${esc(c.qualificationStatus)}</span>
+      <span style="color:#FD5108;margin-left:12px;font-size:18px;">${c.overallFitScore}% Match</span>
     </div>
-
-    <div class="section-label">Raw CV Text (excerpt)</div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;font-family:monospace;">${escapeHtml(c.cvText.slice(0, 1500))}${c.cvText.length > 1500 ? '…' : ''}</div>
-  `;
-
-  document.getElementById('modalOverlay').classList.add('active');
-  state.activeModal = id;
+  </div>
+  <div class="score-box">
+    <div class="metric"><span>Years of Experience</span><strong>${c.yearsExperience} Years</strong></div>
+    <div class="metric"><span>Current / Target Role</span><strong>${esc(c.currentRoleTitle)}</strong></div>
+    <div class="metric"><span>Estimated Compensation</span><strong>$${c.estimatedSalaryExpectationUSD.toLocaleString()}</strong></div>
+    <div class="metric"><span>Estimated Ramp-Up Time</span><strong>${c.estimatedRampUpWeeks} Weeks</strong></div>
+  </div>
+  <p style="font-size:13px;margin:10px 0;color:#464646"><strong>Advisory Rationale:</strong> ${esc(c.qualificationRationale)}</p>
+  <p style="font-size:13px;margin:10px 0;color:#464646"><strong>Core Competencies:</strong> ${c.coreCompetencies.join(', ')}</p>
+  <p style="font-size:13px;margin:10px 0;color:#464646"><strong>Demonstrated Responsibilities:</strong></p>
+  <ul>${c.demonstratedResponsibilities.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+</div>`).join('')}
+</div>
+<div class="footer">TalentLens System Report • Confidential • Generated via AI Recruitment Advisory Engine</div>
+</body></html>`);
+  
+  w.document.close();
+  w.focus();
+  setTimeout(() => { w.print(); }, 500);
+  showToast('PDF Report generated. Select "Save as PDF" in the print dialog.', 'success');
 }
 
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-  state.activeModal = null;
-}
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-/* ============================================================
-   EXPORTS
-   ============================================================ */
-function downloadRankingsCSV() {
-  if (!state.candidates.length) { toast('No results to export.', true); return; }
-  const rows = [['Rank', 'Name', 'Fit Score', 'Total Years', 'Top Strength', 'Key Gap', 'Rationale']];
-  state.candidates.forEach(c => rows.push([
-    c.rank, c.name, c.score, c.totalYears,
-    c.strengths[0] || '', c.gaps[0] || '', c.rationale
-  ]));
-  downloadCSV(rows, 'candidate_rankings.csv');
-}
-
-function downloadMatrixCSV() {
-  if (!state.candidates.length) { toast('No matrix to export.', true); return; }
-  const jdResp = extractResponsibilities(state.jdText);
-  const header = ['Competency', ...state.candidates.map(c => c.name)];
-  const rows = [header];
-  jdResp.forEach(resp => {
-    rows.push([
-      resp,
-      ...state.candidates.map(c => {
-        const m = c.competencyMatches.find(x => x.jd === resp);
-        return m ? m.match : 'weak';
-      })
-    ]);
+// =========================================================================
+// CHARTS
+// =========================================================================
+function renderOverviewCharts() {
+  const c = state.analysisResult.candidates;
+  if (state.charts.bar) state.charts.bar.destroy();
+  state.charts.bar = new Chart($('overviewBarChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: c.map(x => x.name), datasets: [{ label: 'JD Match Score (%)', data: c.map(x => x.overallFitScore), backgroundColor: c.map(x => x.qualificationStatus === 'Optimal Fit' ? '#D04A02' : x.qualificationStatus === 'Over-Qualified' ? '#FFB600' : '#DB536A'), borderRadius: 8, maxBarThickness: 40 }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 850 },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#2D2D2D', padding: 10, cornerRadius: 8, callbacks: { afterLabel: ctx => 'Status: ' + c[ctx.dataIndex].qualificationStatus } } },
+      scales: { y: { beginAtZero: true, max: 100, grid: { color: '#F0F0F0' } }, x: { grid: { display: false } } } }
   });
-  downloadCSV(rows, 'competency_matrix.csv');
+  if (state.charts.doughnut) state.charts.doughnut.destroy();
+  const cnt = s => c.filter(x => x.qualificationStatus === s).length;
+  state.charts.doughnut = new Chart($('tierDoughnutChart').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: ['Optimal Fit', 'Over-Qualified', 'Under-Qualified'], datasets: [{ data: [cnt('Optimal Fit'), cnt('Over-Qualified'), cnt('Under-Qualified')], backgroundColor: ['#D04A02', '#FFB600', '#DB536A'], borderWidth: 2, borderColor: '#FFF' }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 14 } } } }
+  });
 }
 
-function downloadCSV(rows, filename) {
-  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-  toast(`Downloaded ${filename}`);
+function populateCompetencyTab(data) {
+  $('jdCoreCompetenciesList').innerHTML = data.jdCompetencyDimensions.map(d => `<span class="px-3 py-1 rounded-full bg-white border border-orange-200 text-xs font-semibold">${esc(d)}</span>`).join('');
+  $('jdResponsibilitiesList').innerHTML = data.jdKeyResponsibilities.map(r => `<li>${esc(r)}</li>`).join('');
+  const opts = data.candidates.map(c => `<option value="${esc(c.name)}">${esc(c.name)} (${c.overallFitScore}%)</option>`).join('');
+  $('compareSelectA').innerHTML = opts; $('compareSelectB').innerHTML = opts;
+  if (data.candidates.length > 1) $('compareSelectB').selectedIndex = 1;
+  $('comparativeTableBody').innerHTML = data.candidates.map(c => `<tr class="hover:bg-orange-50/30">
+    <td class="py-3.5 px-4 align-top"><div class="font-bold">${esc(c.name)}</div><div class="text-[11px] text-pwc-grey mb-1.5">${esc(c.currentRoleTitle)}</div>${getStatusBadgeHTML(c.qualificationStatus)}</td>
+    <td class="py-3.5 px-4 align-top"><div class="flex flex-wrap gap-1">${c.coreCompetencies.map(x => `<span class="px-2 py-0.5 rounded bg-gray-100 text-[11px]">${esc(x)}</span>`).join('')}</div></td>
+    <td class="py-3.5 px-4 align-top"><ul class="list-disc list-inside space-y-1 text-pwc-slate">${c.demonstratedResponsibilities.map(r => `<li>${esc(r)}</li>`).join('')}</ul></td>
+    <td class="py-3.5 px-4 align-top text-pwc-slate">${esc(c.qualificationAnalysisNote)}</td></tr>`).join('');
+  updateComparativeView();
 }
 
-/* ============================================================
-   DEMO DATA
-   ============================================================ */
-function loadDemoData() {
-  const jd = `We are seeking a Senior Financial Analyst with 5+ years of experience in the banking sector.
+function updateComparativeView() {
+  if (!state.analysisResult) return;
+  const cs = state.analysisResult.candidates;
+  const a = cs.find(c => c.name === $('compareSelectA').value) || cs[0];
+  const b = cs.find(c => c.name === $('compareSelectB').value) || cs[0];
+  if (state.charts.radar) state.charts.radar.destroy();
+  const ds = [{ label: a.name, data: a.competencyScores, backgroundColor: 'rgba(208,74,2,.22)', borderColor: '#D04A02', pointBackgroundColor: '#D04A02', borderWidth: 2 }];
+  if (b.name !== a.name) ds.push({ label: b.name, data: b.competencyScores, backgroundColor: 'rgba(45,45,45,.14)', borderColor: '#2D2D2D', pointBackgroundColor: '#2D2D2D', borderWidth: 2, borderDash: [4, 4] });
+  state.charts.radar = new Chart($('competencyRadarChart').getContext('2d'), {
+    type: 'radar', data: { labels: state.analysisResult.jdCompetencyDimensions, datasets: ds },
+    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 700 }, scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20, backdropColor: 'transparent' } } }, plugins: { legend: { position: 'bottom' } } }
+  });
+}
 
-Responsibilities:
-- Conduct financial modelling and forecasting for retail banking products
-- Prepare IFRS-compliant financial statements and management reports
-- Analyse credit risk and loan portfolio performance
-- Support stakeholder reporting and regulatory submissions to the central bank
-- Collaborate with treasury on liquidity and interest rate risk management
-- Drive process automation and data quality improvements in financial reporting
+// =========================================================================
+// FINANCIAL
+// =========================================================================
+function populateFinancialTab(data) {
+  $('finCandidateSelect').innerHTML = data.candidates.map(c => `<option value="${esc(c.name)}">${esc(c.name)} — ${esc(c.qualificationStatus)} (${c.overallFitScore}% Fit)</option>`).join('');
+  if (data.suggestedRoleBudgetUSD) $('budgetSalaryInput').value = data.suggestedRoleBudgetUSD;
+  syncCandidateSalaryAndCalculate();
+}
 
-Requirements:
-- 5+ years of experience in banking or financial services
-- Strong knowledge of IFRS, financial modelling, and Excel
-- Experience with regulatory reporting and stakeholder management
-- Professional certification (ACCA, CFA, or CPA) preferred
-- Excellent communication and analytical skills`;
+function syncCandidateSalaryAndCalculate() {
+  if (!state.analysisResult) return;
+  const c = state.analysisResult.candidates.find(x => x.name === $('finCandidateSelect').value);
+  if (c) $('candidateSalaryInput').value = c.estimatedSalaryExpectationUSD;
+  calculateFinancialImpact();
+}
 
-  document.getElementById('jdText').value = jd;
-  state.jdText = jd;
+function calculateFinancialImpact() {
+  if (!state.analysisResult) return;
+  const cand = state.analysisResult.candidates.find(x => x.name === $('finCandidateSelect').value) || state.analysisResult.candidates[0];
+  const budget = parseFloat($('budgetSalaryInput').value) || 100000;
+  const salary = parseFloat($('candidateSalaryInput').value) || 100000;
+  const oh = parseFloat($('overheadSlider').value) / 100;
+  const mult = parseFloat($('multiplierSlider').value);
+  const fee = parseFloat($('hiringFeeInput').value) || 0;
 
-  state.files = [
-    { id: 'd1', name: 'Ayesha Khan - Senior Financial Analyst.pdf', size: 240000, status: 'done',
-      text: `Ayesha Khan
-Senior Financial Analyst
+  const totalCost = salary * (1 + oh) + fee;
+  const variance = totalCost - (budget * (1 + oh) + fee);
+  const rampWeeks = cand.estimatedRampUpWeeks || 6;
+  const rampFrac = Math.min(rampWeeks / 52, 0.5);
+  const fitFactor = 0.65 + (cand.overallFitScore / 100) * 0.45;
+  const gross = budget * mult * fitFactor;
+  const drag = gross * rampFrac * 0.5;
+  const net = gross - drag - totalCost;
+  const roi = totalCost ? ((net / totalCost) * 100).toFixed(0) : '0';
+  const fmt = n => Math.round(n).toLocaleString();
 
-Experience
-Senior Financial Analyst at UBL (Jan 2020 – Present)
-- Led financial modelling for retail banking products
-- Prepared IFRS-compliant financial statements
-- Managed regulatory reporting to the central bank
-- Analyzed credit risk across loan portfolios
+  $('finTotalCost').innerText = `$${fmt(totalCost)}`;
+  const vb = $('finVarianceBadge');
+  if (variance > 0) { vb.innerText = `+$${fmt(variance)} over budget`; vb.className = 'inline-block mt-1.5 text-[11px] font-semibold px-2 py-0.5 rounded bg-rose-50 text-pwc-burgundy'; }
+  else { vb.innerText = `$${fmt(Math.abs(variance))} under budget`; vb.className = 'inline-block mt-1.5 text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700'; }
+  const ne = $('finNetValue');
+  ne.innerText = `${net >= 0 ? '+' : '-'}$${fmt(Math.abs(net))}`;
+  ne.className = `text-xl font-bold mt-1 ${net >= 0 ? 'text-pwc-orange' : 'text-pwc-burgundy'}`;
+  $('finRoiPercent').innerText = `${roi}% Year-1 Net ROI`;
+  $('finRampWeeks').innerText = `${rampWeeks} Weeks`;
+  $('finRampCost').innerText = `Ramp drag: -$${fmt(drag)}`;
 
-Financial Analyst at HBL (Jun 2016 – Dec 2019)
-- Supported treasury with liquidity reporting
-- Built Excel models for interest rate risk
-- Collaborated with stakeholders on monthly management reports
+  const n = esc(cand.name);
+  $('financialAdvisoryNote').innerHTML =
+    cand.qualificationStatus === 'Over-Qualified' ? `<strong>Over-Qualification Advisory:</strong> ${n} delivers immediate productivity (${rampWeeks}-week ramp) but carries a $${fmt(Math.max(0, salary - budget))} premium over budget and elevated retention risk.`
+    : cand.qualificationStatus === 'Under-Qualified' ? `<strong>Under-Qualification Advisory:</strong> Lower base salary, but a ${rampWeeks}-week onboarding curve costs about $${fmt(drag)} in Year-1 productivity.`
+    : `<strong>Optimal Economics Advisory:</strong> ${n} balances compensation discipline with a ${cand.overallFitScore}% competency match, for an estimated net Year-1 contribution of $${fmt(net)}.`;
+  renderFinancialComparisonChart(budget, oh, mult, fee);
+}
 
-Skills: Financial modelling, IFRS, Excel, credit risk, regulatory reporting, stakeholder management
-Certifications: ACCA
-Total experience: 8 years` },
-    { id: 'd2', name: 'Bilal Ahmed - Finance Manager.docx', size: 180000, status: 'done',
-      text: `Bilal Ahmed
-Finance Manager
+function renderFinancialComparisonChart(budget, oh, mult, fee) {
+  if (state.charts.financial) state.charts.financial.destroy();
+  const cs = state.analysisResult.candidates, costs = [], nets = [];
+  cs.forEach(c => {
+    const cost = c.estimatedSalaryExpectationUSD * (1 + oh) + fee;
+    const rf = Math.min((c.estimatedRampUpWeeks || 6) / 52, 0.5);
+    const gross = budget * mult * (0.65 + (c.overallFitScore / 100) * 0.45);
+    costs.push(Math.round(cost)); nets.push(Math.round(gross * (1 - rf * 0.5) - cost));
+  });
+  state.charts.financial = new Chart($('financialChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: cs.map(c => c.name), datasets: [{ label: 'Year-1 Loaded Cost ($)', data: costs, backgroundColor: '#2D2D2D', borderRadius: 6 }, { label: 'Net Year-1 Value Surplus ($)', data: nets, backgroundColor: '#D04A02', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 750 }, plugins: { legend: { position: 'top' } },
+      scales: { y: { grid: { color: '#F0F0F0' }, ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'k' } }, x: { grid: { display: false } } } }
+  });
+}
 
-Experience
-Finance Manager at Nestle (Mar 2018 – Present)
-- Managed FMCG financial reporting and forecasting
-- Led process automation for month-end close
-- Coordinated with stakeholders on budgeting
+// =========================================================================
+// SAMPLE ENGAGEMENT
+// =========================================================================
+function loadDemoEngagement() {
+  const jd = `Role: Chief Technology Officer (CTO)
+Practice: Financial Services & Digital Banking Modernization
 
-Senior Accountant at Unilever (Jan 2014 – Feb 2018)
-- Prepared management reports
-- Supported IFRS compliance
+Overview:
+We are seeking a Chief Technology Officer (CTO) to lead digital banking platform architecture, regulatory compliance, enterprise cloud modernization, and team governance.
 
-Skills: Financial reporting, IFRS, budgeting, Excel, process automation
-Certifications: CPA
-Total experience: 10 years` },
-    { id: 'd3', name: 'Sara Malik - Financial Analyst.pdf', size: 210000, status: 'done',
-      text: `Sara Malik
-Financial Analyst
+Core Responsibilities:
+- Direct multi-channel banking technology architectures and cloud security compliance.
+- Lead C-suite executive workshops on digital transformation and regulatory frameworks.
+- Govern enterprise IT risk management, SOC2/ISO compliance, and core banking platforms.
 
-Experience
-Financial Analyst at Meezan Bank (Aug 2021 – Present)
-- Financial modelling for Islamic banking products
-- Regulatory reporting to the central bank
-- Credit risk analysis
+Required Qualifications:
+- 10 to 15+ years of progressive technology leadership in banking / financial services.
+- Deep expertise in Digital Banking Architecture, Regulatory Compliance, and IT Risk.`;
+  
+  $('jobTitleInput').value = 'Chief Technology Officer (CTO)';
+  $('jdTextInput').value = jd; state.jdText = jd; $('jdCharCount').innerText = `${jd.length.toLocaleString()} chars`;
 
-Junior Analyst at KPMG (Jul 2019 – Jul 2021)
-- Audit support and IFRS compliance testing
-
-Skills: Financial modelling, IFRS, credit risk, Excel, regulatory reporting
-Total experience: 4 years` },
-    { id: 'd4', name: 'Omar Farooq - Credit Risk.docx', size: 160000, status: 'done',
-      text: `Omar Farooq
-Credit Risk Specialist
-
-Experience
-Credit Risk Analyst at MCB (Feb 2017 – Present)
-- Loan portfolio analysis and credit risk modelling
-- Regulatory submissions to the central bank
-- Stakeholder management with treasury
-
-Analyst at PwC (Aug 2014 – Jan 2017)
-- Financial due diligence for banking clients
-- IFRS advisory and financial modelling
-
-Skills: Credit risk, financial modelling, IFRS, Excel, treasury, stakeholder management
-Certifications: CFA
-Total experience: 9 years` },
-    { id: 'd5', name: 'Hina Raza - Junior Analyst.pdf', size: 140000, status: 'done',
-      text: `Hina Raza
-Junior Financial Analyst
-
-Experience
-Junior Analyst at Telenor (Jun 2022 – Present)
-- Financial reporting and budgeting support
-- Excel-based forecasting
-
-Intern at Standard Chartered (Jan 2022 – May 2022)
-- Supported treasury reporting
-
-Skills: Excel, financial reporting, budgeting
-Total experience: 2 years` },
+  state.uploadedCVs = [
+    { id: 'demo_1', fileName: 'Syed_Ali_Naqvi_CV.pdf', sizeLabel: '142.4 KB', text: 'Syed Ali Naqvi\nSeasoned Digital CXO & Technology Leader\n\nExperience\nChief Technology Officer at UBL (Jan 2016 - Present)\n- Led digital banking transformations across financial institutions.\n- Expert in Digital Banking Architecture, Cloud Modernization, SOC2 Compliance, and IT Risk Governance.\n- Managed 15+ years experience in banking technology.\n\nEducation\nMasters in Computer Science' },
+    { id: 'demo_2', fileName: 'Shaikh_Mashhood_Resume.docx', sizeLabel: '188.0 KB', text: 'Shaikh Mashhood Ur Rahman\nInfrastructure & Cybersecurity Leader\n\nExperience\nDirector of Infrastructure at Standard Chartered (Mar 2010 - Dec 2019)\n- Managed large scale cybersecurity governance and infrastructure compliance.\n- 16 years experience in financial services.\n\nEducation\nBSc in Engineering' },
+    { id: 'demo_3', fileName: 'Saad_Sarwar_CV.pdf', sizeLabel: '118.2 KB', text: 'Saad Sarwar\nSenior Systems Architect\n\nExperience\nSystems Architect at Systems Ltd (Jun 2018 - Present)\n- Experienced in cloud systems, API integration, and agile delivery.\n- 6 years experience in software engineering.\n\nEducation\nBSc in Computer Science' }
   ];
+  renderCVQueue();
 
-  renderFileList();
-  updateRunHint();
-  toast('Demo data loaded. Click "Run Screening" to see results.');
-  switchTab('1');
+  const result = runAnalysisEngine('Chief Technology Officer (CTO)', jd, state.uploadedCVs);
+  state.analysisResult = result;
+  populateDashboard(result);
+  switchTab('overview');
+  showToast('Loaded sample engagement. Evaluated candidate pool.', 'success');
 }
-
-function resetApp() {
-  state.jdText = '';
-  state.files = [];
-  state.candidates = [];
-  document.getElementById('jdText').value = '';
-  document.getElementById('jdFileStatus').textContent = '';
-  document.getElementById('cvFileList').innerHTML = '';
-  document.getElementById('tab2Content').style.display = 'none';
-  document.getElementById('tab2Empty').style.display = 'block';
-  document.getElementById('tab3Content').style.display = 'none';
-  document.getElementById('tab3Empty').style.display = 'block';
-  document.getElementById('progressWrap').classList.remove('active');
-  document.getElementById('progressFill').style.width = '0%';
-  updateRunHint();
-  closeModal();
-  switchTab('1');
-  toast('Reset complete.');
-}
-
-/* ============================================================
-   UTILITIES
-   ============================================================ */
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-function formatSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-let toastTimer;
-function toast(msg, isError = false) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.toggle('error', isError);
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
-}
-
-/* Initialise */
-updateRunHint();
 </script>
 </body>
 </html>
