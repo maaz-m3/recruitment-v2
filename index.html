@@ -200,9 +200,11 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
         <label class="flex items-center gap-2 text-sm font-semibold pb-2"><input id="ageCritEnabled" type="checkbox" onchange="onAgeCritChange()" class="w-4 h-4 accent-[#FD5108]"> Apply age criterion</label>
         <div><label for="ageMin" class="block text-[11px] font-bold uppercase text-pwc-grey mb-1">Minimum age</label><input id="ageMin" type="number" min="16" max="75" inputmode="numeric" onchange="onAgeCritChange()" class="w-24 px-3 py-2 rounded-xl border border-pwc-line text-sm font-semibold num"></div>
         <div><label for="ageMax" class="block text-[11px] font-bold uppercase text-pwc-grey mb-1">Maximum age</label><input id="ageMax" type="number" min="16" max="75" inputmode="numeric" onchange="onAgeCritChange()" class="w-24 px-3 py-2 rounded-xl border border-pwc-line text-sm font-semibold num"></div>
+        <div><label for="gradAge" class="block text-[11px] font-bold uppercase text-pwc-grey mb-1">Assumed graduation age</label><input id="gradAge" type="number" min="18" max="30" value="22" inputmode="numeric" onchange="onGradAgeChange()" aria-describedby="gradAgeMsg" class="w-28 px-3 py-2 rounded-xl border border-pwc-line text-sm font-semibold num"></div>
       </div>
     </div>
     <p id="ageCritMsg" class="text-xs mt-2 text-pwc-grey" role="status">Not applied. Ages are still extracted for information.</p>
+    <p id="gradAgeMsg" class="text-xs mt-1 text-pwc-grey" role="status">Used only to estimate age from the bachelor's graduation year (birth year = graduation year minus this age) when no age or date of birth is stated. Work experience is never added to it.</p>
   </div>
 </section>
 
@@ -487,8 +489,8 @@ const DATE_RANGE_RE = new RegExp('((?:' + MONTH_PAT + ')?(?:19|20)\\d{2})\\s*(?:
 const TITLE_RE = /(engineer|architect|manager|director|lead\b|consultant|analyst|developer|specialist|officer|\bhead\b|\bvp\b|president|designer|scientist|accountant|recruiter|administrator|executive|associate|advisor|supervisor|coordinator|technician|programmer|\bcto\b|\bcio\b|\bceo\b|\bcfo\b|chief|partner|principal|intern\b|trainee|owner|founder|technologist)/i;
 const ORG_RE = /\b(ltd|limited|inc|llc|llp|corp|corporation|company|co\.|pvt|private|bank|group|university|systems|technologies|solutions|industries|holdings|services|authority|ministry|telecom|foods|consulting|partners|associates|enterprises|international|global|labs)\b/i;
 const LOC_TAIL = /,?\s*\(?(karachi|lahore|islamabad|rawalpindi|dubai|abu dhabi|riyadh|jeddah|doha|pakistan|uae|saudi arabia|usa|uk|london|new york|singapore|remote)\b.*$/i;
-const END_HEAD_RE = /^(education|academic|qualifications?|skills|technical skills|core competenc|certifications?|training|projects|references|awards|languages|interests|publications|achievements|courses)/i;
-const EXP_HEAD_RE = /^((professional|work|employment|career) )?(experience|history)( summary)?$|^employment( history)?$|^career (history|summary)$|^work history$/i;
+const END_HEAD_RE = /^(education|academic|qualifications?|professional qualifications?|skills|technical skills|core competenc|certifications?|training|projects|references|awards|languages|interests|publications|achievements|courses|memberships?|personal (details|information)|declaration|hobbies)/i;
+const EXP_HEAD_RE = /^((professional|work|employment|career|relevant) )?(experience|history)( summary)?$|^employment( history| record| background)?$|^career (history|summary|record)$|^work history$|^(professional|work|career) background$|^previous (employment|experience|positions?|employers?)$/i;
 const NARR_RE = /^(led|lead|managed|built|designed|developed|delivered|architected|implemented|drove|launched|owned|created|directed|oversaw|reduced|increased|improved|deployed|migrated|engineered|established|negotiated|coordinated|analy[sz]ed|presented|mentored|spearheaded|executed|optimi[sz]ed|automated|maintained|supported|assisted|advised|responsible|worked|handled|used|provided|ensured|prepared|conducted|performed|served|collaborated|achieved|generated)\b/i;
 const headNorm = l => l.replace(/[:\s]+$/, '');
 
@@ -1563,7 +1565,7 @@ function renderAssessment() {
   const c = candById(state.assessId); if (!c) return;
   $('assessCandSelect').innerHTML = candOptions(c.id);
   const m = mandatorySummary(c);
-  $('assessHeader').innerHTML = `<div class="flex flex-wrap items-center gap-2"><h2 class="font-serif text-xl font-bold">${esc(c.name)}</h2>${getBadge(c.qualificationStatus)}${eligBadge(c)}<span class="text-xs text-pwc-grey">${esc(c.id)} · rank #${c.rank} of ${cands().length}</span></div><p class="text-xs text-pwc-grey">${esc(c.currentRoleTitle)} · ${c.yearsExperience || '?'} yrs · JD match ${c.overallFitScore}% · mandatory ${m.total ? m.met + '/' + m.total + ' met' : 'n/a'}</p>`;
+  $('assessHeader').innerHTML = `<div class="flex flex-wrap items-center gap-2"><h2 class="font-serif text-xl font-bold">${esc(c.name)}</h2>${getBadge(c.qualificationStatus)}${eligBadge(c)}<span class="text-xs text-pwc-grey">${esc(c.id)} · rank #${c.rank} of ${cands().length}</span></div><p class="text-xs text-pwc-grey">${esc(c.currentRoleTitle)} · ${yrsTxt(getExtra(c).employment.totalMonths, getExtra(c).employment.totalEstimated)} total exp. · JD match ${c.overallFitScore}% · mandatory ${m.total ? m.met + '/' + m.total + ' met' : 'n/a'}</p>`;
   $('assessTabs').innerHTML = ASSESS_TABS.map(t => `<button role="tab" aria-selected="${state.assessTab === t.id}" onclick="setAssessTab('${t.id}')" class="${pillClass(state.assessTab === t.id)}">${t.label}</button>`).join('');
   const body = $('assessBody');
   if (body._chart) { body._chart.destroy(); body._chart = null; }
@@ -1971,7 +1973,7 @@ function renderOverview() {
 function passesRankFilters(c) {
   const ef = $('rankEligFilter') ? $('rankEligFilter').value : '', af = $('rankAgeFilter') ? $('rankAgeFilter').value : '';
   if (ef) { const e = effectiveElig(c); if (ef === 'recruiter' ? e.source !== 'recruiter' : e.status !== ef) return false; }
-  if (af && ageFilterKey(c) !== af) return false;
+  if (af && !(af === 'verify' ? ageCheck(getExtra(c).age, state.ageCrit).needsVerification : getExtra(c).age.status === af)) return false;
   return true;
 }
 function applyRankFilters() { renderRankingList(state.analysisResult); filterCandidates(state.activeFilter || 'ALL'); }
@@ -1991,7 +1993,8 @@ function renderRankingList(data) {
       ${c.ranking.compare.length ? `<div class="rounded-xl bg-pwc-light p-2.5 space-y-1"><strong class="text-pwc-charcoal">Head-to-head</strong>${c.ranking.compare.map(r => `<p>${esc(r)}</p>`).join('')}</div>` : ''}
       ${c.strengths.length ? `<div><strong class="text-pwc-charcoal">Evidence for strengths</strong><ul class="list-disc list-inside">${c.strengths.map(r => `<li>${esc(r)}</li>`).join('')}</ul></div>` : ''}
       ${c.gaps.length ? `<div><strong class="text-pwc-charcoal">Gaps / risks</strong><ul class="list-disc list-inside">${c.gaps.map(r => `<li>${esc(r)}</li>`).join('')}</ul></div>` : ''}
-      <button type="button" onclick="openAssessment('${id}','matching')" class="text-xs font-bold text-pwc-burgundy hover:underline">Open full assessment →</button></div></details></li>`; }).join('') : '<li class="py-6 text-center text-xs text-pwc-grey">No candidates match these filters.</li>';
+      <button type="button" onclick="openAssessment('${id}','matching')" class="text-xs font-bold text-pwc-burgundy hover:underline">Open full assessment →</button></div></details>
+    <details class="pl-11 mt-2"><summary class="cursor-pointer text-xs font-bold text-pwc-burgundy">Past experience (${x.employment.entries.length})</summary>${expMiniTable(c)}</details></li>`; }).join('') : '<li class="py-6 text-center text-xs text-pwc-grey">No candidates match these filters.</li>';
 }
 function renderCandidateCards(filterStatus) {
   const grid = $('candidateCardsGrid'), all = cands();
@@ -2001,7 +2004,7 @@ function renderCandidateCards(filterStatus) {
     const m = mandatorySummary(c), r = finResultFor(c), id = esc(c.id), x = getExtra(c);
     return `<div class="glass-card p-5 flex flex-col justify-between ${c.rank === 1 ? 'ring-2 ring-pwc-orange/70' : ''}"><div>
       <div class="flex items-start justify-between gap-3"><div><div class="flex items-center gap-2 flex-wrap"><h4 class="text-base font-bold"><span class="text-pwc-burgundy">#${c.rank}</span> ${esc(c.name)}</h4>${c.rank === 1 ? '<span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-pwc-orange text-black">Best fit</span>' : ''}${c.checks && c.checks.length ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-900" title="${esc(c.checks.join(' | '))}">⚠ Review data</span>` : ''}</div>
-        <p class="text-xs text-pwc-grey mt-0.5">${esc(c.currentRoleTitle)} • <strong>${c.yearsExperience || '?'} yrs</strong> • ${id}</p></div>
+        <p class="text-xs text-pwc-grey mt-0.5">${esc(c.currentRoleTitle)} • <strong>${yrsTxt(x.employment.totalMonths, x.employment.totalEstimated)}</strong> total exp. • ${id}</p></div>
         <div class="text-right shrink-0"><div class="text-xl font-bold text-pwc-burgundy num">${c.overallFitScore}%</div><span class="text-[10px] uppercase tracking-wider text-pwc-grey">JD match</span></div></div>
       <div class="mt-3 flex flex-wrap items-center gap-1.5">${getBadge(c.qualificationStatus)}${eligBadge(c)}${ageChip(c)}</div>
       <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-pwc-slate"><span>Total exp: <strong>${yrsTxt(x.employment.totalMonths, x.employment.totalEstimated)}</strong></span><span>Relevant: <strong>${yrsTxt(x.employment.relevantMonths, x.employment.totalEstimated)}</strong></span><span>Mandatory: <strong>${m.total ? m.met + '/' + m.total + ' met' : 'n/a'}</strong></span><span>ROI: <strong>${r && r.roi != null ? fmtSigned(r.roi) : 'not entered'}</strong></span></div>
@@ -2025,40 +2028,7 @@ function tenureParts(t) {
   return [f(p.start) || 'Not Available', p.present ? 'Present' : (f(p.end) || 'Not Available')];
 }
 const NA = '<span class="text-pwc-grey italic">Not Available</span>';
-function assessOverview(c) {
-  const x = getExtra(c), emp = x.employment, a = x.age, ac = ageCheck(a, state.ageCrit), con = x.contact, ed = x.educationDetail;
-  const cur = emp.current || {}, hq = highestLevel(ed), certs = ed.filter(e => e.isCert), degrees = ed.filter(e => !e.isCert);
-  const span = emp.span, total = span ? span.end - span.start : 0;
-  const tl = span && total > 0 ? emp.entries.filter(e => e.iv).map(e => `<div class="flex items-center gap-3 text-[11px]"><div class="w-40 shrink-0 truncate font-semibold" title="${esc(e.roleTitle)}">${esc(e.roleTitle || 'Role not stated')}</div><div class="relative flex-1 h-4 rounded-full bg-pwc-light"><div class="absolute h-4 rounded-full ${e.relevant ? 'bg-pwc-orange' : 'bg-[#9a9a9a]'}" style="left:${((e.iv.start - span.start) / total * 100).toFixed(2)}%;width:${Math.max(1.5, e.months / total * 100).toFixed(2)}%" title="${esc(e.tenure)}"></div></div></div>`).join('') + `<div class="flex justify-between text-[10px] text-pwc-grey pl-[172px]"><span>${monthLabel(span.start)}</span><span>${monthLabel(span.end)}</span></div><p class="text-[10px] text-pwc-grey pl-[172px]">Orange = relevant to the advertised role; grey = other experience.</p>` : '';
-  const rows = emp.entries.length ? emp.entries.map(e => { const [s, en] = tenureParts(e.tenure); return `<tr class="align-top"><td class="py-3 px-3 font-semibold">${e.companyName ? esc(e.companyName) : NA}</td><td class="py-3 px-3">${e.roleTitle ? esc(e.roleTitle) : NA}${e.relevant ? ' <span class="px-1.5 py-0.5 rounded-full bg-orange-50 text-pwc-burgundy text-[10px] font-bold">relevant</span>' : ''}${e.verified === false ? ' <span class="text-[10px] font-semibold text-amber-700">⚠ unverified</span>' : ''}</td><td class="py-3 px-3 whitespace-nowrap">${esc(s)}</td><td class="py-3 px-3 whitespace-nowrap">${esc(en)}</td><td class="py-3 px-3 whitespace-nowrap num">${e.months == null ? NA : esc(fmtDur(e.months, e.estimated)) + (e.estimated ? ' <span class="text-[10px] text-amber-700">est.</span>' : '')}</td>
-      <td class="py-3 px-3 text-pwc-slate">${e.responsibilities.length ? `<details><summary class="cursor-pointer font-semibold text-pwc-burgundy">${e.responsibilities.length} responsibilit${e.responsibilities.length === 1 ? 'y' : 'ies'}${e.achievements.length ? ' · ' + e.achievements.length + ' achievement' + (e.achievements.length === 1 ? '' : 's') : ''}</summary><ul class="list-disc list-inside mt-1 space-y-0.5">${e.responsibilities.map(r => `<li>${esc(r)}</li>`).join('')}</ul>${e.achievements.length ? `<p class="font-semibold mt-1">Key achievements</p><ul class="list-disc list-inside space-y-0.5">${e.achievements.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}</details>` : NA}${e.dateFlags.length ? `<div class="mt-1 text-[10px] text-amber-800">${e.dateFlags.map(esc).join(' · ')}</div>` : ''}</td></tr>`; }).join('') : `<tr><td colspan="6" class="py-6 px-3 text-center text-pwc-grey">Unable to extract employment history from this CV.</td></tr>`;
-  const edRows = degrees.length ? degrees.map(e => `<tr><td class="py-2.5 px-3 font-semibold">${esc(e.degree)}</td><td class="py-2.5 px-3">${e.institution ? esc(e.institution) : NA}</td><td class="py-2.5 px-3 num">${e.gradYear ? e.gradYear : NA}</td><td class="py-2.5 px-3">${LEVEL_NAME[e.level] || NA}</td></tr>`).join('') : `<tr><td colspan="4" class="py-4 px-3 text-center text-pwc-grey">Unable to extract degrees from this CV.</td></tr>`;
-  const fact = (l, v, s) => `<div class="rounded-2xl bg-pwc-surface border border-pwc-line p-3.5"><div class="text-[11px] font-semibold uppercase text-pwc-grey">${l}</div><div class="text-base font-bold mt-0.5 num">${v}</div>${s ? `<div class="text-[11px] text-pwc-grey mt-0.5">${s}</div>` : ''}</div>`;
-  const ageTone = a.status === 'stated' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : a.status === 'estimated' ? 'bg-amber-50 text-amber-900 border-amber-300' : 'bg-gray-100 text-pwc-slate border-gray-300';
-  return `<div class="space-y-6">
-  ${c.checks && c.checks.length ? `<div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900"><strong class="block mb-1">Data checks, please review</strong><ul class="list-disc list-inside space-y-0.5">${c.checks.map(k => `<li>${esc(k)}</li>`).join('')}</ul></div>` : ''}
-  <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-    <div class="xl:col-span-4 glass-card p-6"><div class="flex items-center gap-4"><div class="w-16 h-16 rounded-full bg-[#1c1c1c] text-white text-xl font-bold flex items-center justify-center shrink-0" aria-hidden="true">${esc(initials(c.name))}</div><div class="min-w-0"><h3 class="font-serif text-xl font-bold leading-tight">${esc(c.name)}</h3><p class="text-xs text-pwc-grey">${esc(cur.title || c.currentRoleTitle || 'Title not available')}${cur.employer ? ' · ' + esc(cur.employer) : ''}</p><p class="text-[11px] text-pwc-grey mt-0.5">${esc(c.id)} · rank #${c.rank} of ${cands().length}</p></div></div>
-      <dl class="mt-5 space-y-2 text-xs"><div class="flex gap-2"><dt class="w-20 text-pwc-grey">Email</dt><dd class="font-semibold break-all">${con.email ? esc(con.email) : NA}</dd></div><div class="flex gap-2"><dt class="w-20 text-pwc-grey">Phone</dt><dd class="font-semibold">${con.phone ? esc(con.phone) : NA}</dd></div><div class="flex gap-2"><dt class="w-20 text-pwc-grey">Location</dt><dd class="font-semibold">${con.location ? esc(con.location) : NA}</dd></div><div class="flex gap-2"><dt class="w-20 text-pwc-grey">LinkedIn</dt><dd class="font-semibold break-all">${con.linkedin ? esc(con.linkedin) : NA}</dd></div></dl>
-      <div class="mt-4 flex flex-wrap gap-1.5">${getBadge(c.qualificationStatus)}${eligBadge(c)}</div></div>
-    <div class="xl:col-span-3 glass-card p-6 flex flex-col items-center text-center">${ringSvg(c.overallFitScore)}<p class="text-xs font-bold mt-2">${esc(c.qualificationStatus)}</p><p class="text-[11px] text-pwc-grey mt-1">Mandatory criteria: <strong>${esc(mandatoryAssessment(c).label)}</strong></p><button type="button" onclick="setAssessTab('matching')" class="mt-3 text-xs font-bold text-pwc-burgundy hover:underline">View AI screening summary →</button></div>
-    <div class="xl:col-span-5 glass-card p-6"><div class="grid grid-cols-2 gap-3">
-      ${fact('Age', esc(ageLabel(a)), `<span class="inline-flex px-1.5 py-0.5 rounded-full border text-[10px] font-bold ${ageTone}">${a.status === 'stated' ? 'Verified: stated in CV' : a.status === 'estimated' ? 'Estimate · ' + esc(a.confidence) + ' confidence' : 'Age Not Verified'}</span>`)}
-      ${fact('Total work experience', esc(yrsTxt(emp.totalMonths, emp.totalEstimated)), emp.stated ? `CV states ${emp.stated} yrs` : 'No stated figure')}
-      ${fact('Relevant experience', esc(yrsTxt(emp.relevantMonths, emp.totalEstimated)), 'Roles matching the JD (heuristic)')}
-      ${fact('Highest qualification', esc(LEVEL_NAME[hq]), degrees[0] ? esc(degrees[0].institution || '') : '')}</div>
-      <details class="mt-3 text-xs rounded-xl border border-pwc-line p-3"><summary class="cursor-pointer font-bold text-pwc-burgundy">How the age was determined</summary><p class="mt-2 text-pwc-slate">${esc(a.basis)}</p>${a.assumptions.length ? `<ul class="list-disc list-inside mt-1 space-y-0.5 text-pwc-slate">${a.assumptions.map(k => `<li>${esc(k)}</li>`).join('')}</ul>` : ''}<p class="mt-2 font-semibold">${esc(ac.label)}</p><p class="text-pwc-grey mt-1">An inferred age is an estimate, not a verified personal fact.</p></details></div>
-  </div>
-  <div class="glass-card p-6"><div class="flex flex-wrap items-center justify-between gap-3 mb-3"><h3 class="font-serif text-lg font-bold">Eligibility at a glance</h3><div class="flex flex-wrap items-center gap-2">${eligControl(c)}<button type="button" onclick="setAssessTab('eligibility')" class="text-xs font-bold text-pwc-burgundy hover:underline">Full eligibility assessment →</button></div></div><p class="text-xs text-pwc-grey">The recruiter decision is stored separately; the AI screening result and scores are never changed.</p></div>
-  <div class="glass-card p-6"><div class="flex flex-wrap items-center justify-between gap-3 mb-3"><h3 class="font-serif text-lg font-bold">Employment history</h3><div class="text-xs text-pwc-slate">Total <strong>${esc(yrsTxt(emp.totalMonths, emp.totalEstimated))}</strong> · Relevant <strong>${esc(yrsTxt(emp.relevantMonths, emp.totalEstimated))}</strong>${emp.overlaps ? ` · ${emp.overlaps} overlap(s) counted once` : ''}</div></div>
-    ${tl ? `<div class="space-y-2 mb-4">${tl}</div>` : ''}
-    <div class="overflow-x-auto rounded-2xl border border-pwc-line"><table class="min-w-full text-left text-xs"><thead class="bg-pwc-charcoal text-white"><tr><th class="py-2.5 px-3">Employer</th><th class="py-2.5 px-3">Job title</th><th class="py-2.5 px-3">Start</th><th class="py-2.5 px-3">End</th><th class="py-2.5 px-3">Duration</th><th class="py-2.5 px-3">Responsibilities & achievements</th></tr></thead><tbody class="divide-y divide-pwc-line bg-white">${rows}</tbody></table></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs"><div class="rounded-2xl bg-pwc-surface border border-pwc-line p-3.5"><strong>Career progression</strong><p class="mt-1 text-pwc-slate">${esc(emp.progression)}</p>${emp.promotions.length ? `<ul class="list-disc list-inside mt-1 text-pwc-slate">${emp.promotions.map(p => `<li>Promotion: ${esc(p)}</li>`).join('')}</ul>` : ''}</div>
-      <div class="rounded-2xl bg-pwc-surface border border-pwc-line p-3.5"><strong>Gaps & data quality</strong>${emp.gaps.length ? `<ul class="list-disc list-inside mt-1 text-pwc-slate">${emp.gaps.map(g => `<li>Gap of ${g.months} months (${esc(g.from)} to ${esc(g.to)})</li>`).join('')}</ul>` : '<p class="mt-1 text-pwc-slate">No gaps of 3+ months detected between dated roles.</p>'}${emp.flags.length ? `<ul class="list-disc list-inside mt-1 text-amber-800">${emp.flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}</div></div></div>
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="glass-card p-6"><h3 class="font-serif text-lg font-bold mb-3">Education & qualifications</h3><div class="overflow-x-auto rounded-2xl border border-pwc-line"><table class="min-w-full text-left text-xs"><thead class="bg-pwc-charcoal text-white"><tr><th class="py-2.5 px-3">Degree</th><th class="py-2.5 px-3">Institution</th><th class="py-2.5 px-3">Graduation</th><th class="py-2.5 px-3">Level</th></tr></thead><tbody class="divide-y divide-pwc-line bg-white">${edRows}</tbody></table></div>
-      <h4 class="text-sm font-bold mt-4 mb-1">Professional certifications</h4><ul class="list-disc list-inside text-xs text-pwc-slate space-y-0.5">${certs.length ? certs.map(e => `<li>${esc(e.raw)}</li>`).join('') : '<li class="list-none text-pwc-grey italic">Not Available</li>'}</ul></div>
-    <div class="glass-card p-6"><h3 class="font-serif text-lg font-bold mb-3">Demonstrated responsibilities</h3><ul class="list-disc list-inside space-y-1.5 text-xs text-pwc-slate">${listOr(c.demonstratedResponsibilities, 'None extracted')}</ul></div></div></div>`;
-}
+
 
 // ---------- Eligibility assessment (section E): four separate things shown separately ----------
 function assessEligibility(c) {
@@ -2068,14 +2038,11 @@ function assessEligibility(c) {
   return `<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
   ${panel('1. AI screening outcome', `<p>${getBadge(c.qualificationStatus)} <span class="ml-1">JD match <strong>${c.overallFitScore}%</strong> · rank #${c.rank}</span></p><p class="text-pwc-slate">${esc(c.qualificationRationale)}</p><p class="text-pwc-grey">This result is stored separately and is never overwritten by recruiter decisions.</p>`)}
   ${panel('2. Mandatory criteria assessment', `<p class="font-bold">${esc(ma.label)}</p>${reqs}<p class="text-pwc-grey">Recruiters can confirm individual criteria in the Recruiter Review tab.</p>`)}
-  ${panel('3. Age verification', `<p>Age: <strong>${esc(ageLabel(a))}</strong>${a.confidence ? ` · ${esc(a.confidence)} confidence` : ''}</p><p class="font-bold ${ck.needsVerification ? 'text-amber-800' : ck.state === 'outside' ? 'text-rose-700' : ''}">${esc(ck.label)}</p><p class="text-pwc-slate">Criterion: ${crit && crit.enabled ? `${crit.min ?? 'no minimum'} to ${crit.max ?? 'no maximum'}` : 'not applied for this engagement'} (set in Engagement Intake).</p><p class="text-pwc-slate">${esc(a.basis)}</p>${a.assumptions.length ? `<ul class="list-disc list-inside text-pwc-slate">${a.assumptions.map(k => `<li>${esc(k)}</li>`).join('')}</ul>` : ''}`)}
+  ${assessEligibilityAgePanel(c)}
   ${panel('4. Recruiter-confirmed eligibility', `<p class="text-pwc-slate">Select a decision to override the automated result. You can change or clear it at any time.</p>${eligControl(c)}<label for="elReason" class="block font-semibold mt-2">Reason or comment (optional, recommended when marking ineligible)</label><textarea id="elReason" rows="3" maxlength="500" onchange="setManualReason('${id}',this.value)" class="w-full px-3 py-2 rounded-xl border border-pwc-line text-sm">${esc(man ? man.reason : '')}</textarea>${man ? `<p class="text-pwc-grey">Decision recorded ${esc(new Date(man.at).toLocaleString())}.</p>` : '<p class="text-pwc-grey">No recruiter decision yet.</p>'}`)}
   <div class="lg:col-span-2 glass-card p-6 text-xs space-y-2"><h3 class="font-serif text-base font-bold">Effective eligibility used in reports</h3><p>${eligBadge(c)}</p><p class="text-pwc-slate">Automated suggestion: <strong>${ELIG_LABEL[ef.auto.status]}</strong> (${esc(ef.auto.why.join('; '))}).${ef.source === 'recruiter' ? ' The recruiter decision takes precedence in all views.' : ' No recruiter decision has been made, so the automated suggestion is shown.'}</p></div></div>`;
 }
-function extraReportLine(c) {
-  const x = getExtra(c), e = effectiveElig(c);
-  return `<p><strong>Eligibility:</strong> ${ELIG_LABEL[e.status]} (${e.source === 'recruiter' ? 'recruiter-confirmed' : 'automated'})${e.reason ? ' &ndash; ' + esc(e.reason) : ''} &middot; <strong>Age:</strong> ${esc(ageLabel(x.age))}${x.age.status === 'estimated' ? ' (estimate)' : ''} &middot; <strong>Total experience:</strong> ${esc(yrsTxt(x.employment.totalMonths, x.employment.totalEstimated))} &middot; <strong>Relevant:</strong> ${esc(yrsTxt(x.employment.relevantMonths, x.employment.totalEstimated))}</p>`;
-}
+
 
 // =========================================================================
 // TALENTLENS: EXTRAS (isolated additions; they only READ existing candidate data and never touch scoring)
@@ -2110,7 +2077,7 @@ function mergeIntervals(list) {
   return { merged: out, overlaps, months: out.reduce((t, [a, b]) => t + (b - a), 0) };
 }
 const monthLabel = idx => { const y = Math.floor(idx / 12), m = idx % 12; return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m] + ' ' + y; };
-function fmtDur(months, est) { if (months == null) return 'Not Available'; const y = Math.floor(months / 12), m = Math.round(months % 12); const s = [y ? `${y} yr${y > 1 ? 's' : ''}` : '', m ? `${m} mo${m > 1 ? 's' : ''}` : ''].filter(Boolean).join(' ') || '< 1 mo'; return (est ? '~' : '') + s; }
+function fmtDur(months, est) { if (months == null) return 'Not Available'; let y = Math.floor(months / 12), m = Math.round(months % 12); if (m === 12) { y++; m = 0; } const s = [y ? `${y} year${y > 1 ? 's' : ''}` : '', m ? `${m} month${m > 1 ? 's' : ''}` : ''].filter(Boolean).join(' ') || '< 1 month'; return (est ? '~' : '') + s; }
 function seniorityRank(t) {
   t = String(t || '').toLowerCase();
   if (/vice president|\bvp\b|head of|\bhead\b|director/.test(t)) return 6;
@@ -2174,18 +2141,12 @@ function analyzeEmployment(c, text, ctx, now = new Date()) {
   if (chron.length >= 2) { const a = chron[0], z = chron[chron.length - 1], ra = seniorityRank(a.roleTitle), rz = seniorityRank(z.roleTitle); summary = rz > ra ? `Progressed from ${a.roleTitle || 'earlier role'} to ${z.roleTitle || 'latest role'}.` : rz === ra ? 'No clear change in seniority across roles.' : 'Most recent role appears less senior than the earliest role.'; }
   const display = [...entries].sort((a, b) => (b.iv ? b.iv.start : -1) - (a.iv ? a.iv.start : -1));
   const cur = display.find(e => e.iv && e.iv.present) || display[0] || null;
-  return { entries: display, totalMonths: total.merged.length ? total.months : null, relevantMonths: valid.length ? rel.months : null, totalEstimated: valid.some(e => e.estimated), overlaps: total.overlaps, gaps, flags, promotions, progression: summary, stated, current: cur ? { title: cur.roleTitle, employer: cur.companyName } : null, firstStart: chron.length ? chron[0].iv.start : null, span: valid.length ? { start: Math.min(...valid.map(e => e.iv.start)), end: Math.max(...valid.map(e => e.iv.end)) } : null };
+  const norm0 = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), employerNames = [...new Set(entries.map(e => norm0(e.companyName)).filter(Boolean))], curName = cur && cur.companyName ? norm0(cur.companyName) : '';
+  return { employerCount: employerNames.length, previousEmployerCount: employerNames.filter(n => n !== curName).length, entries: display, totalMonths: total.merged.length ? total.months : null, relevantMonths: valid.length ? rel.months : null, totalEstimated: valid.some(e => e.estimated), overlaps: total.overlaps, gaps, flags, promotions, progression: summary, stated, current: cur ? { title: cur.roleTitle, employer: cur.companyName } : null, firstStart: chron.length ? chron[0].iv.start : null, span: valid.length ? { start: Math.min(...valid.map(e => e.iv.start)), end: Math.max(...valid.map(e => e.iv.end)) } : null };
 }
 
 // ---------- Education & contact ----------
-function parseEducation(lines) {
-  return (lines || []).map(raw => {
-    const ys = raw.match(/(?:19|20)\d{2}/g) || [], isCert = CERT_RE.test(raw) && !eduLevel(raw).valueOf();
-    const clean = raw.replace(/\b(?:19|20)\d{2}\b/g, '').replace(/\s*[-–—]\s*(?=[-–—,]|$)/g, '').replace(/[,\s–—-]+$/g, '').trim();
-    const parts = clean.split(/\s+[–—-]\s+|,\s+(?=[A-Z])/).map(s => s.trim()).filter(Boolean);
-    return { raw, degree: parts[0] || raw, institution: isCert ? '' : parts.slice(1).join(', '), level: eduLevel(raw), gradYear: ys.length ? +ys[ys.length - 1] : null, startYear: ys.length > 1 ? +ys[0] : null, isCert };
-  });
-}
+
 const LEVEL_NAME = { 0: 'Not detected', 1: 'Diploma', 2: "Bachelor's", 3: "Master's / MBA", 4: 'Doctorate' };
 const highestLevel = ed => Math.max(0, ...ed.filter(e => !e.isCert).map(e => e.level));
 function extractContact(text) {
@@ -2198,52 +2159,9 @@ function extractContact(text) {
 }
 
 // ---------- Age: stated vs estimated vs unavailable (never presented as exact fact when inferred) ----------
-function parseDobString(s, now) {
-  let m, d, mo, y, note = '';
-  if ((m = s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.]((?:19|20)\d{2})/))) { let a = +m[1], b = +m[2]; y = +m[3]; if (b > 12 && a <= 12) { mo = a; d = b; } else { d = a; mo = b; if (a <= 12 && b <= 12) note = 'Day/month order assumed to be dd/mm/yyyy.'; } }
-  else if ((m = s.match(/((?:19|20)\d{2})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/))) { y = +m[1]; mo = +m[2]; d = +m[3]; }
-  else if ((m = s.match(/(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,9})\.?,?\s+((?:19|20)\d{2})/)) && MONTH_IDX[m[2].toLowerCase().slice(0, 3)] != null) { d = +m[1]; mo = MONTH_IDX[m[2].toLowerCase().slice(0, 3)] + 1; y = +m[3]; }
-  else if ((m = s.match(/([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+((?:19|20)\d{2})/)) && MONTH_IDX[m[1].toLowerCase().slice(0, 3)] != null) { mo = MONTH_IDX[m[1].toLowerCase().slice(0, 3)] + 1; d = +m[2]; y = +m[3]; }
-  else if ((m = s.match(/((?:19|20)\d{2})/))) return { yearOnly: +m[1] };
-  else return null;
-  if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31)) return null;
-  return { y, mo, d, note };
-}
-function extractAge(text, emp, edu, now = new Date()) {
-  const res = { status: 'unavailable', age: null, confidence: null, basis: 'No stated age, date of birth, graduation date or dated employment found in the CV.', assumptions: [], source: '' };
-  const ok = a => a >= 16 && a <= 75;
-  const dobM = text.match(/(?:date\s+of\s+birth|d\.?\s?o\.?\s?b\.?|birth\s*date|born(?:\s+on|\s+in)?)\s*[:\-–]?\s*([^\n|]{4,32})/i);
-  if (dobM) { const p = parseDobString(dobM[1], now);
-    if (p && p.yearOnly) { const age = now.getFullYear() - p.yearOnly; if (ok(age)) return { ...res, status: 'stated', age, confidence: 'Medium', source: 'Birth year stated in CV', basis: `Birth year ${p.yearOnly} stated in the CV; exact age depends on birth month.`, assumptions: ['Only the birth year is given, so age may be one year lower.'] }; }
-    else if (p) { let age = now.getFullYear() - p.y; if (now.getMonth() + 1 < p.mo || (now.getMonth() + 1 === p.mo && now.getDate() < p.d)) age--; if (ok(age)) return { ...res, status: 'stated', age, confidence: 'High', source: 'Date of birth stated in CV', basis: `Date of birth ${p.d}/${p.mo}/${p.y} stated in the CV.`, assumptions: p.note ? [p.note] : [] }; } }
-  const am = text.match(/\b(?:age|aged)\s*[:\-–]?\s*(\d{2})\b/i) || text.match(/\b(\d{2})\s*[- ]?\s*years?\s*old\b/i);
-  if (am && ok(+am[1])) return { ...res, status: 'stated', age: +am[1], confidence: 'High', source: 'Age stated in CV', basis: `Age ${am[1]} is stated in the CV.`, assumptions: [] };
 
-  // Estimate: assumed age at graduation + years since graduation (preferred) or since the earliest dated role
-  const nowY = now.getFullYear(), real = edu.filter(e => !e.isCert && e.gradYear);
-  const bach = real.filter(e => e.level === 2).sort((a, b) => a.gradYear - b.gradYear)[0];
-  const mast = real.filter(e => e.level === 3).sort((a, b) => a.gradYear - b.gradYear)[0];
-  const phd = real.filter(e => e.level === 4).sort((a, b) => a.gradYear - b.gradYear)[0];
-  const dip = real.filter(e => e.level === 1).sort((a, b) => a.gradYear - b.gradYear)[0];
-  const firstStartY = emp && emp.firstStart != null ? Math.floor(emp.firstStart / 12) : null;
-  let anchor = null;
-  if (bach) anchor = { age: 22, year: bach.gradYear, label: `bachelor's degree (${bach.degree}) completed ${bach.gradYear}`, conf: 'Medium', assume: "Assumed age 22 at bachelor's graduation." };
-  else if (mast) anchor = { age: 24, year: mast.gradYear, label: `master's degree (${mast.degree}) completed ${mast.gradYear}`, conf: 'Low', assume: "No bachelor's graduation date found; assumed age 24 at master's graduation (bachelor's at 22 plus 2 years)." };
-  else if (phd) anchor = { age: 28, year: phd.gradYear, label: `doctorate completed ${phd.gradYear}`, conf: 'Low', assume: "No earlier graduation date found; assumed age 28 at doctorate completion." };
-  else if (dip) anchor = { age: 20, year: dip.gradYear, label: `diploma (${dip.degree}) completed ${dip.gradYear}`, conf: 'Low', assume: 'Assumed age 20 at diploma completion.' };
-  if (anchor) {
-    const age = Math.round(anchor.age + (nowY - anchor.year)), assumptions = [anchor.assume, 'Graduation assumed mid-year, so the estimate can be off by about a year.'];
-    if (bach && mast && mast.gradYear - bach.gradYear > 6) assumptions.push(`${mast.gradYear - bach.gradYear} years between bachelor's and master's; the bachelor's date was used.`);
-    if (firstStartY != null && firstStartY < anchor.year - 1) assumptions.push(`Earliest role (${firstStartY}) starts before graduation (${anchor.year}); the person may have worked while studying, so confidence is reduced.`);
-    if (ok(age)) return { ...res, status: 'estimated', age, confidence: firstStartY != null && firstStartY < anchor.year - 1 ? 'Low' : anchor.conf, source: 'Estimated from education dates', basis: `${anchor.age} (assumed age) + ${nowY - anchor.year} yrs since ${anchor.label}.`, assumptions };
-  }
-  if (emp && emp.firstStart != null) {
-    const yrs = (now.getFullYear() * 12 + now.getMonth() - emp.firstStart) / 12, age = Math.round(22 + yrs);
-    if (ok(age)) return { ...res, status: 'estimated', age, confidence: 'Low', source: 'Estimated from work history', basis: `22 (assumed age at graduation) + ${yrs.toFixed(1)} yrs since earliest dated role (${monthLabel(emp.firstStart)}).`, assumptions: ['No graduation date found; assumed the first role began at age 22 straight after a bachelor\'s degree.', 'Overlapping roles are not added together; the span from the earliest start date is used, so career gaps are included.', 'Candidates who started work earlier or later than 22 will be mis-estimated.'] };
-  }
-  return res;
-}
-function ageLabel(a) { return a.status === 'stated' ? `${a.age} (verified, stated in CV)` : a.status === 'estimated' ? `≈${a.age} (estimated)` : 'Not Available'; }
+
+
 function ageCheck(a, crit) {
   if (!crit || !crit.enabled || (crit.min == null && crit.max == null)) return { state: 'not_applied', label: 'Age criterion not applied', needsVerification: false };
   if (!a || a.status === 'unavailable') return { state: 'unverified', label: 'Age Not Verified', needsVerification: true };
@@ -2253,17 +2171,7 @@ function ageCheck(a, crit) {
 }
 
 // ---------- Enrichment (called inside try/catch so any failure leaves the screening result untouched) ----------
-const EMPTY_EXTRA = () => ({ contact: { email: null, phone: null, linkedin: null, location: null }, educationDetail: [], employment: { entries: [], totalMonths: null, relevantMonths: null, totalEstimated: false, overlaps: 0, gaps: [], flags: ['Employment analysis not available.'], promotions: [], progression: 'Not Available', stated: 0, current: null, firstStart: null, span: null }, age: { status: 'unavailable', age: null, confidence: null, basis: 'Age analysis not available.', assumptions: [] } });
-const getExtra = c => c.extra || EMPTY_EXTRA();
-function enrichResult(result, cvs, ctx) {
-  result.candidates.forEach(c => {
-    try {
-      const cv = cvs.find(x => x.id === c.id), text = cv ? cv.text : '';
-      const ex = EMPTY_EXTRA(); ex.contact = extractContact(text); ex.educationDetail = parseEducation(c.education);
-      ex.employment = analyzeEmployment(c, text, ctx); ex.age = extractAge(text, ex.employment, ex.educationDetail); c.extra = ex;
-    } catch (e) { console.warn('Enrichment failed for', c.name, e); c.extra = EMPTY_EXTRA(); c.extra.error = String(e.message || e); }
-  });
-}
+
 
 // ---------- Eligibility: AI outcome, mandatory criteria, age, and recruiter decision are four separate things ----------
 const eligKey = cid => `elig:${state.jobId}:${cid}`;
@@ -2322,7 +2230,7 @@ function onAgeCritChange() {
   if (!err) msg.innerText = en ? `Applied: ${min ?? 'no minimum'} to ${max ?? 'no maximum'}. Estimated ages outside the range are flagged for manual verification, not rejected.` : 'Not applied. Ages are still extracted for information.';
   refreshAll();
 }
-function loadAgeCritUI() { const c = state.ageCrit || {}; if (!$('ageCritEnabled')) return; $('ageCritEnabled').checked = !!c.enabled; $('ageMin').value = c.min ?? ''; $('ageMax').value = c.max ?? ''; }
+function loadAgeCritUI() { const c = state.ageCrit || {}; if (!$('ageCritEnabled')) return; if ($('gradAge')) $('gradAge').value = state.gradAge; $('ageCritEnabled').checked = !!c.enabled; $('ageMin').value = c.min ?? ''; $('ageMax').value = c.max ?? ''; }
 
 // ---------- Cross-view refresh, search, notifications, sidebar ----------
 function ageFilterKey(c) { const a = getExtra(c).age, ck = ageCheck(a, state.ageCrit); return ck.needsVerification ? 'verify' : a.status; }
@@ -2360,6 +2268,329 @@ document.addEventListener && document.addEventListener('click', e => { const t =
 const PAGE_TITLES = { intake: ['Engagement Intake', 'Upload the job description and CVs, and set eligibility criteria.'], assessment: ['Candidate Assessment', 'Review each candidate in depth: profile, employment, competencies and eligibility.'], cba: ['Cost-Benefit Analysis', 'Model the financial attractiveness of hiring each candidate (PKR).'], reports: ['Reports & Analytics', 'Track screening results and make evidence-based hiring decisions.'] };
 function setPageTitle(t) { const x = PAGE_TITLES[t] || PAGE_TITLES.intake; if ($('pageTitle')) { $('pageTitle').innerText = x[0]; $('pageSub').innerText = x[1]; } }
 
+
+// =========================================================================
+// TALENTLENS: AGE + HISTORY v2 (targeted additions; the scoring/parsing engine is not modified)
+//   - education: own section-aware, multi-line parser (reads the CV text; falls back to the engine's list)
+//   - employment: adds table rows and paragraph-form roles on top of the engine's parsed roles
+//   - age: explicit DOB/age -> bachelor's graduation year - assumed graduation age -> "Age Not Available".
+//          Work history is only a consistency check and is NEVER added to a graduation age.
+// =========================================================================
+state.gradAge = Store.get('gradAge', 22);
+
+// ---------- Degree / qualification recognition (case-sensitive for short forms so "be"/"ms" in prose never match) ----------
+const DEG_L4 = /\b(ph\.?\s?d|d\.?\s?phil|doctorate|doctoral)\b/i;
+const DEG_L3_I = /\b(masters?|master's|m\.?\s?sc|m\.?\s?phil|m\.?\s?eng|m\.?\s?tech|mba|emba|m\.?\s?com|llm|post\s?-?graduate\s+diploma|pgd)\b/i;
+const DEG_L3_CS = /\b(MS|MA|MCS|MIT|M\.S\.|M\.A\.)(?![a-z])/;
+const DEG_L2_I = /\b(bachelors?|bachelor's|b\.?\s?sc|b\.?\s?eng|b\.?\s?tech|b\.?\s?com|bba|llb|undergraduate|mbbs)\b/i;
+const DEG_L2_CS = /\b(BS|BE|BA|BCS|BIT|BSCS|BSSE|BSEE|BSIT|B\.S\.|B\.E\.|B\.A\.)(?![a-z])/;
+const DEG_L1 = /\b(diploma|associate degree|dae)\b/i;
+const SCHOOL_RE = /\b(matric(ulation)?|intermediate|f\.?\s?sc|hssc|ssc|o[- ]levels?|a[- ]levels?|high school|secondary school)\b/i;
+const PROF_RE = /\b(ACCA|FCCA|CIMA|ACMA|FCMA|CFA|CPA|ICAP|ICMAP|ACA|FCA|CMA|CIA|FRM|chartered accountant|chartered)\b/;
+const MEMBER_LINE = /^(member(ship)?|fellow(ship)?|associate member|affiliate)\b|\b(member|fellow) (of|in)\b|\bmembership\b/i;
+const INST_RE = /\b(universit(y|ies)|college|institute|school|academy|polytechnic|board|campus|iba|nust|lums|fast|ned|comsats|giki|szabist|aga khan|iqra|bahria|ku|uet)\b/i;
+const EDU_HEAD = /^(education(al)?( (background|history|qualifications?|details|&\s*training|and training))?|academic( (background|qualifications?|record|history|credentials|profile))?|qualifications?|academics)$/i;
+const CERT_HEAD = /^((professional|technical|additional)\s+)?(certifications?|certificates?|licen[cs]es?( (&|and) certifications?)?|courses|trainings?|training (&|and) (courses|certifications?)|qualifications?|development)$/i;
+const MEM_HEAD = /^((professional|industry)\s+)?(memberships?|affiliations?|associations?)$/i;
+function degreeLevel(s) {
+  s = String(s || '');
+  if (DEG_L4.test(s)) return 4;
+  if (DEG_L3_I.test(s) || DEG_L3_CS.test(s)) return 3;
+  if (DEG_L2_I.test(s) || DEG_L2_CS.test(s)) return 2;
+  if (DEG_L1.test(s)) return 1;
+  return 0;
+}
+const isYearOnly = l => /^\(?\s*((19|20)\d{2})(\s*[-–—to]+\s*((19|20)\d{2}|present|ongoing|current|expected\s*(19|20)\d{2}))?\s*\)?$/i.test(l.trim());
+const isGradeLine = l => /^(c?gpa|grade|percentage|marks|result|class|first class|distinction|thesis|dean|honou?rs?|score)\b/i.test(l.trim()) || /^\(?(c?gpa|grade)\b/i.test(l.trim());
+
+function fieldOfStudy(q) {
+  let t = String(q || '').replace(/\(\s*hons\.?\s*\)/ig, ' ').replace(/\s+/g, ' ').trim();
+  const abbr = /^(?:B\.?\s?Sc\.?|B\.?\s?S\.?|B\.?\s?E\.?|B\.?\s?A\.?|B\.?\s?Com\.?|BBA|BCS|BIT|MBBS|LLB|M\.?\s?Sc\.?|M\.?\s?S\.?|M\.?\s?A\.?|M\.?\s?Phil\.?|M\.?\s?Eng\.?|B\.?\s?Eng\.?|B\.?\s?Tech\.?|M\.?\s?Tech\.?|Ph\.?\s?D\.?|MBA|EMBA)(?=[\s.(:,\-–]|$)/i;
+  const word = /^(?:bachelors?|bachelor's|masters?|master's|doctor(?:ate)?(?: of philosophy)?|post\s?-?graduate diploma|diploma|associate degree)(?:\s+(?:of|in)\s+(?:science|arts|engineering|technology|commerce|business administration|philosophy|laws)\b)?(?:\s+degree)?/i;
+  const before = t; t = t.replace(word, '').trim(); if (t === before) t = t.replace(abbr, '').trim();
+  t = t.replace(/^[\s.:,\-–—]+/, '').replace(/^(?:in|of)\s+/i, '').replace(/^\(([^)]+)\)$/, '$1').replace(/[\s,;:\-–—]+$/, '').trim();
+  return t && t.length < 70 && !/^\d/.test(t) ? t : '';
+}
+function parseEduRecord(S, kind) {
+  const nowY = new Date().getFullYear(), raw = S;
+  const head = S.split(/\s*\|\s*/)[0];
+  let level = degreeLevel(head), type;
+  const prof = PROF_RE.test(head) || PROF_RE.test(S) && level === 0;
+  if (SCHOOL_RE.test(head) && level === 0) type = 'school';
+  else if (level > 0) type = 'degree';
+  else if (kind === 'member' || (MEMBER_LINE.test(head) && !prof)) type = 'membership';
+  else if (prof) type = 'professional';
+  else if (kind === 'cert' || CERT_RE.test(head) || /certif|licen[cs]e|course|training|diploma/i.test(head)) type = 'certification';
+  else type = kind === 'edu' ? 'other' : 'certification';
+  const ys = (S.match(/\b(?:19|20)\d{2}\b/g) || []).map(Number).filter(y => y >= 1960 && y <= nowY + 8);
+  const inProg = /\b(in progress|pursuing|currently|ongoing|expected|anticipated|present|current|final year|enrolled|appearing|candidate)\b/i.test(S);
+  let startYear = null, endYear = null;
+  const presentEnd = /(?:19|20)\d{2}\s*(?:[-–—]|to)\s*(present|ongoing|current)\b/i.test(S);
+  if (presentEnd) { startYear = ys[0] ?? null; endYear = null; }
+  else if (ys.length >= 2) { startYear = ys[0]; endYear = ys[ys.length - 1]; }
+  else if (ys.length === 1) { if (/\b(since|from)\b\s*[:\-]?\s*(\w+\s+)?(19|20)\d{2}/i.test(S)) startYear = ys[0]; else endYear = ys[0]; }
+  const status0 = (inProg && (endYear == null || endYear >= nowY || /expected|anticipated|pursuing|in progress|ongoing|present|current/i.test(S))) || (endYear != null && endYear > nowY) ? 'In progress' : (endYear != null ? 'Completed' : 'Not Provided');
+  const status = type === 'membership' ? (endYear != null && !presentEnd ? 'Completed' : 'Not Provided') : status0;
+  // split into parts, drop years / grades
+  let parts = S.split(/\s*\|\s*|\s+[–—-]\s+|,\s+(?=[A-Z(])/).map(p => p.replace(/\(?\b(?:19|20)\d{2}\b(?:\s*[-–—]\s*(?:(?:19|20)\d{2}|present|ongoing|current))?\)?/gi, '').replace(/\b(expected|anticipated|in progress|pursuing|ongoing)\b/ig, '').replace(/\(\s*[,;\s]*\)/g, '').replace(/[\s,;:\-–—(]+$/g, '').trim()).filter(p => p.length > 1 && !isGradeLine(p) && !/^(c?gpa|cgpa)\b/i.test(p));
+  let institution = '', field = '';
+  const ISSUER_RE = /\b(institute|council|association|board|foundation|amazon|aws|microsoft|google|cisco|hashicorp|oracle|pmi|isaca|isc2|scrum|axelos|coursera|udemy|linkedin|ibm|red hat|comptia|salesforce|vmware|sap)\b/i;
+  let qualParts = parts;
+  if (type === 'certification' && parts.length > 1) { const iss = parts.slice(1).find(p => INST_RE.test(p) || ISSUER_RE.test(p)); const rest = parts.slice(1).filter(p => p !== iss); qualParts = [[parts[0], ...rest].join(' – '), ...(iss ? [iss] : [])]; }
+  const qual = (type === 'certification' ? qualParts[0] : parts[0]) || head;
+  const instPart = qualParts.slice(1).find(p => INST_RE.test(p) || (type === 'certification' && ISSUER_RE.test(p))) || (type === 'certification' ? [] : parts.slice(1)).find(p => p.length <= 45 && degreeLevel(p) === 0 && !/^[a-z]/.test(p));
+  if (instPart) institution = instPart;
+  if (type === 'degree' || type === 'school') {
+    field = fieldOfStudy(qual);
+    const mInst = qual.match(/((?:[A-Z][\w&.'-]*\s+){0,3}(?:University|College|Institute|School|Academy)\b.*)$/);
+    if (mInst && !institution) { institution = mInst[1].trim(); field = fieldOfStudy(qual.slice(0, qual.indexOf(mInst[1])).trim() || qual) ; }
+    if (!field && parts[1] && !INST_RE.test(parts[1]) && instPart !== parts[1] && degreeLevel(parts[1]) === 0 && parts[1].length < 50 && parts.length > 2) field = parts[1];
+  } else if (type === 'professional') { field = 'Professional Qualification'; const body = (S.match(PROF_RE) || [])[0]; if (body && !INST_RE.test(institution)) institution = body; }
+  else if (type === 'membership') field = 'Professional Membership'; else field = 'Certification';
+  return { raw, qualification: qual, degree: qual, institution, field, startYear, endYear, gradYear: endYear, status, level, type, isCert: type === 'professional' || type === 'certification' || type === 'membership' };
+}
+function extractEducationRecords(text, fallbackList) {
+  const raw = String(text || '').split('\n').map(s => s.trim()).filter(Boolean), recs = [];
+  const kindOf = l => { const h = headNorm(l); if (l.length >= 55) return null; if (EDU_HEAD.test(h)) return 'edu'; if (CERT_HEAD.test(h)) return 'cert'; if (MEM_HEAD.test(h)) return 'member'; return null; };
+  const isBoundary = l => { const h = headNorm(l); return l.length < 50 && !l.includes('|') && (EXP_HEAD_RE.test(h) || END_HEAD_RE.test(h) || kindOf(l)) || (/^[A-Z][A-Z &/]{3,40}$/.test(l) && degreeLevel(l) === 0 && !INST_RE.test(l) && !PROF_RE.test(l)); };
+  for (let i = 0; i < raw.length; i++) {
+    const kind = kindOf(raw[i]); if (!kind) continue;
+    const sec = []; let j = i + 1; while (j < raw.length && !(isBoundary(raw[j]) && !(kindOf(raw[j]) === null && degreeLevel(raw[j]) > 0))) { sec.push(cleanLine(raw[j])); j++; }
+    let cur = null; const HDR = /^(qualification|degree|institution|university|college|school|field( of study)?|major|start( year| date)?|end( year| date)?|graduation( year| date)?|year|status|from|to|period|duration|grade|cgpa|programme|program|course)$/i;
+    const flush = () => { if (cur) { const S = cur.join(' | '); if (!(S.includes('|') && S.split('|').every(c => HDR.test(c.trim())))) { const r = parseEduRecord(S, kind); if (r.type !== 'other' || (INST_RE.test(S) && /(19|20)\d{2}/.test(S))) recs.push(r); } } cur = null; };
+    sec.filter(Boolean).forEach(l => {
+      const starts = degreeLevel(l) > 0 || PROF_RE.test(l) || SCHOOL_RE.test(l) || kind === 'cert' || kind === 'member';
+      const attach = isYearOnly(l) || isGradeLine(l) || (cur && INST_RE.test(l) && !starts) || (cur && !starts && l.length < 60);
+      if (cur && attach && !(kind !== 'edu' && !isYearOnly(l) && !INST_RE.test(l) && !isGradeLine(l))) cur.push(l); else { flush(); cur = [l]; }
+    }); flush(); i = j - 1;
+  }
+  const norm = s => String(s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  (fallbackList || []).forEach(l => { const n = norm(l).split(' ').filter(w => w.length > 2); if (!n.length) return; if (!recs.some(r => { const rn = norm(r.raw); return n.filter(w => rn.includes(w)).length / n.length >= 0.6; })) { const r = parseEduRecord(l, 'edu'); if (r.level > 0 || r.isCert) recs.push(r); } });
+  const uniq = []; recs.forEach(r => { if (!uniq.some(u => norm(u.qualification) === norm(r.qualification) && u.endYear === r.endYear)) uniq.push(r); });
+  return uniq;
+}
+function parseEducation(lines) { return (lines || []).map(l => parseEduRecord(l, 'edu')); }   // kept for backward compatibility
+
+// ---------- Employment: tables and paragraphs, merged with (never replacing) the engine's parsed roles ----------
+const P_MON = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?,?\\s+';
+const P_DATE = '(?:' + P_MON + ')?(?:19|20)\\d{2}';
+const P_RANGE = new RegExp('(' + P_DATE + ')\\s*(?:to|until|till|through|and|-|–|—)\\s*(' + P_DATE + '|present|current|now|date)', 'i');
+const TITLE_PHRASE = /((?:(?:Senior|Junior|Lead|Principal|Chief|Assistant|Associate|Deputy|Regional|Group|Executive|Head of|Vice)\s+)*(?:[A-Z][A-Za-z&]+\s+){0,2}(?:Engineer|Manager|Analyst|Consultant|Director|Officer|Specialist|Architect|Developer|Accountant|Administrator|Coordinator|Supervisor|Advisor|Executive|Associate|Intern|President|Controller|Auditor|Planner|Designer|Scientist|Technician)\b(?:\s+(?:of|for|in)\s+[A-Z][A-Za-z&]+)?)/;
+const COMPANY_PHRASE = /\b(?:at|with|for|by|joined)\s+((?:[A-Z][\w&.'-]*)(?:\s+(?:&|and|of|for)?\s*[A-Z][\w&.'-]*){0,5})/;
+const DATEISH = /^((jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s+)?(19|20)\d{2}$|^(present|current|ongoing|now|till date|to date)$/i;
+function parseTableRoles(text) {
+  const out = [], rows = String(text).split('\n').map(s => s.trim()).filter(l => l.split('|').length >= 3); let map = null;
+  const HC = /^(employer|company|organi[sz]ation|firm)$/i, HT = /^(job title|title|position|designation|role)$/i, HS = /^(start( date)?|from)$/i, HE = /^(end( date)?|to)$/i, HP = /^(period|duration|dates?|tenure)$/i, HR = /^(key )?(responsibilities|duties|description|achievements)$/i;
+  rows.forEach(l => {
+    const cells = l.split('|').map(c => c.trim());
+    if (cells.some(c => HC.test(c)) && cells.some(c => HT.test(c))) { map = {}; cells.forEach((c, i) => { if (HC.test(c)) map.company = i; else if (HT.test(c)) map.title = i; else if (HS.test(c)) map.start = i; else if (HE.test(c)) map.end = i; else if (HP.test(c)) map.period = i; else if (HR.test(c)) map.resp = i; }); return; }
+    if (degreeLevel(cells[0]) > 0 || cells.some(c => INST_RE.test(c) && degreeLevel(l) > 0)) return;
+    let role = '', company = '', tenure = '', resp = '';
+    if (map && map.company != null && map.title != null) {
+      role = cells[map.title] || ''; company = cells[map.company] || ''; resp = map.resp != null ? cells[map.resp] || '' : '';
+      tenure = map.period != null ? cells[map.period] || '' : [cells[map.start], cells[map.end]].filter(Boolean).join(' – ');
+    } else {
+      const di = cells.findIndex((c, i) => DATEISH.test(c) && cells[i + 1] && DATEISH.test(cells[i + 1]));
+      if (di < 0) return; tenure = cells[di] + ' – ' + cells[di + 1];
+      const rest = cells.filter((c, i) => i !== di && i !== di + 1 && c); resp = rest.find(c => c.length > 45) || '';
+      const cl = classifyHeader(rest.filter(c => c !== resp)); role = cl.role; company = cl.company;
+    }
+    if (!/(19|20)\d{2}/.test(tenure) || (!role && !company)) return;
+    out.push({ roleTitle: role.trim(), companyName: company.trim(), tenure: tenure.trim(), keySummary: resp.trim().slice(0, 200), source: 'table' });
+  });
+  return out;
+}
+function parseParagraphRoles(text) {
+  const out = [], units = String(text).split(/(?<=[.!?])\s+(?=[A-Z])|\n/).map(s => s.trim()).filter(s => s.length > 25);
+  units.forEach(s => {
+    const m = P_RANGE.exec(s); if (!m) return;
+    const tenure = (m[1] + ' – ' + m[2]).replace(/\bpresent\b/i, 'Present').replace(/\bcurrent\b|\bnow\b|\bdate\b/i, 'Present');
+    const asM = s.match(new RegExp('\\b(?:as|role of|position of)\\s+(?:an?\\s+|the\\s+)?' + TITLE_PHRASE.source)), tm = asM ? { 1: asM[1], index: asM.index } : (s.match(TITLE_PHRASE) ? { 1: s.match(TITLE_PHRASE)[1], index: s.match(TITLE_PHRASE).index } : null);
+    if (!tm) return;
+    const after = s.slice(tm.index + tm[1].length), cm = after.match(COMPANY_PHRASE) || s.match(COMPANY_PHRASE);
+    let company = cm ? cm[1].replace(/[\s,;.]+$/, '') : ''; if (company && tm[1].includes(company)) company = '';
+    const tail = cm ? after.slice((after.indexOf(cm[0]) >= 0 ? after.indexOf(cm[0]) : 0) + cm[0].length) : '';
+    const resp = tail.replace(/^[\s,;:.]*(?:where|during which|in which|and)?\s*(?:I\s+)?/i, '').replace(/[\s.]+$/, '');
+    out.push({ roleTitle: tm[1].trim(), companyName: company, tenure, keySummary: resp.length > 12 ? resp.slice(0, 200) : '', source: 'paragraph' });
+  });
+  return out;
+}
+function roleQuality(e) {
+  let q = 0; const r = e.roleTitle || '', c = e.companyName || '';
+  if (r && r.length <= 60 && TITLE_RE.test(r)) q += 2; if (c && c.length <= 60) q += 1;
+  if (/\b(I|my|we|where|which|worked as|served as)\b/.test(r + ' ' + c) || r.length > 80 || c.length > 80) q -= 3;
+  if (/^(from|between|since)\b/i.test(r)) q -= 2; return q;
+}
+function experienceScope(text) {
+  const out = []; let skip = false;
+  const kind = l => { const t = l.trim(); if (!t || t.length >= 55 || t.includes('|')) return null; const h = headNorm(t); if (EDU_HEAD.test(h) || CERT_HEAD.test(h) || MEM_HEAD.test(h)) return 'skip'; if (EXP_HEAD_RE.test(h) || END_HEAD_RE.test(h) || (/^[A-Z][A-Z &/]{3,40}$/.test(t) && degreeLevel(t) === 0)) return 'keep'; return null; };
+  String(text).split('\n').forEach(l => { const k = kind(l); if (k === 'skip') skip = true; else if (k === 'keep') skip = false; if (!skip) out.push(l); });
+  return out.join('\n');
+}
+function extractEmploymentRecords(text, baseWH) {
+  const out = (baseWH || []).map(w => ({ roleTitle: w.roleTitle || '', companyName: w.companyName || '', tenure: w.tenure || '', keySummary: w.keySummary || '', verified: w.verified, source: 'parser' }));
+  let extra = []; try { const scoped = experienceScope(text); extra = [...parseTableRoles(scoped), ...parseParagraphRoles(scoped)]; } catch (e) { console.warn('Extra employment parsing skipped:', e); }
+  const yrs = e => (String(e.tenure).match(/(?:19|20)\d{2}/g) || []).join('-');
+  extra.forEach(e => {
+    const i = out.findIndex(o => yrs(o) && yrs(o) === yrs(e));
+    if (i < 0) out.push({ ...e }); else if (roleQuality(e) > roleQuality(out[i])) out[i] = { ...e, keySummary: e.keySummary || out[i].keySummary };
+  });
+  return out;
+}
+
+// ---------- Age ----------
+function parseDobString(s) {
+  let m, d, mo, y, note = '';
+  const MI = k => MONTH_IDX[k.toLowerCase().slice(0, 3)];
+  if ((m = s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.]((?:19|20)\d{2})/))) { const a = +m[1], b = +m[2]; y = +m[3]; if (b > 12 && a <= 12) { mo = a; d = b; } else { d = a; mo = b; if (a <= 12 && b <= 12) note = 'Day/month order assumed to be dd/mm/yyyy.'; } }
+  else if ((m = s.match(/((?:19|20)\d{2})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/))) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+  else if ((m = s.match(/(\d{1,2})(?:st|nd|rd|th)?[\s\-\/.,]+([A-Za-z]{3,9})\.?[\s\-\/.,]+((?:19|20)\d{2})/)) && MI(m[2]) != null) { d = +m[1]; mo = MI(m[2]) + 1; y = +m[3]; }
+  else if ((m = s.match(/([A-Za-z]{3,9})\.?[\s\-\/.,]+(\d{1,2})(?:st|nd|rd|th)?[\s\-\/.,]+((?:19|20)\d{2})/)) && MI(m[1]) != null) { mo = MI(m[1]) + 1; d = +m[2]; y = +m[3]; }
+  else if ((m = s.match(/((?:19|20)\d{2})/))) return { yearOnly: +m[1] };
+  else return null;
+  if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31)) return null;
+  return { y, mo, d, note };
+}
+function extractAgeSources(text, edu, emp) {
+  const src = { stated: null, bachelor: null, reason: '', empCheck: null };
+  const dobM = text.match(/(?:date\s+of\s+birth|d\.?\s?o\.?\s?b\.?|birth\s*date|born(?:\s+on|\s+in)?)\s*[:\-–]?\s*([^\n|]{4,40})/i);
+  if (dobM) { const p = parseDobString(dobM[1]); if (p && p.yearOnly) src.stated = { kind: 'birthyear', year: p.yearOnly, source: 'Birth year stated in CV' }; else if (p) src.stated = { kind: 'dob', ...p, source: 'Date of birth stated in CV' }; }
+  if (!src.stated || src.stated.kind === 'birthyear') { const am = text.match(/\b(?:age|aged)\s*[:\-–]?\s*(\d{2})\b/i) || text.match(/\b(\d{2})\s*[- ]?\s*years?\s*old\b/i); if (am && +am[1] >= 16 && +am[1] <= 75) src.stated = { kind: 'age', value: +am[1], source: 'Age stated in CV' }; }
+  const degrees = (edu || []).filter(e => e.type === 'degree');
+  const done = degrees.filter(e => e.level === 2 && e.status === 'Completed' && e.endYear).sort((a, b) => a.endYear - b.endYear);
+  if (done.length) src.bachelor = { degree: done[0].qualification, institution: done[0].institution, gradYear: done[0].endYear };
+  else if (degrees.some(e => e.level === 2 && e.status === 'In progress')) src.reason = "The bachelor's degree appears to be in progress, so there is no graduation year to estimate from.";
+  else if (degrees.some(e => e.level === 2)) src.reason = "A bachelor's degree was found but it has no graduation year.";
+  else if (degrees.some(e => e.level >= 3)) src.reason = "Only a postgraduate degree was found; the bachelor's graduation year is needed for an estimate.";
+  else src.reason = 'No bachelor\'s degree with a graduation year was found in the education history.';
+  const pg = degrees.filter(e => e.level >= 3 && e.status === 'Completed' && e.endYear).sort((a, b) => a.endYear - b.endYear)[0];
+  if (pg) src.postgradYear = pg.endYear;
+  src.empCheck = { firstWorkYear: emp && emp.firstStart != null ? Math.floor(emp.firstStart / 12) : null, careerYears: emp && emp.totalMonths != null ? emp.totalMonths / 12 : null };
+  return src;
+}
+function deriveAge(src, gradAge, now = new Date()) {
+  const base = { status: 'unavailable', age: null, type: 'Not Available', basis: '', source: '', confidence: null, verification: 'Age Not Verified', gradYear: null, assumedGradAge: null, birthYear: null, assumptions: [] };
+  const ok = a => a >= 16 && a <= 75, nowY = now.getFullYear();
+  const s = src && src.stated;
+  if (s) {
+    if (s.kind === 'dob') { let age = nowY - s.y; if (now.getMonth() + 1 < s.mo || (now.getMonth() + 1 === s.mo && now.getDate() < s.d)) age--; if (ok(age)) return { ...base, status: 'stated', age, type: 'Verified', basis: 'Date of birth', source: s.source, confidence: 'High', verification: 'Verified: stated in the CV (not independently checked)', birthYear: s.y, assumptions: s.note ? [s.note] : [] }; }
+    else if (s.kind === 'age' && ok(s.value)) return { ...base, status: 'stated', age: s.value, type: 'Verified', basis: 'Explicit age', source: s.source, confidence: 'High', verification: 'Verified: stated in the CV (not independently checked)' };
+    else if (s.kind === 'birthyear') { const age = nowY - s.year; if (ok(age)) return { ...base, status: 'stated', age, type: 'Verified', basis: 'Birth year', source: s.source, confidence: 'Medium', verification: 'Verified: birth year stated in the CV', birthYear: s.year, assumptions: ['Only the birth year is given, so the age may be one year lower.'] }; }
+  }
+  const ga = Number(gradAge) || 22;
+  if (src && src.bachelor) {
+    const b = src.bachelor, birthYear = b.gradYear - ga, age = nowY - birthYear, assumptions = [`Assumed age at bachelor's graduation: ${ga} (configurable in Engagement Intake).`, 'Estimated birth year = graduation year minus assumed graduation age; the current year is used, so the estimate can be off by about a year.'];
+    let conf = 'Low', note = '';
+    const w = src.empCheck && src.empCheck.firstWorkYear;
+    if (w == null) note = 'No dated employment to cross-check the estimate, so confidence is low.';
+    else if (w < b.gradYear - 3) note = `Earliest role (${w}) starts more than 3 years before graduation (${b.gradYear}); the degree may have been taken part-time or later, so confidence is low.`;
+    else if (src.empCheck.careerYears != null && src.empCheck.careerYears > age - 16) note = `Dated employment (${src.empCheck.careerYears.toFixed(1)} yrs) is longer than the estimated age allows; the dates conflict, so confidence is low.`;
+    else if (w > b.gradYear + 10) note = `First dated role (${w}) is more than 10 years after graduation (${b.gradYear}); the estimate is kept but confidence is low.`;
+    else { conf = 'Medium'; note = `Employment dates (first role ${w}) are consistent with graduating in ${b.gradYear}. Work experience was used only as a check, not added to the age.`; }
+    if (src.postgradYear != null) { const gap = src.postgradYear - b.gradYear; if (gap > 6) assumptions.push(`${gap} years between the bachelor's and postgraduate degrees; the bachelor's date was used.`); else if (gap < 0) assumptions.push('A postgraduate degree is dated before the bachelor\'s degree; please check the dates. The bachelor\'s date was used.'); else assumptions.push('A postgraduate degree is also listed; it was not added to the age. The bachelor\'s graduation year was used.'); }
+    assumptions.push(note);
+    if (ok(age)) return { ...base, status: 'estimated', age, type: 'Estimated', basis: "Bachelor's graduation year", source: `Estimated from ${b.degree}${b.institution ? ', ' + b.institution : ''} (completed ${b.gradYear})`, confidence: conf, verification: 'Requires Verification', gradYear: b.gradYear, assumedGradAge: ga, birthYear, assumptions };
+    return { ...base, basis: 'Estimate was implausible', assumptions: [`Graduation year ${b.gradYear} with assumed age ${ga} gives an age of ${age}, which is outside 16 to 75, so no age is shown.`] };
+  }
+  return { ...base, basis: (src && src.reason) || 'No stated age, date of birth, or bachelor\'s graduation year was found.', assumptions: ['No age is shown rather than guessing. Work experience alone is not used to estimate age.'] };
+}
+function extractAge(text, emp, edu, now = new Date(), gradAge) { return deriveAge(extractAgeSources(text, edu, emp), gradAge || state.gradAge, now); }
+function ageLabel(a) { return a.status === 'stated' ? `${a.age} (verified, stated in CV)` : a.status === 'estimated' ? `≈${a.age} (estimated)` : 'Age Not Available'; }
+
+const EMPTY_EXTRA = () => ({ contact: { email: null, phone: null, linkedin: null, location: null }, educationDetail: [], ageSrc: null, employment: { entries: [], totalMonths: null, relevantMonths: null, totalEstimated: false, overlaps: 0, gaps: [], flags: ['Employment analysis not available.'], promotions: [], progression: 'Not Available', stated: 0, current: null, firstStart: null, span: null, employerCount: 0, previousEmployerCount: 0 }, age: { status: 'unavailable', age: null, type: 'Not Available', confidence: null, basis: 'Age analysis not available.', verification: 'Age Not Verified', assumptions: [] } });
+// Single source of truth: every view reads the age through here, so ranking, profile, reports and charts always agree.
+function getExtra(c) { const ex = c.extra || EMPTY_EXTRA(); return ex.ageSrc ? { ...ex, age: deriveAge(ex.ageSrc, state.gradAge) } : ex; }
+function enrichResult(result, cvs, ctx) {
+  result.candidates.forEach(c => {
+    try {
+      const cv = cvs.find(x => x.id === c.id), text = cv ? cv.text : '', ex = EMPTY_EXTRA();
+      ex.contact = extractContact(text); ex.educationDetail = extractEducationRecords(text, c.education);
+      ex.employment = analyzeEmployment({ ...c, workHistory: extractEmploymentRecords(text, c.workHistory) }, text, ctx);
+      ex.ageSrc = extractAgeSources(text, ex.educationDetail, ex.employment); ex.age = deriveAge(ex.ageSrc, state.gradAge); c.extra = ex;
+    } catch (e) { console.warn('Enrichment failed for', c.name, e); c.extra = EMPTY_EXTRA(); c.extra.error = String(e.message || e); }
+  });
+}
+function onGradAgeChange() {
+  const el = $('gradAge'), v = Number(el.value), msg = $('gradAgeMsg');
+  if (!Number.isFinite(v) || v < 18 || v > 30 || Math.round(v) !== v) { msg.innerText = 'Enter a whole number between 18 and 30.'; msg.className = 'text-xs mt-1 text-rose-700 font-semibold'; el.value = state.gradAge; return; }
+  state.gradAge = v; Store.set('gradAge', v); msg.innerText = `Estimates now assume graduation at ${v}.`; msg.className = 'text-xs mt-1 text-pwc-grey'; refreshAll();
+}
+
+// =========================================================================
+// TALENTLENS: CANDIDATE PROFILE v2: age table, Past Experience table, Education & Qualifications table
+// =========================================================================
+const NP = '<span class="text-pwc-grey italic">Not Provided</span>';
+const sCell = v => (v == null || v === '') ? NP : esc(v);
+function statusPill(s) { const t = { Completed: 'bg-emerald-50 text-emerald-800 border-emerald-300', 'In progress': 'bg-amber-50 text-amber-900 border-amber-300', 'Not Provided': 'bg-gray-100 text-pwc-slate border-gray-300' }[s] || 'bg-gray-100 text-pwc-slate border-gray-300'; return `<span class="px-2 py-0.5 rounded-full border text-[11px] font-bold ${t}">${esc(s)}</span>`; }
+function respCell(e) {
+  if (!e.responsibilities.length) return NP;
+  const first = e.responsibilities.slice(0, 2).join('; '), short = first.length > 150 ? first.slice(0, 147) + '…' : first, more = e.responsibilities.length > 2 || e.achievements.length || first.length > 150;
+  return `<div>${esc(short)}</div>${more ? `<details class="mt-1"><summary class="cursor-pointer font-semibold text-pwc-burgundy">All responsibilities${e.achievements.length ? ' & achievements' : ''}</summary><ul class="list-disc list-inside mt-1 space-y-0.5">${e.responsibilities.map(r => `<li>${esc(r)}</li>`).join('')}</ul>${e.achievements.length ? `<p class="font-semibold mt-1">Key achievements</p><ul class="list-disc list-inside space-y-0.5">${e.achievements.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}</details>` : ''}${e.dateFlags.length ? `<div class="mt-1 text-[10px] text-amber-800">${e.dateFlags.map(esc).join(' · ')}</div>` : ''}`;
+}
+function empTableHtml(c) {
+  const emp = getExtra(c).employment, span = emp.span, total = span ? span.end - span.start : 0;
+  const tl = span && total > 0 ? emp.entries.filter(e => e.iv).map(e => `<div class="flex items-center gap-3 text-[11px]"><div class="w-40 shrink-0 truncate font-semibold" title="${esc(e.roleTitle)}">${esc(e.roleTitle || 'Role not stated')}</div><div class="relative flex-1 h-4 rounded-full bg-pwc-light"><div class="absolute h-4 rounded-full ${e.relevant ? 'bg-pwc-orange' : 'bg-[#9a9a9a]'}" style="left:${((e.iv.start - span.start) / total * 100).toFixed(2)}%;width:${Math.max(1.5, e.months / total * 100).toFixed(2)}%" title="${esc(e.tenure)}"></div></div></div>`).join('') + `<div class="flex justify-between text-[10px] text-pwc-grey pl-[172px]"><span>${monthLabel(span.start)}</span><span>${monthLabel(span.end)}</span></div><p class="text-[10px] text-pwc-grey pl-[172px]">Orange = relevant to the advertised role; grey = other experience.</p>` : '';
+  const rows = emp.entries.length ? emp.entries.map(e => { const [s, en] = tenureParts(e.tenure); return `<tr class="align-top"><td class="py-3 px-3 font-semibold">${sCell(e.companyName)}</td><td class="py-3 px-3">${sCell(e.roleTitle)}${e.relevant ? ' <span class="px-1.5 py-0.5 rounded-full bg-orange-50 text-pwc-burgundy text-[10px] font-bold">relevant</span>' : ''}${e.verified === false ? ' <span class="text-[10px] font-semibold text-amber-700">⚠ unverified</span>' : ''}</td><td class="py-3 px-3 whitespace-nowrap">${s === 'Not Available' ? NP : esc(s)}</td><td class="py-3 px-3 whitespace-nowrap">${en === 'Not Available' ? NP : esc(en)}</td><td class="py-3 px-3 whitespace-nowrap num">${e.months == null ? NP : esc(fmtDur(e.months, e.estimated)) + (e.estimated ? ' <span class="text-[10px] text-amber-700">(estimated)</span>' : '')}</td><td class="py-3 px-3 text-pwc-slate min-w-[240px]">${respCell(e)}</td></tr>`; }).join('') : `<tr><td colspan="6" class="py-6 px-3 text-center text-pwc-grey">Unable to extract employment history from this CV.</td></tr>`;
+  const cur = emp.current || {}, stat = (l, v, s) => `<div class="rounded-2xl bg-pwc-surface border border-pwc-line p-3.5"><div class="text-[11px] font-semibold uppercase text-pwc-grey">${l}</div><div class="text-sm font-bold mt-0.5">${v}</div>${s ? `<div class="text-[11px] text-pwc-grey mt-0.5">${s}</div>` : ''}</div>`;
+  return `${tl ? `<div class="space-y-2 mb-4">${tl}</div>` : ''}<div class="overflow-x-auto rounded-2xl border border-pwc-line"><table class="min-w-full text-left text-xs"><thead class="bg-pwc-charcoal text-white"><tr><th scope="col" class="py-2.5 px-3">Employer</th><th scope="col" class="py-2.5 px-3">Job Title</th><th scope="col" class="py-2.5 px-3">Start Date</th><th scope="col" class="py-2.5 px-3">End Date</th><th scope="col" class="py-2.5 px-3">Duration</th><th scope="col" class="py-2.5 px-3">Key Responsibilities</th></tr></thead><tbody class="divide-y divide-pwc-line bg-white">${rows}</tbody></table></div>
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-3">${stat('Total professional experience', esc(yrsTxt(emp.totalMonths, emp.totalEstimated)), emp.totalEstimated ? 'Includes estimated durations' : (emp.overlaps ? 'Overlaps counted once' : ''))}${stat('Relevant experience', esc(yrsTxt(emp.relevantMonths, emp.totalEstimated)), 'For the advertised role (heuristic)')}${stat('Previous employers', emp.employerCount ? emp.previousEmployerCount : NP, emp.employerCount ? `${emp.employerCount} employer${emp.employerCount === 1 ? '' : 's'} in total` : '')}${stat('Most recent job title', cur.title ? esc(cur.title) : NP)}${stat('Current / most recent employer', cur.employer ? esc(cur.employer) : NP)}</div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs"><div class="rounded-2xl bg-pwc-surface border border-pwc-line p-3.5"><strong>Career progression</strong><p class="mt-1 text-pwc-slate">${esc(emp.progression)}</p>${emp.promotions.length ? `<ul class="list-disc list-inside mt-1 text-pwc-slate">${emp.promotions.map(p => `<li>Promotion: ${esc(p)}</li>`).join('')}</ul>` : ''}</div>
+  <div class="rounded-2xl bg-pwc-surface border border-pwc-line p-3.5"><strong>Gaps & data quality</strong>${emp.gaps.length ? `<ul class="list-disc list-inside mt-1 text-pwc-slate">${emp.gaps.map(g => `<li>Employment gap of ${g.months} months (${esc(g.from)} to ${esc(g.to)})</li>`).join('')}</ul>` : '<p class="mt-1 text-pwc-slate">No gaps of 3+ months detected between dated roles.</p>'}${emp.flags.length ? `<ul class="list-disc list-inside mt-1 text-amber-800">${emp.flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}</div></div>`;
+}
+function eduTableHtml(c) {
+  const ed = [...getExtra(c).educationDetail].sort((a, b) => (b.endYear || 0) - (a.endYear || 0));
+  const rows = ed.length ? ed.map(e => `<tr class="align-top"><td class="py-2.5 px-3 font-semibold">${sCell(e.qualification)}</td><td class="py-2.5 px-3">${sCell(e.institution)}</td><td class="py-2.5 px-3">${sCell(e.field)}</td><td class="py-2.5 px-3 num">${sCell(e.startYear)}</td><td class="py-2.5 px-3 num">${sCell(e.endYear)}</td><td class="py-2.5 px-3">${statusPill(e.status)}</td></tr>`).join('') : `<tr><td colspan="6" class="py-6 px-3 text-center text-pwc-grey">Unable to extract education or qualifications from this CV.</td></tr>`;
+  return `<div class="overflow-x-auto rounded-2xl border border-pwc-line"><table class="min-w-full text-left text-xs"><thead class="bg-pwc-charcoal text-white"><tr><th scope="col" class="py-2.5 px-3">Qualification</th><th scope="col" class="py-2.5 px-3">Institution</th><th scope="col" class="py-2.5 px-3">Field of Study</th><th scope="col" class="py-2.5 px-3">Start Year</th><th scope="col" class="py-2.5 px-3">Graduation Year</th><th scope="col" class="py-2.5 px-3">Status</th></tr></thead><tbody class="divide-y divide-pwc-line bg-white">${rows}</tbody></table></div><p class="text-[11px] text-pwc-grey mt-2">Professional certifications and memberships are listed in the same table. “Not Provided” means the CV does not state it.</p>`;
+}
+function expMiniTable(c) {
+  const emp = getExtra(c).employment;
+  if (!emp.entries.length) return '<p class="text-xs text-pwc-grey mt-2">Unable to extract employment history from this CV.</p>';
+  return `<div class="overflow-x-auto rounded-xl border border-pwc-line mt-2"><table class="min-w-full text-left text-[11px]"><thead class="bg-pwc-light"><tr><th class="py-1.5 px-2">Employer</th><th class="py-1.5 px-2">Job Title</th><th class="py-1.5 px-2">Start</th><th class="py-1.5 px-2">End</th><th class="py-1.5 px-2">Duration</th></tr></thead><tbody class="divide-y divide-pwc-line bg-white">${emp.entries.map(e => { const [s, en] = tenureParts(e.tenure); return `<tr><td class="py-1.5 px-2 font-semibold">${sCell(e.companyName)}</td><td class="py-1.5 px-2">${sCell(e.roleTitle)}</td><td class="py-1.5 px-2 whitespace-nowrap">${s === 'Not Available' ? NP : esc(s)}</td><td class="py-1.5 px-2 whitespace-nowrap">${en === 'Not Available' ? NP : esc(en)}</td><td class="py-1.5 px-2 whitespace-nowrap">${e.months == null ? NP : esc(fmtDur(e.months, e.estimated)) + (e.estimated ? ' (est.)' : '')}</td></tr>`; }).join('')}</tbody></table></div><p class="text-[11px] text-pwc-grey mt-1">Total <strong>${esc(yrsTxt(emp.totalMonths, emp.totalEstimated))}</strong> · relevant <strong>${esc(yrsTxt(emp.relevantMonths, emp.totalEstimated))}</strong>${emp.overlaps ? ' · overlapping roles counted once' : ''}</p>`;
+}
+function ageTableHtml(c) {
+  const a = getExtra(c).age, ck = ageCheck(a, state.ageCrit), est = a.status === 'estimated';
+  const rows = [['Age', a.age != null ? `<strong class="text-base">${a.age}</strong>` : '<strong>Age Not Available</strong>'], ['Age Type', esc(a.type || 'Not Available')], ['Basis', a.basis ? esc(a.basis) : NP]];
+  if (a.status !== 'unavailable') rows.push(['Source', sCell(a.source)]);
+  if (est) rows.push(['Graduation Year', sCell(a.gradYear)], ['Assumed Graduation Age', sCell(a.assumedGradAge)], ['Estimated Birth Year', sCell(a.birthYear)]);
+  rows.push(['Confidence', a.confidence ? esc(a.confidence) : NP], ['Verification Status', `<strong class="${est ? 'text-amber-800' : a.status === 'stated' ? 'text-emerald-800' : ''}">${esc(a.verification)}</strong>`], ['Age criterion result', esc(ck.label)]);
+  return `<table class="min-w-full text-xs"><tbody class="divide-y divide-pwc-line">${rows.map(([k, v]) => `<tr><th scope="row" class="py-2 pr-4 text-left font-semibold text-pwc-grey w-48 align-top">${k}</th><td class="py-2">${v}</td></tr>`).join('')}</tbody></table>${a.assumptions.length ? `<ul class="list-disc list-inside mt-2 text-xs text-pwc-slate space-y-0.5">${a.assumptions.map(k => `<li>${esc(k)}</li>`).join('')}</ul>` : ''}${est ? '<p class="mt-2 text-[11px] text-amber-800 font-semibold">This is an estimate, not a verified personal fact. It is never used to reject a candidate automatically.</p>' : ''}`;
+}
+function assessOverview(c) {
+  const x = getExtra(c), emp = x.employment, a = x.age, con = x.contact, cur = emp.current || {}, hq = highestLevel(x.educationDetail);
+  const fact = (l, v, s) => `<div class="rounded-2xl bg-pwc-surface border border-pwc-line p-3.5"><div class="text-[11px] font-semibold uppercase text-pwc-grey">${l}</div><div class="text-sm font-bold mt-0.5 break-words">${v}</div>${s ? `<div class="text-[11px] text-pwc-grey mt-0.5">${s}</div>` : ''}</div>`;
+  const ageTone = a.status === 'stated' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : a.status === 'estimated' ? 'bg-amber-50 text-amber-900 border-amber-300' : 'bg-gray-100 text-pwc-slate border-gray-300';
+  return `<div class="space-y-6">
+  ${c.checks && c.checks.length ? `<div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900"><strong class="block mb-1">Data checks, please review</strong><ul class="list-disc list-inside space-y-0.5">${c.checks.map(k => `<li>${esc(k)}</li>`).join('')}</ul></div>` : ''}
+  <div><span class="eyebrow">A. Candidate overview</span></div>
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+    <div class="xl:col-span-4 glass-card p-6"><div class="flex items-center gap-4"><div class="w-16 h-16 rounded-full bg-[#1c1c1c] text-white text-xl font-bold flex items-center justify-center shrink-0" aria-hidden="true">${esc(initials(c.name))}</div><div class="min-w-0"><h3 class="font-serif text-xl font-bold leading-tight">${esc(c.name)}</h3><p class="text-[11px] text-pwc-grey mt-0.5">${esc(c.id)} · rank #${c.rank} of ${cands().length}</p></div></div>
+      <dl class="mt-5 space-y-2 text-xs"><div class="flex gap-2"><dt class="w-20 text-pwc-grey">Email</dt><dd class="font-semibold break-all">${con.email ? esc(con.email) : NA}</dd></div><div class="flex gap-2"><dt class="w-20 text-pwc-grey">Phone</dt><dd class="font-semibold">${con.phone ? esc(con.phone) : NA}</dd></div><div class="flex gap-2"><dt class="w-20 text-pwc-grey">Location</dt><dd class="font-semibold">${con.location ? esc(con.location) : NA}</dd></div><div class="flex gap-2"><dt class="w-20 text-pwc-grey">LinkedIn</dt><dd class="font-semibold break-all">${con.linkedin ? esc(con.linkedin) : NA}</dd></div></dl>
+      <div class="mt-4 flex flex-wrap gap-1.5">${getBadge(c.qualificationStatus)}${eligBadge(c)}</div></div>
+    <div class="xl:col-span-3 glass-card p-6 flex flex-col items-center text-center">${ringSvg(c.overallFitScore)}<p class="text-xs font-bold mt-2">${esc(c.qualificationStatus)}</p><p class="text-[11px] text-pwc-grey mt-1">Mandatory criteria: <strong>${esc(mandatoryAssessment(c).label)}</strong></p><button type="button" onclick="setAssessTab('matching')" class="mt-3 text-xs font-bold text-pwc-burgundy hover:underline">View AI screening summary →</button></div>
+    <div class="xl:col-span-5 glass-card p-6"><div class="grid grid-cols-2 gap-3">
+      ${fact('Age', a.age != null ? esc(ageLabel(a)) : 'Age Not Available', `<span class="inline-flex px-1.5 py-0.5 rounded-full border text-[10px] font-bold ${ageTone}">${esc(a.verification)}</span>`)}
+      ${fact('Eligibility', eligBadge(c), '')}
+      ${fact('Total work experience', esc(yrsTxt(emp.totalMonths, emp.totalEstimated)), emp.stated ? `CV states ${emp.stated} yrs` : 'No stated figure')}
+      ${fact('Relevant experience', esc(yrsTxt(emp.relevantMonths, emp.totalEstimated)), 'Roles matching the JD (heuristic)')}
+      ${fact('Most recent job title', cur.title ? esc(cur.title) : NP, '')}
+      ${fact('Most recent employer', cur.employer ? esc(cur.employer) : NP, '')}</div></div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="glass-card p-6"><h3 class="font-serif text-lg font-bold mb-3">Age identification</h3>${ageTableHtml(c)}</div>
+    <div class="glass-card p-6"><div class="flex flex-wrap items-center justify-between gap-3 mb-3"><h3 class="font-serif text-lg font-bold">Eligibility at a glance</h3><button type="button" onclick="setAssessTab('eligibility')" class="text-xs font-bold text-pwc-burgundy hover:underline">Full eligibility assessment →</button></div><div class="mb-3">${eligControl(c)}</div><p class="text-xs text-pwc-grey">The recruiter decision is stored separately; the AI screening result and scores are never changed. Highest qualification detected: <strong>${esc(LEVEL_NAME[hq])}</strong>.</p></div></div>
+  <div><span class="eyebrow">B. Employment history</span></div>
+  <div class="glass-card p-6"><h3 class="font-serif text-lg font-bold mb-3">Past experience</h3>${empTableHtml(c)}</div>
+  <div><span class="eyebrow">C. Education & qualifications</span></div>
+  <div class="glass-card p-6"><h3 class="font-serif text-lg font-bold mb-3">Education & Qualifications</h3>${eduTableHtml(c)}</div>
+  <div class="glass-card p-6"><h3 class="font-serif text-lg font-bold mb-3">Demonstrated responsibilities</h3><ul class="list-disc list-inside space-y-1.5 text-xs text-pwc-slate">${listOr(c.demonstratedResponsibilities, 'None extracted')}</ul></div></div>`;
+}
+function extraReportLine(c) {
+  const x = getExtra(c), e = effectiveElig(c), emp = x.employment;
+  const ex = emp.entries.length ? `<table><tr><th>Employer</th><th>Job Title</th><th>Start</th><th>End</th><th>Duration</th></tr>${emp.entries.map(en => { const [s, t] = tenureParts(en.tenure); return `<tr><td>${esc(en.companyName || 'Not Provided')}</td><td>${esc(en.roleTitle || 'Not Provided')}</td><td>${esc(s === 'Not Available' ? 'Not Provided' : s)}</td><td>${esc(t === 'Not Available' ? 'Not Provided' : t)}</td><td>${en.months == null ? 'Not Provided' : esc(fmtDur(en.months, en.estimated))}</td></tr>`; }).join('')}</table>` : '<p>Employment history not available.</p>';
+  const ed = x.educationDetail.length ? `<table><tr><th>Qualification</th><th>Institution</th><th>Field</th><th>Start</th><th>Graduation</th><th>Status</th></tr>${x.educationDetail.map(q => `<tr><td>${esc(q.qualification)}</td><td>${esc(q.institution || 'Not Provided')}</td><td>${esc(q.field || 'Not Provided')}</td><td>${q.startYear || 'Not Provided'}</td><td>${q.endYear || 'Not Provided'}</td><td>${esc(q.status)}</td></tr>`).join('')}</table>` : '<p>Education not available.</p>';
+  return `<p><strong>Eligibility:</strong> ${ELIG_LABEL[e.status]} (${e.source === 'recruiter' ? 'recruiter-confirmed' : 'automated'})${e.reason ? ' &ndash; ' + esc(e.reason) : ''} &middot; <strong>Age:</strong> ${esc(ageLabel(x.age))}${x.age.status === 'estimated' ? ' (estimate, requires verification)' : ''} &middot; <strong>Total experience:</strong> ${esc(yrsTxt(emp.totalMonths, emp.totalEstimated))} &middot; <strong>Relevant:</strong> ${esc(yrsTxt(emp.relevantMonths, emp.totalEstimated))}</p><p><strong>Past experience</strong></p>${ex}<p><strong>Education &amp; qualifications</strong></p>${ed}`;
+}
+// Eligibility tab: age panel now uses the same age table as the profile (one source of truth)
+function assessEligibilityAgePanel(c) { return `<div class="glass-card p-6 text-xs space-y-2"><h3 class="font-serif text-base font-bold">3. Age verification</h3>${ageTableHtml(c)}<p class="text-pwc-slate">Criterion: ${state.ageCrit && state.ageCrit.enabled ? `${state.ageCrit.min ?? 'no minimum'} to ${state.ageCrit.max ?? 'no maximum'}` : 'not applied for this engagement'} (set in Engagement Intake). Age eligibility is kept separate from the AI match score.</p></div>`; }
 
 </script>
 </body>
